@@ -1,79 +1,84 @@
 <script setup lang="ts">
-import { customRef, inject } from "vue";
+import { inject, type ShallowRef, triggerRef, nextTick } from "vue";
+import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
+import { useBooleanDebouncedRef } from "./composable/useBooleanDebouncedRef";
 
-const props = defineProps<{
-  index: number;
-  concatindex?: number;
-  truelabel: string;
-  falselabel: string;
-}>();
+const
+  props = defineProps<{
+    index: number;
+    focusableDescendants: Boolean;
+    truelabel: string;
+    falselabel: string;
+  }>(),
+  emits = defineEmits<{
+    (e: "enable:focusableDescendants"): void;
+  }>(),
+  cards = inject("cards") as ShallowRef<PrimitiveType[]>
+;
 
-const emits = defineEmits<{
-  (e: "update:trueorfalse", trueorfalse: boolean): void;
-}>();
+let trueorfalse = useBooleanDebouncedRef(cards.value[props.index].search.trueorfalse);
 
-const cards = inject("cards") as any;
-
-function useDebouncedRef(value, delay = 5) {
-  let timeout;
-  return customRef((track, trigger) => {
-    return {
-      get() {
-        track();
-        return value;
-      },
-      set(newValue) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          value = newValue;
-          trigger();
-        }, delay);
-      },
-    };
+function updateTrueOrFalse(val: Boolean) {
+  emits("enable:focusableDescendants");
+  
+  nextTick(() => {
+    cards.value[props.index].search.trueorfalse = !val;
+    triggerRef(cards);
   });
 }
 
-let debouncedsearch = useDebouncedRef(cards.value[props.index].search.trueorfalse);
 </script>
 
 <template>
   <label
+    role="switch"
+    :aria-checked="(trueorfalse as boolean)"
     :for="cards[index].scroll.areaid + '-switch'"
-    @click.stop="emits('update:trueorfalse', !debouncedsearch)"
+    @click.stop="updateTrueOrFalse(trueorfalse)"
+    @keyup.enter.native="updateTrueOrFalse(trueorfalse)"
+    @keyup.enter="updateTrueOrFalse(trueorfalse)"
     class="d-inline-block w-100 h-100 position-relative"
-    style="background-color: #eee"
+    style="background-color: #eee;"
   >
     <input
       :id="cards[index].scroll.areaid + '-switch'"
       class="d-none"
       @click.stop=""
       type="checkbox"
-      v-model="debouncedsearch"
+      v-model="(trueorfalse as boolean)"
     />
-    <span
-      class="d-block align-middle position-absolute t-0 h-100 slider"
-      style="outline: 1px solid rgba(0, 0, 0, 0.2)"
+    <div
+      class="d-block align-middle position-absolute m-0 t-0 h-100 slider"
+      tabindex="-1"
     >
-      <a class="d-block underline-none text-center cursor-pointer">{{
-        debouncedsearch ? truelabel : falselabel
+      <a 
+        class="d-block underline-none text-center cursor-pointer h-100 switch-btn"
+        tabindex="-1"
+        :aria-label="trueorfalse ? 'Selected relatively between ' : 'Selected unrelative between '"
+      >{{
+        trueorfalse ? truelabel : falselabel
       }}</a>
-    </span>
+    </div>
     <div
       class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center h-100"
-      style="outline: 1px solid rgba(0, 0, 0, 0.2)"
+      style="outline: 1.4px solid rgba(0, 0, 0, 0.2);"
     >
-      <div class="flex-w-50 bold align-self-stretch">
+      <div class="flex-w-50 bold align-self-stretch h-100">
         <a
-          class="d-block underline-none text-center cursor-pointer"
-          style="padding: 2.5px 0 1px 0"
+          class="d-block underline-none text-center cursor-pointer switch-btn h-100"
+          :tabindex="props.focusableDescendants? 0 : -1"
+          aria-pressed="true"
+          aria-label="relatively"
         >
           {{ truelabel }}
         </a>
       </div>
-      <div class="flex-w-50 bold align-self-stretch">
+      <div class="flex-w-50 bold align-self-stretch h-100">
         <a
-          class="d-block underline-none text-center cursor-pointer"
-          style="padding: 2.5px 0 1px 0"
+          class="d-block underline-none text-center cursor-pointer switch-btn h-100"
+          :tabindex="props.focusableDescendants? 0 : -1"
+          aria-pressed="true"
+          aria-label="unrelatively"
         >
           {{ falselabel }}
         </a>
@@ -85,10 +90,9 @@ let debouncedsearch = useDebouncedRef(cards.value[props.index].search.trueorfals
 <style scoped>
 .slider {
   width: 1.75rem;
-  padding: 2.5px 0 1px 0;
   background-color: #f0e68c;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
+  -webkit-transition: 0.6s;
+  transition: 0.6s;
   -webkit-transform: translateX(1.75rem);
   -ms-transform: translateX(1.75rem);
   transform: translateX(1.75rem);
@@ -101,5 +105,17 @@ input:checked + .slider {
   -webkit-transform: translateX(0rem);
   -ms-transform: translateX(0rem);
   transform: translateX(0rem);
+}
+
+.switch-btn {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 2px 0;
+}
+
+.slider:focus,
+.switch-btn:hover,
+.switch-btn:focus,
+.switch-btn:active {
+  background-color: grey;
 }
 </style>

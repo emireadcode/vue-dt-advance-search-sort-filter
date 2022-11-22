@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import AppAdvanceSortSearchAndFilter from "./components/AppAdvanceSortSearchAndFilter.vue";
+import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.vue";
+
+//npm install --save ol
 </script>
 
 <template>
-  <AppAdvanceSortSearchAndFilter
+  <AdvanceSearchSortAndFilter
     :config="{
       singlewordstringtypes: [
         {
@@ -275,7 +277,7 @@ import AppAdvanceSortSearchAndFilter from "./components/AppAdvanceSortSearchAndF
         },
       ],
     }"
-  ></AppAdvanceSortSearchAndFilter>
+  ></AdvanceSearchSortAndFilter>
 </template>
 
 <style>
@@ -537,6 +539,9 @@ input[type="text"][readonly] {
 }
 .cursor-pointer {
   cursor: pointer !important;
+}
+.cursor-disabled {
+  cursor: not-allowed !important;
 }
 .position-absolute {
   position: absolute !important;
@@ -914,3 +919,4 @@ a.btn.disabled {
     cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 </style>
+
