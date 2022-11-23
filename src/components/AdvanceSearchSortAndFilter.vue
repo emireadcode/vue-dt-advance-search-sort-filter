@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, shallowRef, onBeforeMount, type ShallowRef } from "vue";
-import type { NumberStringType, TimeType, KeyToNameType, NumberType, YearType, DateTimeType, DateType, MultipleWordsStringType, SingleWordStringConcatenatedFieldType, MultipleWordsStringConcatenatedFieldType, SingleWordStringType, PrimitiveType, IdentityType, CardType, CardInnerType, DistinctRecordType } from "./types/SupportedDatatypesTypeDeclaration";
+import type { SingleWordConcatenatedType, MultipleWordsStringConcatenatedType, NumberStringType, TimeType, KeyToNameType, NumberType, YearType, DateTimeType, DateType, MultipleWordsStringType, SingleWordStringConcatenatedFieldType, MultipleWordsStringConcatenatedFieldType, SingleWordStringType, PrimitiveType, IdentityType, CardType, CardInnerType, DistinctRecordType, KeyToNameMappingType, DateFormat, TimeFormat } from "./types/SupportedDatatypesTypeDeclaration";
 import AdvanceSearchSortAndFilterModal from "./AdvanceSearchSortAndFilterModal.vue";
 
 let distinctRecords: DistinctRecordType = null;
@@ -86,20 +86,20 @@ function scanConfig(
   card: CardInnerType,
   index: number,
   size: number,
-  sSAndFCards1: PrimitiveType[],
-  sSAndFCards2: PrimitiveType[],
+  _arrangedCards: PrimitiveType[],
+  _unarrangedCards: PrimitiveType[],
   isfound: boolean,
   pnotfound: boolean
 ) {
   let found = isfound,
     positionNotFound = pnotfound,
-    searchSortAndFilterCards = sSAndFCards1;
+    arrangedCards = _arrangedCards;
   if (!found) {
     if (typeof card.position !== undefined) {
       if (card.position === index) {
         for (let j = 0; j < size; j++) {
-          if (card.name === sSAndFCards2[j].info.name) {
-            searchSortAndFilterCards.push(sSAndFCards2[j]);
+          if (card.name === _unarrangedCards[j].info.name) {
+            arrangedCards.push(_unarrangedCards[j]);
             found = true;
             break;
           }
@@ -110,18 +110,18 @@ function scanConfig(
     }
   }
   return {
-    searchSortAndFilterCards,
+    arrangedCards,
     found,
     positionNotFound,
   };
 }
 
 function arrangeCards(
-  sSAndFCards: PrimitiveType[],
+  unarrangedCards: PrimitiveType[],
   config: CardType<CardInnerType>
 ) {
-  let searchSortAndFilterCards: PrimitiveType[] = [],
-    size = sSAndFCards.length,
+  let arrangedCards: PrimitiveType[] = [],
+    size = unarrangedCards.length,
     positionNotFound = false,
     supportedtypes = [
       "multiplewordsstringtypes",
@@ -170,12 +170,13 @@ function arrangeCards(
             card,
             index,
             size,
-            searchSortAndFilterCards,
-            sSAndFCards,
+            arrangedCards,
+            unarrangedCards,
             found,
             positionNotFound
           );
-          searchSortAndFilterCards = configReturn.searchSortAndFilterCards;
+          
+          arrangedCards = configReturn.arrangedCards;
           found = configReturn.found;
           positionNotFound = configReturn.positionNotFound;
         });
@@ -188,7 +189,7 @@ function arrangeCards(
     }
   }
 
-  return positionNotFound ? sSAndFCards : searchSortAndFilterCards;
+  return positionNotFound ? unarrangedCards : arrangedCards;
 }
 
 function getIdentityItem(item: CardInnerType, attribute: string, datatype: string) {
@@ -224,6 +225,26 @@ function getIdentityItem(item: CardInnerType, attribute: string, datatype: strin
   } as IdentityType;
 }
 
+/*
+when we concatenate multiple attributes, if at least one attribute of the list of 
+attributes being concatenated happens to be a multiple word string, then
+do not allow a search based on derived attribute that equals to the concatenation of all 
+attributes.
+
+For example, given we have the following attributes such as address, city, country.
+
+Address happens to be a multiple word string,
+City happens to be a single word string,
+Country also happens to be a single word string
+
+And we have concatenated address + city + country, but we do not need to allow users to 
+search base on address + city + country.
+
+Instead let a user search address, city, and/or country separately.
+
+Given, that It is very rare for users to type in large search phrase.
+
+*/
 function shouldShowFullConcatOrNot(
   concatenated:
     | MultipleWordsStringConcatenatedFieldType
@@ -239,301 +260,319 @@ function shouldShowFullConcatOrNot(
   return show;
 }
 
+function getKeyToNameTypeObject(item: CardInnerType & KeyToNameMappingType) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "KeyToName"),
+    img: {
+      ascclicked: "sort-asc.png",
+      descclicked: "sort-desc.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      keyword: "",
+      trueorfalse: false,
+    },
+    keytonamemapping:
+      item.keytonamemapping !== undefined ? item.keytonamemapping : {},
+  } as KeyToNameType;
+}
+
+function getYearTypeObject(item: CardInnerType) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "Year"),
+    img: {
+      ascclicked: "sort-a-z.png",
+      descclicked: "sort-z-a.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      tab: "RANGE",
+      multiple_or_single: [],
+      range: [],
+      trueorfalse: false,
+    },
+    searchFrom: "SERVER",
+  } as YearType;
+}
+
+function getNumberTypeObject(item: CardInnerType) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "Number"),
+    img: {
+      ascclicked: "sort-1-9.png",
+      descclicked: "sort-9-1.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      trueorfalse: false,
+      tab: "GREATER-THAN",
+      greaterthan: "",
+      lessthan: "",
+      equalto: {
+        single: "",
+        value: [],
+        index: 0,
+        disabled: [],
+        show: [],
+      },
+      notequalto: {
+        single: "",
+        value: [],
+        index: 0,
+        disabled: [],
+        show: [],
+      },
+      fromto: {
+        from: "",
+        to: "",
+      },
+      exclude: {
+        fromto: {
+          singlefrom: "",
+          from: [],
+          singleto: "",
+          to: [],
+          index: 0,
+          disabled: [],
+          show: [],
+        },
+        equalto: {
+          single: "",
+          value: [],
+          index: 0,
+          disabled: [],
+          show: [],
+        },
+      },
+    },
+    searchFrom: "SERVER",
+  } as NumberType;
+}
+
+function getMultipleWordStringTypeObject(item: (CardInnerType & {concatenated?: MultipleWordsStringConcatenatedType | undefined;})) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "MultipleWordsString"),
+    img: {
+      ascclicked: "sort-a-z.png",
+      descclicked: "sort-z-a.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      ...searchStringDefaultObject(),
+      include: {
+        ...searchStringDefaultObject(),
+      },
+      exclude: {
+        ...searchStringDefaultObject(),
+      },
+      trueorfalse: false,
+    },
+    searchFrom: "SERVER",
+    concatenatedname:
+      item.concatenated !== undefined &&
+      shouldShowFullConcatOrNot(item.concatenated.fields)
+        ? item.name
+        : undefined,
+    concatenated:
+      item.concatenated !== undefined
+        ? formConcatenatedSearch(item.concatenated.fields)
+        : undefined,
+  } as MultipleWordsStringType;
+}
+
+function getDateTypeObject(item: CardInnerType & DateFormat) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "Date"),
+    img: {
+      ascclicked: "sort-asc.png",
+      descclicked: "sort-desc.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      trueorfalse: false,
+      format: "DD/MM/YYYY",
+      dd_mm_yyyy: {
+        format: "RANGE",
+        dates: {},
+      },
+      days_months_years: {
+        days: {
+          format: "RANGE",
+          days: {},
+        },
+        months: {
+          format: "RANGE",
+          months: {},
+        },
+        years: {
+          format: "RANGE",
+          years: {},
+        },
+      },
+    },
+    searchFrom: "SERVER",
+    dateFormat: item.dateFormat,
+  } as DateType;
+}
+
+function getDateTimeObject(item: CardInnerType & DateFormat & TimeFormat) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "DateTime"),
+    img: {
+      ascclicked: "sort-asc.png",
+      descclicked: "sort-desc.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      from_to_time: [],
+      trueorfalse: false,
+      format: "DD/MM/YYYY",
+      dd_mm_yyyy: {
+        format: "RANGE",
+        dates: {},
+      },
+      days_months_years: {
+        days: {
+          format: "RANGE",
+          days: {},
+        },
+        months: {
+          format: "RANGE",
+          months: {},
+        },
+        years: {
+          format: "RANGE",
+          years: {},
+        },
+      },
+    },
+    searchFrom: "SERVER",
+    dateFormat: item.dateFormat,
+    timeFormat: item.timeFormat,
+  } as DateTimeType;
+}
+
+function getTimeTypeObject(item: CardInnerType & TimeFormat) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "Time"),
+    img: {
+      ascclicked: "sort-1-9.png",
+      descclicked: "sort-9-1.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      trueorfalse: false,
+      from_to_time: [],
+    },
+    searchFrom: "SERVER",
+    timeFormat: item.timeFormat,
+  } as TimeType;
+}
+
+function getNumberStringTypeObject(item: CardInnerType & {concatenated?: SingleWordConcatenatedType | undefined;}) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "NumberString"),
+    img: {
+      ascclicked: "sort-1-9.png",
+      descclicked: "sort-9-1.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      trueorfalse: false,
+      ...searchStringDefaultObject(),
+    },
+    concatenated:
+      item.concatenated !== undefined
+        ? formConcatenatedSearch(item.concatenated.fields)
+        : undefined,
+    concatenatedname:
+      item.concatenated !== undefined &&
+      shouldShowFullConcatOrNot(item.concatenated.fields)
+        ? item.name
+        : undefined,
+    searchFrom: "SERVER",
+  } as NumberStringType;
+}
+
+function getSingleWordStringTypeObject(item: CardInnerType & {concatenated?: SingleWordConcatenatedType | undefined;}) {
+  const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
+  return {
+    ...getIdentityItem(item, attribute, "SingleWordString"),
+    img: {
+      ascclicked: "sort-a-z.png",
+      descclicked: "sort-z-a.png",
+      mixclicked: "mix.png",
+    },
+    search: {
+      trueorfalse: false,
+      ...searchStringDefaultObject(),
+    },
+    concatenated:
+      item.concatenated !== undefined
+        ? formConcatenatedSearch(item.concatenated.fields)
+        : undefined,
+    concatenatedname:
+      item.concatenated !== undefined &&
+      shouldShowFullConcatOrNot(item.concatenated.fields)
+        ? item.name
+        : undefined,
+    searchFrom: "SERVER",
+  } as SingleWordStringType;
+}
+
 function generateSearchSortAndFilterCards(config: CardType<CardInnerType>) {
   let searchSortAndFilterCards: PrimitiveType[] = [];
   if (typeof config.multiplewordsstringtypes !== undefined) {
     config.multiplewordsstringtypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const multiplewordsstringtypetemplate = {
-        ...getIdentityItem(item, attribute, "MultipleWordsString"),
-        img: {
-          ascclicked: "sort-a-z.png",
-          descclicked: "sort-z-a.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          ...searchStringDefaultObject(),
-          include: {
-            ...searchStringDefaultObject(),
-          },
-          exclude: {
-            ...searchStringDefaultObject(),
-          },
-          trueorfalse: false,
-        },
-        searchFrom: "SERVER",
-        concatenatedname:
-          item.concatenated !== undefined &&
-          shouldShowFullConcatOrNot(item.concatenated.fields)
-            ? item.name
-            : undefined,
-        concatenated:
-          item.concatenated !== undefined
-            ? formConcatenatedSearch(item.concatenated.fields)
-            : undefined,
-      } as MultipleWordsStringType;
-
-      searchSortAndFilterCards.push(multiplewordsstringtypetemplate);
+      searchSortAndFilterCards.push(getMultipleWordStringTypeObject(item));
     });
   }
   if (typeof config.yeartypes !== undefined) {
     config.yeartypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const yeartypetemplate = {
-        ...getIdentityItem(item, attribute, "Year"),
-        img: {
-          ascclicked: "sort-a-z.png",
-          descclicked: "sort-z-a.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          tab: "RANGE",
-          multiple_or_single: [],
-          range: [],
-          trueorfalse: false,
-        },
-        searchFrom: "SERVER",
-      } as YearType;
-
-      searchSortAndFilterCards.push(yeartypetemplate);
+      searchSortAndFilterCards.push(getYearTypeObject(item));
     });
   }
   if (typeof config.keytonamemappingtypes !== undefined) {
     config.keytonamemappingtypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const keytonametypetemplate = {
-        ...getIdentityItem(item, attribute, "KeyToName"),
-        img: {
-          ascclicked: "sort-asc.png",
-          descclicked: "sort-desc.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          keyword: "",
-          trueorfalse: false,
-        },
-        keytonamemapping:
-          item.keytonamemapping !== undefined ? item.keytonamemapping : {},
-      } as KeyToNameType;
-
-      searchSortAndFilterCards.push(keytonametypetemplate);
+      searchSortAndFilterCards.push(getKeyToNameTypeObject(item));
     });
   }
   if (typeof config.numbertypes !== undefined) {
     config.numbertypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const numbertypetemplate = {
-        ...getIdentityItem(item, attribute, "Number"),
-        img: {
-          ascclicked: "sort-1-9.png",
-          descclicked: "sort-9-1.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          trueorfalse: false,
-          tab: "GREATER-THAN",
-          greaterthan: "",
-          lessthan: "",
-          equalto: {
-            single: "",
-            value: [],
-            index: 0,
-            disabled: [],
-            show: [],
-          },
-          notequalto: {
-            single: "",
-            value: [],
-            index: 0,
-            disabled: [],
-            show: [],
-          },
-          fromto: {
-            from: "",
-            to: "",
-          },
-          exclude: {
-            fromto: {
-              singlefrom: "",
-              from: [],
-              singleto: "",
-              to: [],
-              index: 0,
-              disabled: [],
-              show: [],
-            },
-            equalto: {
-              single: "",
-              value: [],
-              index: 0,
-              disabled: [],
-              show: [],
-            },
-          },
-        },
-        searchFrom: "SERVER",
-      } as NumberType;
-
-      searchSortAndFilterCards.push(numbertypetemplate);
+      searchSortAndFilterCards.push(getNumberTypeObject(item));
     });
   }
   if (typeof config.datetypes !== undefined) {
     config.datetypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const datetypetemplate = {
-        ...getIdentityItem(item, attribute, "Date"),
-        img: {
-          ascclicked: "sort-asc.png",
-          descclicked: "sort-desc.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          trueorfalse: false,
-          format: "DD/MM/YYYY",
-          dd_mm_yyyy: {
-            format: "RANGE",
-            dates: {},
-          },
-          days_months_years: {
-            days: {
-              format: "RANGE",
-              days: {},
-            },
-            months: {
-              format: "RANGE",
-              months: {},
-            },
-            years: {
-              format: "RANGE",
-              years: {},
-            },
-          },
-        },
-        searchFrom: "SERVER",
-        dateFormat: item.dateFormat,
-      } as DateType;
-
-      searchSortAndFilterCards.push(datetypetemplate);
+      searchSortAndFilterCards.push(getDateTypeObject(item));
     });
   }
   if (typeof config.datetimetypes !== undefined) {
     config.datetimetypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const datetimetypetemplate = {
-        ...getIdentityItem(item, attribute, "DateTime"),
-        img: {
-          ascclicked: "sort-asc.png",
-          descclicked: "sort-desc.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          from_to_time: [],
-          trueorfalse: false,
-          format: "DD/MM/YYYY",
-          dd_mm_yyyy: {
-            format: "RANGE",
-            dates: {},
-          },
-          days_months_years: {
-            days: {
-              format: "RANGE",
-              days: {},
-            },
-            months: {
-              format: "RANGE",
-              months: {},
-            },
-            years: {
-              format: "RANGE",
-              years: {},
-            },
-          },
-        },
-        searchFrom: "SERVER",
-        dateFormat: item.dateFormat,
-        timeFormat: item.timeFormat,
-      } as DateTimeType;
-
-      searchSortAndFilterCards.push(datetimetypetemplate);
+      searchSortAndFilterCards.push(getDateTimeObject(item));
     });
   }
   if (typeof config.timetypes !== undefined) {
     config.timetypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const timetypetemplate = {
-        ...getIdentityItem(item, attribute, "Time"),
-        img: {
-          ascclicked: "sort-1-9.png",
-          descclicked: "sort-9-1.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          trueorfalse: false,
-          from_to_time: [],
-        },
-        searchFrom: "SERVER",
-        timeFormat: item.timeFormat,
-      } as TimeType;
-
-      searchSortAndFilterCards.push(timetypetemplate);
+      searchSortAndFilterCards.push(getTimeTypeObject(item));
     });
   }
   if (typeof config.numberstringtypes !== undefined) {
     config.numberstringtypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const numberstringtypetemplate = {
-        ...getIdentityItem(item, attribute, "NumberString"),
-        img: {
-          ascclicked: "sort-1-9.png",
-          descclicked: "sort-9-1.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          trueorfalse: false,
-          ...searchStringDefaultObject(),
-        },
-        concatenated:
-          item.concatenated !== undefined
-            ? formConcatenatedSearch(item.concatenated.fields)
-            : undefined,
-        concatenatedname:
-          item.concatenated !== undefined &&
-          shouldShowFullConcatOrNot(item.concatenated.fields)
-            ? item.name
-            : undefined,
-        searchFrom: "SERVER",
-      } as NumberStringType;
-
-      searchSortAndFilterCards.push(numberstringtypetemplate);
+      searchSortAndFilterCards.push(getNumberStringTypeObject(item));
     });
   }
   if (typeof config.singlewordstringtypes !== undefined) {
     config.singlewordstringtypes?.forEach((item) => {
-      const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
-      const singlewordstringtypetemplate = {
-        ...getIdentityItem(item, attribute, "SingleWordString"),
-        img: {
-          ascclicked: "sort-a-z.png",
-          descclicked: "sort-z-a.png",
-          mixclicked: "mix.png",
-        },
-        search: {
-          trueorfalse: false,
-          ...searchStringDefaultObject(),
-        },
-        concatenated:
-          item.concatenated !== undefined
-            ? formConcatenatedSearch(item.concatenated.fields)
-            : undefined,
-        concatenatedname:
-          item.concatenated !== undefined &&
-          shouldShowFullConcatOrNot(item.concatenated.fields)
-            ? item.name
-            : undefined,
-        searchFrom: "SERVER",
-      } as SingleWordStringType;
-
-      searchSortAndFilterCards.push(singlewordstringtypetemplate);
+      searchSortAndFilterCards.push(getSingleWordStringTypeObject(item));
     });
   }
 

@@ -1,20 +1,32 @@
 <script setup lang="ts">
-import { inject, triggerRef, ref, nextTick, type ShallowRef } from "vue";
+import { inject, triggerRef, nextTick, type ShallowRef, ref } from "vue";
 import type { KeyToNameType, PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 
 const
   props = defineProps<{
     index: number;
     focusableDescendants: Boolean;
+    listfocuser: Boolean;
   }>(),
   emits = defineEmits<{
     (e: "enable:focusableDescendants"): void;
     (e: "enable:cardRefFocus"): void;
+    (e: "enableOrDisable:listDescendantsFocus", action: Boolean): void;
   }>(),
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
-  index = props.index,
-  listfocuser = ref(false)
+  index = props.index
 ;
+
+function handleTabPress(e: KeyboardEvent) {
+  nextTick(() => {
+    if (e.shiftKey) {
+      console.log(document.getElementById(cards.value[index].scroll.areaid));
+      document.getElementById(cards.value[index].scroll.areaid)?.focus();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+}
 
 function selectAllOrNot() {
   cards.value[index].result.all = !cards.value[index].result.all;
@@ -36,7 +48,7 @@ function selectAllOrNot() {
     });
     triggerRef(cards);
 
-    listfocuser.value = true;
+    if(props.listfocuser === false) emits('enableOrDisable:listDescendantsFocus', true);
   });
 }
 
@@ -58,7 +70,7 @@ function handleSelection(index: number) {
     }
     triggerRef(cards);
 
-    listfocuser.value = true;
+    if(props.listfocuser === false) emits('enableOrDisable:listDescendantsFocus', true);
   });
 }
 </script>
@@ -88,10 +100,9 @@ function handleSelection(index: number) {
       class="d-block overflow-y-auto overflow-x-hidden shadow-sm listbox"
       style="height: 16.625rem"
       :tabindex="props.focusableDescendants? 0 : -1"
-      @keyup.enter.native=""
-      @keyup.enter=""
-      @click=""
-      @focus=""
+      @keyup.enter.native="emits('enableOrDisable:listDescendantsFocus', true)"
+      @keyup.enter="emits('enableOrDisable:listDescendantsFocus', true)"
+      @click="emits('enableOrDisable:listDescendantsFocus', true)"
     >
       <ul class="d-block list-style-none m-0" style="padding: 5px 0px">
         <li
@@ -114,7 +125,7 @@ function handleSelection(index: number) {
             >
               <div class="flex-shrink-0 flex-grow-0">
                 <input
-                  :tabindex="listfocuser? 0 : -1"
+                  :tabindex="props.listfocuser? 0 : -1"
                   @change="handleSelection(dindex)"
                   :checked="data.checked"
                   :id="cards[index].scroll.areaid + 'jjj' + dindex"
@@ -176,7 +187,7 @@ function handleSelection(index: number) {
             >
               <div class="flex-shrink-0 flex-grow-0">
                 <input
-                  :tabindex="listfocuser? 0 : -1"
+                  :tabindex="props.listfocuser? 0 : -1"
                   @change="handleSelection(dindex)"
                   :checked="data.checked"
                   :id="cards[index].scroll.areaid + 'jjj' + dindex"
@@ -236,6 +247,10 @@ function handleSelection(index: number) {
           class="btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center shadow-sm"
           style="border-radius: 10px; padding: 0.08rem 0"
           :tabindex="props.focusableDescendants? 0 : -1"
+          @keydown.tab="handleTabPress($event)"
+          @blur="() => {
+            emits('enableOrDisable:listDescendantsFocus', false);
+          }"
         >
           <img
             src="/src/assets/icons/filter.png"
@@ -245,8 +260,9 @@ function handleSelection(index: number) {
           <span
             class="font-bold letter-spacing font-0-dot-90-rem"
             style="padding-left: 0.2rem"
-            >Filter by selected</span
           >
+            Filter by selected
+          </span>
         </button>
       </div>
     </div>
@@ -261,10 +277,7 @@ input[type="checkbox"] {
   -webkit-appearance: none;
   -moz-appearance: none;
 }
-input[type="checkbox"]:focus {
-  outline: 1px solid rgba(0, 0, 0, 0.2);
-  border: none;
-}
+input[type="checkbox"]:focus,
 input[type="checkbox"]:hover {
   background-color: #ccc;
   border: none;
@@ -276,12 +289,10 @@ input[type="checkbox"]:checked {
     url("data:image/gif;base64,R0lGODlhCwAKAIABAP////3cnSH5BAEKAAEALAAAAAALAAoAAAIUjH+AC73WHIsw0UCjglraO20PNhYAOw==")
     2px 2px no-repeat;
 }
-
 .listbox {
   outline: 1px solid transparent;
   border: none;
 }
-
 .listbox:hover,
 .listbox:focus {
   outline: 1px solid black;

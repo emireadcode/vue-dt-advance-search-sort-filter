@@ -9,9 +9,12 @@ const
   props = defineProps<{
     index: number;
     focusableDescendants: Boolean;
+    listfocuser: Boolean;
   }>(),
   emits = defineEmits<{
     (e: "enable:focusableDescendants"): void;
+    (e: "enable:cardRefFocus"): void;
+    (e: "enableOrDisable:listDescendantsFocus", action: Boolean): void;
   }>(),
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
   index = props.index
@@ -45,7 +48,10 @@ const
     <FilterableResultDisplayer
       :index="index"
       :focusableDescendants="props.focusableDescendants"
+      :listfocuser="props.listfocuser"
       @enable:focusableDescendants="emits('enable:focusableDescendants')"
+      @enable:cardRefFocus="emits('enable:cardRefFocus')"
+      @enableOrDisable:listDescendantsFocus="$val => emits('enableOrDisable:listDescendantsFocus', $val)"
     ></FilterableResultDisplayer>
   </div>
 </template>

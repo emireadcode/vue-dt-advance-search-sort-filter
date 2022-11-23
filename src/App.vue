@@ -77,7 +77,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 aword: true,
               },
             },
-            delimiters: '',
+            delimiters: [''],
           },
         },
         {
@@ -109,7 +109,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 aword: true,
               },
             },
-            delimiters: ' ',
+            delimiters: [' '],
           },
         },
         {
@@ -156,7 +156,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 aword: true,
               },
             },
-            delimiters: ', ',
+            delimiters: [', ', ' - '],
           },
         },
         {
@@ -184,7 +184,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 aword: true,
               },
             },
-            delimiters: ', ',
+            delimiters: [', '],
           },
         },
       ],

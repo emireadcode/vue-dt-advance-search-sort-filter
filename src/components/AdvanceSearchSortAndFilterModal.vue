@@ -8,6 +8,7 @@ const
   cardRef = ref<HTMLDivElement[]>([]),
   focusableDescendants = ref<Boolean[]>([]),
   cardRefTabIndex = ref<Boolean[]>([]),
+  listfocuser = ref<Boolean[]>([]),
   emits = defineEmits<{
     (e: "modal:close", action: boolean): void;
   }>(),
@@ -19,9 +20,6 @@ const
 
 provide("cards", cards);
 
-function aa() {
-}
-
 function assignElToCardRef(el: HTMLDivElement, index: number) {
   cardRef.value[index] = el;
 }
@@ -30,7 +28,7 @@ function enableCardFocusableDescendantsTabIndex(index: number) {
   focusableDescendants.value[index] = true;
 }
 
-function enableAllSelfRefTabIndex() {
+function enableAllCardRefTabIndex() {
   cardRefTabIndex.value.forEach((item, i) => {
     cardRefTabIndex.value[i] = true;
   });
@@ -41,6 +39,12 @@ function disableOtherCardFocusableDescendants(index: number) {
     if(i !== index) {
       focusableDescendants.value[i] = false;
     }
+  });
+}
+
+function disableAllListFocuser() {
+  listfocuser.value.forEach((item, i) => {
+    listfocuser.value[i] = false;
   });
 }
 
@@ -56,6 +60,7 @@ onBeforeMount(() => {
   cards.value?.forEach((item, index) => {
     focusableDescendants.value[index] = false;
     cardRefTabIndex.value[index] = true;
+    listfocuser.value[index] = false;
   });
 });
 
@@ -69,7 +74,7 @@ onBeforeMount(() => {
           tabindex="-1"
           class="position-fixed w-100 l-0 t-0 m-0 p-0 shadow"
           style="z-index: 1000; height: 4.08333rem; pointer-events: auto"
-          @click="() =>{ disableOtherCardFocusableDescendants(-1); enableAllSelfRefTabIndex(); }"
+          @click="() =>{ disableOtherCardFocusableDescendants(-1); disableAllListFocuser(); enableAllCardRefTabIndex(); }"
         >
           <div
             class="flex-box flex-direction-row w-100 h-100 flex-nowrap justify-content-center align-items-center p-0 m-0"
@@ -83,19 +88,23 @@ onBeforeMount(() => {
                   type="button"
                   @keyup.enter="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @keyup.enter.native="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @click="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @focus="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex();
+                    enableAllCardRefTabIndex();
+                    disableAllListFocuser();
                   }"
                   style="background-color:#fff;"
                   class="control-img-btn m-0 p-0 cursor-pointer"
@@ -114,19 +123,23 @@ onBeforeMount(() => {
                   type="button"
                   @keyup.enter="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @keyup.enter.native="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @click="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @focus="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   style="background-color:#fff;"
                   class="control-img-btn m-0 p-0 cursor-pointer"
@@ -145,19 +158,23 @@ onBeforeMount(() => {
                   type="button"
                   @keyup.enter="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex();
+                    disableAllListFocuser(); 
                   }"
                   @keyup.enter.native="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @click="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @focus="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   style="background-color:#fff;"
                   class="control-img-btn m-0 p-0 cursor-pointer"
@@ -176,20 +193,24 @@ onBeforeMount(() => {
                   type="button"
                   @keyup.enter="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   @keyup.enter.native="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex();
+                    disableAllListFocuser(); 
                   }"
                   @click="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                     emits('modal:close', false); 
                   }"
                   @focus="() => { 
                     disableOtherCardFocusableDescendants(-1); 
-                    enableAllSelfRefTabIndex(); 
+                    enableAllCardRefTabIndex(); 
+                    disableAllListFocuser();
                   }"
                   style="background-color:#fff;"
                   class="control-img-btn m-0 p-0 cursor-pointer"
@@ -211,9 +232,10 @@ onBeforeMount(() => {
         <div
           tabindex="-1"
           @click.self="() => { 
-            enableAllSelfRefTabIndex(); 
+            enableAllCardRefTabIndex(); 
             cardContainerRef.focus(); 
-            disableOtherCardFocusableDescendants(-1); 
+            disableOtherCardFocusableDescendants(-1);
+            disableAllListFocuser(); 
           }"
           class="d-block m-0 overflow-y-auto overflow-x-hidden h-100"
           style="padding: 0.875rem 1.75rem important;z-index: 990;background-color: snow;"
@@ -221,9 +243,10 @@ onBeforeMount(() => {
           <div
             tabindex="-1"
             @click.self="() => { 
-              enableAllSelfRefTabIndex();
+              enableAllCardRefTabIndex();
               cardContainerRef.focus(); 
               disableOtherCardFocusableDescendants(-1); 
+              disableAllListFocuser(); 
             }"
             class="d-block"
             style="height: auto !important; padding: 0.875rem 0 !important"
@@ -231,9 +254,10 @@ onBeforeMount(() => {
             <ul
               tabindex="-1"
               @click.self="() => { 
-                enableAllSelfRefTabIndex();
+                enableAllCardRefTabIndex();
                 cardContainerRef.focus(); 
                 disableOtherCardFocusableDescendants(-1); 
+                disableAllListFocuser(); 
               }"
               id="card-container"
               class="flex-box flex-direction-row w-100 flex-wrap align-items-center justify-content-center list-style-none m-0 p-0"
@@ -241,9 +265,10 @@ onBeforeMount(() => {
               <li
                 tabindex="-1"
                 @click.self="() => { 
-                  enableAllSelfRefTabIndex();
+                  enableAllCardRefTabIndex();
                   cardContainerRef.focus(); 
                   disableOtherCardFocusableDescendants(-1); 
+                  disableAllListFocuser(); 
                 }"
                 v-for="(card, index) in cards"
                 :key="index"
@@ -254,24 +279,21 @@ onBeforeMount(() => {
                   :tabindex="cardRefTabIndex[index]? 0 : -1"
                   :aria-labelledby="'info-'+card.info.attribute"
                   @focus.self="() => { 
-                    enableAllSelfRefTabIndex();
+                    enableAllCardRefTabIndex();
                     cardRef[index].focus();
                     disableOtherCardFocusableDescendants(-1);
                   }"
                   @click="() => {
                     enableCardFocusableDescendantsTabIndex(index);
                     disableOtherCardFocusableDescendants(index);
-                    disableOtherCardRefTabIndex(index);
                   }"
                   @keyup.enter.native="() => {
                     enableCardFocusableDescendantsTabIndex(index);
                     disableOtherCardFocusableDescendants(index);
-                    disableOtherCardRefTabIndex(index);
                   }"
                   @keyup.enter="() => {
                     enableCardFocusableDescendantsTabIndex(index);
                     disableOtherCardFocusableDescendants(index);
-                    disableOtherCardRefTabIndex(index);
                   }"
                   :ref="
                     (el) => {
@@ -288,7 +310,12 @@ onBeforeMount(() => {
                       disableOtherCardRefTabIndex(index);
                     }"
                     :index="index"
+                    @enable:cardRefFocus="() => {
+                      disableAllListFocuser();
+                    }"
                     :focusableDescendants="focusableDescendants[index]"
+                    @enableOrDisable:listDescendantsFocus="$val => { listfocuser[index] = $val; }"
+                    :listfocuser="listfocuser[index]"
                   ></Card>
                 </div>
               </li>

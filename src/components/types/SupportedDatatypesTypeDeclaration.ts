@@ -13,7 +13,9 @@ export type MultipleWordsStringConcatenatedFieldType = {
   [key: string]: {
     aword: boolean;
     name: string;
-    attribute: string;
+    attribute?: string | undefined;
+    table?: string | undefined;
+    join?: string | undefined;
     search?:
       | (StringSearchType & {
           include?: StringSearchType | undefined;
@@ -22,28 +24,40 @@ export type MultipleWordsStringConcatenatedFieldType = {
       | undefined;
   };
 };
+
+type StartModifierWildCardType = "@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[";
+
+type StartModifierWildCardTypeUnion = `${StartModifierWildCardType}${StartModifierWildCardType}`;
+
+type EndModifierWildCardType = "*" | ")" | "#" | "/" | "]" | "}";
+
+type EndModifierWildCardTypeUnion = `${EndModifierWildCardType}${EndModifierWildCardType}`;
   
+type DelimiterType = " - " | "-" | "/" | "." | " " | "*" | "" | '' | ', ' | ", " | '?' | '<' | '>' | '%' | '{' | '}' | '(' | ')' | '+' | '#' | '$' | '@' | '_' | '|' | '=' | '&';
+
+type DelimiterTypeUnion = `${DelimiterType}${DelimiterType}`;
+
 export type SingleWordStringConcatenatedFieldType = {
   [key: string]: {
     aword: true;
     name: string;
-    attribute: string;
+    attribute?: string | undefined;
+    table?: string | undefined;
+    join?: string | undefined;
     search?: StringSearchType | undefined;
-    startmodifierwildcard?: 
-      | ("@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[")[]
-      | undefined;
-    endmodifierwildcard?: ("*" | ")" | "#" | "/" | "]" | "}")[] | undefined;
+    startmodifierwildcard?: StartModifierWildCardTypeUnion | StartModifierWildCardType | undefined;
+    endmodifierwildcard?: EndModifierWildCardTypeUnion | EndModifierWildCardType | undefined;
   };
 };
   
 export type MultipleWordsStringConcatenatedType = {
   fields: MultipleWordsStringConcatenatedFieldType;
-  delimiters: string[];
+  delimiters: DelimiterType[] | DelimiterType | DelimiterTypeUnion[] | DelimiterTypeUnion | undefined;
 };
   
 export type SingleWordConcatenatedType = {
   fields: SingleWordStringConcatenatedFieldType;
-  delimiters?: string[] | "-" | "/" | "." | " " | "*" | undefined;
+  delimiters: DelimiterType[] | DelimiterType | DelimiterTypeUnion[] | DelimiterTypeUnion | undefined;
 };
 
 export type KeyToNameMappingType = {
