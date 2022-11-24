@@ -51,14 +51,12 @@ function handleShiftTab(e: KeyboardEvent) {
   nextTick(() => {
     if (e.shiftKey) {
       accessibility.attributes.sliderRef.value[index]?.blur();
-      if(trueorfalse) {
-        accessibility.attributes.trueLabelRef.value[index]?.focus();
-        if(accessibility.attributes.sliderOnFocused.value[index]) {
-          accessibility.attributes.sliderRef.value[index].blur();
-          nextTick(() => {
-            document.getElementById('mix-btn-'+cards.value[index].info.attribute)?.focus();
-          });
-        }
+      accessibility.attributes.trueLabelRef.value[index]?.focus();
+      if(accessibility.attributes.sliderOnFocused.value[index]) {
+        accessibility.attributes.sliderRef.value[index].blur();
+        nextTick(() => {
+          document.getElementById('mix-btn-'+cards.value[index].info.attribute)?.focus();
+        });
       }
       e.preventDefault();
       e.stopPropagation();
