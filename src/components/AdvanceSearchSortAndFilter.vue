@@ -225,26 +225,6 @@ function getIdentityItem(item: CardInnerType, attribute: string, datatype: strin
   } as IdentityType;
 }
 
-/*
-when we concatenate multiple attributes, if at least one attribute of the list of 
-attributes being concatenated happens to be a multiple word string, then
-do not allow a search based on derived attribute that equals to the concatenation of all 
-attributes.
-
-For example, given we have the following attributes such as address, city, country.
-
-Address happens to be a multiple word string,
-City happens to be a single word string,
-Country also happens to be a single word string
-
-And we have concatenated address + city + country, but we do not need to allow users to 
-search base on address + city + country.
-
-Instead let a user search address, city, and/or country separately.
-
-Given, that It is very rare for users to type in large search phrase.
-
-*/
 function shouldShowFullConcatOrNot(
   concatenated:
     | MultipleWordsStringConcatenatedFieldType

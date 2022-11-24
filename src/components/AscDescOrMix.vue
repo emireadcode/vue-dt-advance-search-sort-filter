@@ -1,17 +1,27 @@
 <script setup lang="ts">
-import { inject, onMounted, nextTick, triggerRef, type ShallowRef } from "vue";
+import { inject, onMounted, nextTick, triggerRef, type ShallowRef, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 
 const
   props = defineProps<{
     index: number;
-    focusableDescendants: Boolean;
-  }>(),
-  emits = defineEmits<{
-    (e: "enable:focusableDescendants"): void;
   }>(),
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
   index = props.index
+;
+
+let
+  accessibility = inject("accessibility") as {
+    attributes: {
+      cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
+      cardRefTabIndex: Ref<Boolean[]>;
+    };
+    methods: {
+      enableCardFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => void;
+      disableOtherCardsFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => void;
+      disableOtherCardsRefTabIndex: (i: number, c: Ref<Boolean[]>) => void;
+    };
+  }
 ;
 
 onMounted(() => {
@@ -24,7 +34,10 @@ function setSortType(sorttype: string, clicked: boolean) {
   triggerRef(cards);
 
   if(clicked) {
-    emits("enable:focusableDescendants");
+    accessibility.attributes.cardFocusableDescendantsTabIndex.value[index] = true;
+    accessibility.methods.enableCardFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
+    accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
+    accessibility.methods.disableOtherCardsRefTabIndex(index, accessibility.attributes.cardRefTabIndex);
   }
 
   nextTick(() => {
@@ -56,10 +69,9 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'asc-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="Ascending"
-        :tabindex="props.focusableDescendants? 0 : -1"
+        :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
         @click.prevent="setSortType('ASC', true)"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
-        style="border-radius: 10px;padding:0.291667rem;"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.ascclicked" style="height:1.1667rem !important;width:1.1667rem;" />
         <span class="font-bold letter-spacing font-0-dot-80-rem" style="padding-left:0.175rem;">ASC</span>
@@ -70,10 +82,9 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'desc-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="Descending"
-        :tabindex="props.focusableDescendants? 0 : -1"
+        :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
         @click.prevent="setSortType('DESC', true)"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
-        style="border-radius: 10px;padding:0.291667rem;"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.descclicked" style="height:1.1667rem !important;width:1.1667rem;" />
         <span class="font-bold letter-spacing font-0-dot-80-rem" style="padding-left:0.175rem;">DESC</span>
@@ -84,10 +95,9 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'mix-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="No sorting"
-        :tabindex="props.focusableDescendants? 0 : -1"
+        :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
         @click.prevent="setSortType('MIX', true)"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
-        style="border-radius: 10px;padding:0.291667rem;"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.mixclicked" style="height:1.1667rem !important;width:1.1667rem;" />
         <span class="font-bold letter-spacing font-0-dot-80-rem" style="padding-left:0.175rem;">MIX</span>
@@ -101,10 +111,13 @@ function setSortType(sorttype: string, clicked: boolean) {
   outline: 2px solid gray;
   border: none;
   background-color: #eee;
+  border-radius: 10px;
+  padding: 0.291667rem;
 }
 
 .sort-btn:hover,
-.sort-btn:focus {
+.sort-btn:focus,
+.sort-btn:active {
   outline: 2px solid blue;
   background-color: gray !important;
 }

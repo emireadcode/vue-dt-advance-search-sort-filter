@@ -1,19 +1,23 @@
 <script setup lang="ts">
-import { ref, inject, type ShallowRef } from "vue";
+import { ref, inject, type ShallowRef, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 import Switchable from "./Switchable.vue";
 
 const
   props = defineProps<{
     index: number;
-    focusableDescendants: Boolean;
-  }>(),
-  emits = defineEmits<{
-    (e: "enable:focusableDescendants"): void;
   }>(),
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
   index = props.index,
   open = ref(false)
+;
+
+let
+  accessibility = inject("accessibility") as {
+    attributes: {
+      cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
+    };
+  }
 ;
 </script>
 
@@ -28,8 +32,6 @@ const
           truelabel="R"
           falselabel="U"
           :index="index"
-          :focusableDescendants="props.focusableDescendants"
-          @enable:focusableDescendants="emits('enable:focusableDescendants')"
         ></Switchable>
       </div>
       <div class="flex-fill m-0 align-self-stretch" style="padding:0 0 0 1px;">
@@ -38,7 +40,7 @@ const
         >
           <div class="flex-fill p-0 m-0 h-100" style="z-index: 700">
             <input
-              :tabindex="props.focusableDescendants? 0 : -1"
+              :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
               @click="() => { open = true; }"
               @keyup.enter.native="() => { }"
               @keyup.enter="() => { }"

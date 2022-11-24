@@ -1,26 +1,28 @@
 <script setup lang="ts">
-import { inject, triggerRef, nextTick, type ShallowRef, ref } from "vue";
+import { inject, triggerRef, nextTick, type ShallowRef, type Ref } from "vue";
 import type { KeyToNameType, PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 
 const
   props = defineProps<{
     index: number;
-    focusableDescendants: Boolean;
-    listfocuser: Boolean;
-  }>(),
-  emits = defineEmits<{
-    (e: "enable:focusableDescendants"): void;
-    (e: "enable:cardRefFocus"): void;
-    (e: "enableOrDisable:listDescendantsFocus", action: Boolean): void;
-  }>(),
+  }>()
+;
+
+let
+  accessibility = inject("accessibility") as {
+    attributes: {
+      cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
+      cardListBoxFocusableDescendantsTabIndex: Ref<Boolean[]>;
+    };
+  },
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
   index = props.index
 ;
 
+
 function handleTabPress(e: KeyboardEvent) {
   nextTick(() => {
     if (e.shiftKey) {
-      console.log(document.getElementById(cards.value[index].scroll.areaid));
       document.getElementById(cards.value[index].scroll.areaid)?.focus();
       e.preventDefault();
       e.stopPropagation();
@@ -48,7 +50,9 @@ function selectAllOrNot() {
     });
     triggerRef(cards);
 
-    if(props.listfocuser === false) emits('enableOrDisable:listDescendantsFocus', true);
+    if(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] === false) {
+      accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true;
+    }
   });
 }
 
@@ -70,7 +74,9 @@ function handleSelection(index: number) {
     }
     triggerRef(cards);
 
-    if(props.listfocuser === false) emits('enableOrDisable:listDescendantsFocus', true);
+    if(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] === false) {
+      accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true;
+    }
   });
 }
 </script>
@@ -78,7 +84,7 @@ function handleSelection(index: number) {
 <template>
   <div class="d-block" style="padding: 0.325777rem 0">
     <input
-      :tabindex="props.focusableDescendants? 0 : -1"
+      :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
       @change="selectAllOrNot()"
       class="align-middle shadow-sm"
       :id="'deselect-' + cards[index].scroll.areaid"
@@ -99,10 +105,11 @@ function handleSelection(index: number) {
       :id="cards[index].scroll.areaid"
       class="d-block overflow-y-auto overflow-x-hidden shadow-sm listbox"
       style="height: 16.625rem"
-      :tabindex="props.focusableDescendants? 0 : -1"
-      @keyup.enter.native="emits('enableOrDisable:listDescendantsFocus', true)"
-      @keyup.enter="emits('enableOrDisable:listDescendantsFocus', true)"
-      @click="emits('enableOrDisable:listDescendantsFocus', true)"
+      @focus="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = false"
+      :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
+      @keyup.enter.native="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true"
+      @keyup.enter="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true"
+      @click="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true"
     >
       <ul class="d-block list-style-none m-0" style="padding: 5px 0px">
         <li
@@ -125,7 +132,7 @@ function handleSelection(index: number) {
             >
               <div class="flex-shrink-0 flex-grow-0">
                 <input
-                  :tabindex="props.listfocuser? 0 : -1"
+                  :tabindex="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index]? 0 : -1"
                   @change="handleSelection(dindex)"
                   :checked="data.checked"
                   :id="cards[index].scroll.areaid + 'jjj' + dindex"
@@ -187,7 +194,7 @@ function handleSelection(index: number) {
             >
               <div class="flex-shrink-0 flex-grow-0">
                 <input
-                  :tabindex="props.listfocuser? 0 : -1"
+                  :tabindex="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index]? 0 : -1"
                   @change="handleSelection(dindex)"
                   :checked="data.checked"
                   :id="cards[index].scroll.areaid + 'jjj' + dindex"
@@ -246,11 +253,9 @@ function handleSelection(index: number) {
           :aria-disabled="cards[index].result.totalselection === 0 ? true : false"
           class="btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center shadow-sm"
           style="border-radius: 10px; padding: 0.08rem 0"
-          :tabindex="props.focusableDescendants? 0 : -1"
+          :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
           @keydown.tab="handleTabPress($event)"
-          @blur="() => {
-            emits('enableOrDisable:listDescendantsFocus', false);
-          }"
+          @blur="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = false"
         >
           <img
             src="/src/assets/icons/filter.png"

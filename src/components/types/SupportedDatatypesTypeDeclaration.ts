@@ -27,15 +27,15 @@ export type MultipleWordsStringConcatenatedFieldType = {
 
 type StartModifierWildCardType = "@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[";
 
-type StartModifierWildCardTypeUnion = `${StartModifierWildCardType}${StartModifierWildCardType}`;
+type StartModifierWildCardUnionType = `${StartModifierWildCardType}${StartModifierWildCardType}`;
 
 type EndModifierWildCardType = "*" | ")" | "#" | "/" | "]" | "}";
 
-type EndModifierWildCardTypeUnion = `${EndModifierWildCardType}${EndModifierWildCardType}`;
+type EndModifierWildCardUnionType = `${EndModifierWildCardType}${EndModifierWildCardType}`;
   
 type DelimiterType = " - " | "-" | "/" | "." | " " | "*" | "" | '' | ', ' | ", " | '?' | '<' | '>' | '%' | '{' | '}' | '(' | ')' | '+' | '#' | '$' | '@' | '_' | '|' | '=' | '&';
 
-type DelimiterTypeUnion = `${DelimiterType}${DelimiterType}`;
+type DelimiterUnionType = `${DelimiterType}${DelimiterType}`;
 
 export type SingleWordStringConcatenatedFieldType = {
   [key: string]: {
@@ -45,19 +45,19 @@ export type SingleWordStringConcatenatedFieldType = {
     table?: string | undefined;
     join?: string | undefined;
     search?: StringSearchType | undefined;
-    startmodifierwildcard?: StartModifierWildCardTypeUnion | StartModifierWildCardType | undefined;
-    endmodifierwildcard?: EndModifierWildCardTypeUnion | EndModifierWildCardType | undefined;
+    startmodifierwildcard?: StartModifierWildCardUnionType | StartModifierWildCardType | undefined;
+    endmodifierwildcard?: EndModifierWildCardUnionType | EndModifierWildCardType | undefined;
   };
 };
   
 export type MultipleWordsStringConcatenatedType = {
   fields: MultipleWordsStringConcatenatedFieldType;
-  delimiters: DelimiterType[] | DelimiterType | DelimiterTypeUnion[] | DelimiterTypeUnion | undefined;
+  delimiters: DelimiterType[] | DelimiterType | DelimiterUnionType[] | DelimiterUnionType | undefined;
 };
   
 export type SingleWordConcatenatedType = {
   fields: SingleWordStringConcatenatedFieldType;
-  delimiters: DelimiterType[] | DelimiterType | DelimiterTypeUnion[] | DelimiterTypeUnion | undefined;
+  delimiters: DelimiterType[] | DelimiterType | DelimiterUnionType[] | DelimiterUnionType | undefined;
 };
 
 export type KeyToNameMappingType = {
