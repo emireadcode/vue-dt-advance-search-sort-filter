@@ -14,6 +14,7 @@ const
 ;
 
 let
+  done = ref(false),
   accessibility = inject("accessibility") as {
     attributes: {
       cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
@@ -34,20 +35,38 @@ let
 
 let trueorfalse = useBooleanDebouncedRef(cards.value[index].search.trueorfalse);
 
-function updateTrueOrFalse(val: boolean, e: KeyboardEvent | MouseEvent) {
-  cards.value[index].search.trueorfalse = !val;
-  trueorfalse.value = !val;
-  triggerRef(cards);
-    
-  accessibility.methods.enableCardFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
-  accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
-    
-  nextTick(() => {
-    document.getElementById(cards.value[index].scroll.areaid + '-switch')?.click();
-  });
-  accessibility.attributes.sliderRef.value[index].focus();
-  e.preventDefault();
-  
+function updateTrueOrFalse(e: KeyboardEvent | MouseEvent) {
+  if(done.value === false) {
+    done.value = true;
+    let time: NodeJS.Timeout;
+    time = setTimeout(() => {
+      if(trueorfalse.value) {
+        cards.value[index].search.trueorfalse = false;
+        trueorfalse.value = false;
+      }
+      else {
+        cards.value[index].search.trueorfalse = true;
+        trueorfalse.value = true;
+      }
+
+      triggerRef(cards);
+        
+      accessibility.methods.enableCardFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
+      accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
+        
+      accessibility.attributes.sliderRef.value[index].focus();
+
+      if(e instanceof KeyboardEvent) {
+        document.getElementById(cards.value[index].scroll.areaid + '-switch')?.click();
+        e.preventDefault();
+      }
+      
+      done.value = false;
+      
+      clearTimeout(time);
+      
+    }, 50);
+  }
 }
 
 function handleShiftTab(e: KeyboardEvent) {
@@ -75,8 +94,8 @@ function handleShiftTab(e: KeyboardEvent) {
     role="switch"
     :aria-checked="(trueorfalse as boolean)"
     :for="cards[index].scroll.areaid + '-switch'"
-    @click.stop="updateTrueOrFalse(trueorfalse as boolean, $event)"
-    @keypress.enter.stop="updateTrueOrFalse(trueorfalse as boolean, $event)"
+    @click.stop="updateTrueOrFalse($event)"
+    @keypress.enter.stop="updateTrueOrFalse($event)"
     class="d-inline-block w-100 h-100 position-relative"
     style="background-color: #eee;"
   >
