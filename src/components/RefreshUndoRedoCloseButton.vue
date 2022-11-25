@@ -37,11 +37,6 @@ const
         accessibility.methods.disableAllCardsListBoxFocusableDescendantsTabIndex(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex);
         accessibility.methods.enableAllCardsRefTabIndex(accessibility.attributes.cardRefTabIndex); 
       }"
-      @keyup.enter.native="() => { 
-        accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(-1, accessibility.attributes.cardFocusableDescendantsTabIndex); 
-        accessibility.methods.disableAllCardsListBoxFocusableDescendantsTabIndex(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex);
-        accessibility.methods.enableAllCardsRefTabIndex(accessibility.attributes.cardRefTabIndex); 
-      }"
       @click="() => { 
         accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(-1, accessibility.attributes.cardFocusableDescendantsTabIndex); 
         accessibility.methods.disableAllCardsListBoxFocusableDescendantsTabIndex(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex);

@@ -34,16 +34,20 @@ let
 
 let trueorfalse = useBooleanDebouncedRef(cards.value[index].search.trueorfalse);
 
-function updateTrueOrFalse(val: Boolean) {
-  accessibility.attributes.cardFocusableDescendantsTabIndex.value[index] = true;
+function updateTrueOrFalse(val: boolean, e: KeyboardEvent | MouseEvent) {
+  cards.value[index].search.trueorfalse = !val;
+  trueorfalse.value = !val;
+  triggerRef(cards);
+    
   accessibility.methods.enableCardFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
   accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
-  accessibility.methods.disableOtherCardsRefTabIndex(index, accessibility.attributes.cardRefTabIndex);
-  
+    
   nextTick(() => {
-    cards.value[index].search.trueorfalse = !val;
-    triggerRef(cards);
+    document.getElementById(cards.value[index].scroll.areaid + '-switch')?.click();
   });
+  accessibility.attributes.sliderRef.value[index].focus();
+  e.preventDefault();
+  
 }
 
 function handleShiftTab(e: KeyboardEvent) {
@@ -71,9 +75,8 @@ function handleShiftTab(e: KeyboardEvent) {
     role="switch"
     :aria-checked="(trueorfalse as boolean)"
     :for="cards[index].scroll.areaid + '-switch'"
-    @click.stop="updateTrueOrFalse(trueorfalse)"
-    @keyup.enter.native="updateTrueOrFalse(trueorfalse)"
-    @keyup.enter="updateTrueOrFalse(trueorfalse)"
+    @click.stop="updateTrueOrFalse(trueorfalse as boolean, $event)"
+    @keypress.enter.stop="updateTrueOrFalse(trueorfalse as boolean, $event)"
     class="d-inline-block w-100 h-100 position-relative"
     style="background-color: #eee;"
   >
@@ -110,8 +113,9 @@ function handleShiftTab(e: KeyboardEvent) {
       :id="cards[index].scroll.areaid + '-switch'"
       class="d-none"
       @click.stop=""
+      @keypress.enter.stop=""
       type="checkbox"
-      v-model="(trueorfalse as boolean)"
+      vmodel="(trueorfalse as boolean)"
     />
     <div
       @keydown.tab="handleShiftTab($event)"
@@ -123,7 +127,7 @@ function handleShiftTab(e: KeyboardEvent) {
       <a 
         class="d-block underline-none text-center cursor-pointer h-100 switch-btn"
         tabindex="-1"
-        :aria-label="trueorfalse ? 'Selected relatively ' : 'Selected unrelative '"
+        :aria-label="trueorfalse ? 'Selected relatively ' : 'Selected unrelatively '"
       >{{
         trueorfalse ? truelabel : falselabel
       }}</a>

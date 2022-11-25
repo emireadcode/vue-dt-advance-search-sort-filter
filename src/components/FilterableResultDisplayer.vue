@@ -56,12 +56,12 @@ function selectAllOrNot() {
   });
 }
 
-function handleSelection(index: number) {
-  cards.value[index].result.data[index].checked = !cards.value[index].result.data[index].checked;
+function handleSelection(i: number) {
+  cards.value[index].result.data[i].checked = !cards.value[index].result.data[i].checked;
   triggerRef(cards);
 
   nextTick(() => {
-    if (cards.value[index].result.data[index].checked) {
+    if (cards.value[index].result.data[i].checked) {
       cards.value[index].result.totalselection++;
       if (cards.value[index].result.totalselection === cards.value[index].result.data.length) {
         cards.value[index].result.all = true;
@@ -107,7 +107,6 @@ function handleSelection(index: number) {
       style="height: 16.625rem"
       @focus="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = false"
       :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
-      @keyup.enter.native="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true"
       @keyup.enter="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true"
       @click="accessibility.attributes.cardListBoxFocusableDescendantsTabIndex.value[index] = true"
     >
@@ -115,7 +114,7 @@ function handleSelection(index: number) {
         <li
           class="w-100"
           v-for="(data, dindex) in cards[index].result.data"
-          :key="cards[index].scroll.areaid + '-' + dindex"
+          :key="cards[index].scroll.areaid + '-jjj-' + dindex"
         >
           <template
             v-if="

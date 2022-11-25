@@ -42,9 +42,7 @@ let
             <input
               :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
               @click="() => { open = true; }"
-              @keyup.enter.native="() => { }"
               @keyup.enter="() => { }"
-              @keyup.13="() => { }"
               type="text"
               class="w-100 align-middle h-100"
             />

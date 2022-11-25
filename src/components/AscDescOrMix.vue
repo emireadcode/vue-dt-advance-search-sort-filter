@@ -34,10 +34,8 @@ function setSortType(sorttype: string, clicked: boolean) {
   triggerRef(cards);
 
   if(clicked) {
-    accessibility.attributes.cardFocusableDescendantsTabIndex.value[index] = true;
     accessibility.methods.enableCardFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
     accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
-    accessibility.methods.disableOtherCardsRefTabIndex(index, accessibility.attributes.cardRefTabIndex);
   }
 
   nextTick(() => {
