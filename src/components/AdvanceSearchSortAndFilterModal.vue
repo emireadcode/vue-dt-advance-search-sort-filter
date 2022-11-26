@@ -21,6 +21,7 @@ let
   falseLabelRef = ref<HTMLAnchorElement[]>([]),
   sliderOnFocused = ref<Boolean[]>([]),
   shiftTabbed = ref<Boolean[]>([]),
+  cardSearchBarOpen = ref<Boolean[]>([]),
   cardListBoxFocusableDescendantsTabIndex = ref<Boolean[]>([])
 ;
 
@@ -46,7 +47,8 @@ provide("accessibility", {
     trueLabelRef,
     falseLabelRef,
     sliderOnFocused,
-    shiftTabbed
+    shiftTabbed,
+    cardSearchBarOpen,
   },
   methods: {
     enableCardFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => {
@@ -77,6 +79,7 @@ onBeforeMount(() => {
     cardListBoxFocusableDescendantsTabIndex.value[index] = false;
     sliderOnFocused.value[index] = false;
     shiftTabbed.value[index] = false;
+    cardSearchBarOpen.value[index] = false;
   });
 });
 

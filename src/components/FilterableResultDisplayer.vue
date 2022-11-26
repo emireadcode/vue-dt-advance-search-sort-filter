@@ -297,7 +297,6 @@ input[type="checkbox"]:checked {
   outline: 1px solid transparent;
   border: none;
 }
-.listbox:hover,
 .listbox:focus {
   outline: 1px solid black;
 }

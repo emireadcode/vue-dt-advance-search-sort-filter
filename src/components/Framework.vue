@@ -156,9 +156,6 @@ const
   border: 2px solid transparent;
   outline: none;
 }
-
-.card:hover,
-.card:active,
 .card:focus {
   border: 2px solid black;
   outline: none;

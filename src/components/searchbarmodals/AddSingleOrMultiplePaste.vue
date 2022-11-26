@@ -55,8 +55,8 @@ let duplicateCheckerObject = {},
   unwatchpagination: WatchStopHandle,
   temporary = useDebouncedRef(props.tree);
 
-function useDebouncedRef(value, delay = 1) {
-  let timeout;
+function useDebouncedRef(value: { single: string; value: string[]; index: number; temporary: string[]; done: boolean; bottom: boolean; loading: boolean; addloading: boolean; }, delay = 1) {
+  let timeout: NodeJS.Timeout;
   return customRef((track, trigger) => {
     return {
       get() {
@@ -102,12 +102,12 @@ function processPastedTextAndFindRejectedAndAcceptedLines(
 
   return [lines, removeDuplicateAndValidateLine(textareaacceptedtextArray)];
 }
-function removeDuplicateAndValidateLine(acceptedArray) {
-  let newArray = [],
+function removeDuplicateAndValidateLine(acceptedArray: any[]) {
+  let newArray: any[][] = [],
     index = 0,
     duplicate = 0,
     error = 0;
-  acceptedArray.forEach((item, i) => {
+  acceptedArray.forEach((item: string, i: any) => {
     if (item.trim() !== "") {
       if (
         duplicateCheckerObject["" + item] === undefined ||
@@ -184,7 +184,7 @@ function addNewIncludeOrExclude(tree: {
     if (tree.value.length === 0) {
       increment = true;
     } else {
-      let tt3 = [],
+      let tt3: NodeJS.Timeout[] = [],
         tt3Index = 0;
 
       if (current.value !== 0) {
@@ -234,7 +234,7 @@ function addNewIncludeOrExclude(tree: {
       tree.index = tree.value.length;
       paginateFurther();
 
-      let t2;
+      let t2: number | NodeJS.Timeout | undefined;
       clearTimeout(t2);
       t2 = setTimeout(() => {
         scrollToElement(includedend.value);
@@ -256,17 +256,17 @@ function openPasteArea() {
   pastefrommultipleincludecounter.value = 0;
   pastefrommultipleincludeloading.value = false;
   duplicateCheckerObject = {};
-  let tt;
+  let tt: number | NodeJS.Timeout | undefined;
   clearTimeout(tt);
   tt = setTimeout(() => {
     pastefrommultipleincluderef.value.focus();
     clearTimeout(tt);
   }, 50);
 }
-function pasteMultilineWordsCopiedFromSomewhere(e) {
+function pasteMultilineWordsCopiedFromSomewhere(e: any) {
   pastefrommultipleincluderef.value.maxLength = 5000;
   actualpastedincludedata = handlePaste(e);
-  let pastelengthresizetimer;
+  let pastelengthresizetimer: number | NodeJS.Timeout | undefined;
   clearTimeout(pastelengthresizetimer);
   pastelengthresizetimer = setTimeout(() => {
     pastefrommultipleincluderef.value.maxLength = 0;
@@ -275,7 +275,7 @@ function pasteMultilineWordsCopiedFromSomewhere(e) {
 }
 function addPasted() {
   let done = false,
-    tt3 = [],
+    tt3: NodeJS.Timeout[] = [],
     tt3Index = 0;
   for (let i = 0; i < processedpasteinclude.value.length; i++) {
     let item = processedpasteinclude.value[i];
@@ -343,7 +343,7 @@ function addPasted() {
       }
     }
   }
-  let tt;
+  let tt: number | NodeJS.Timeout | undefined;
   clearTimeout(tt);
   tt = setTimeout(() => {
     scrollToElement(includedend.value);
@@ -356,7 +356,7 @@ function addPasted() {
   pastefrommultipleinclude.value = false;
   duplicateCheckerObject = {};
 }
-function saveEditedTooLong(item, i) {
+function saveEditedTooLong(item: string, i: string | number) {
   if (item.length <= 40) {
     if (item.trim() !== "") {
       if (
@@ -379,7 +379,7 @@ function saveEditedTooLong(item, i) {
     }
   }
 }
-function handlePaste(e) {
+function handlePaste(e: { clipboardData: any; }) {
   var clipboardData, pastedData;
 
   // Get pasted data via clipboard API
@@ -388,7 +388,7 @@ function handlePaste(e) {
 
   return pastedData;
 }
-function deletePasted(index) {
+function deletePasted(index: number) {
   processedpasteinclude.value.splice(index, 1);
   if (processedpasteinclude.value.length === 0) {
     pastefrommultipleincludetext.value = "";
@@ -498,7 +498,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
     current.value = inputpagenumberref.value.value;
   }
 }
-function scrollToElement(el) {
+function scrollToElement(el: never) {
   if (el) {
     el.scrollIntoView({ behavior: "smooth" });
   }
@@ -562,7 +562,7 @@ onMounted(() => {
       if (pastefrommultipleincludecounter.value === 0) {
         pastefrommultipleincludeloading.value = true;
         pastefrommultipleincludecounter.value = 1;
-        let pt;
+        let pt: number | NodeJS.Timeout | undefined;
         clearTimeout(pt);
         pt = setTimeout(() => {
           pastefrommultipleincludeloading.value = false;
@@ -582,7 +582,7 @@ onMounted(() => {
   );
 });
 
-function scrollInclude(e) {
+function scrollInclude(e: { srcElement: any; originalTarget: any; }) {
   let doc = document,
     originalElement = e.srcElement || e.originalTarget,
     el = doc.getElementById(
@@ -599,7 +599,7 @@ function scrollInclude(e) {
         ) {
           props.tree.loading = true;
           nextTick(() => triggerRef(cards));
-          let time2;
+          let time2: number | NodeJS.Timeout | undefined;
           clearTimeout(time2);
           time2 = setTimeout(() => {
             let sum = 0,
@@ -684,7 +684,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="d-block position-relative" style="padding-bottom: 15px">
+  <div class="d-block position-relative">
     <div
       class="position-relative shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center"
     >
@@ -988,7 +988,7 @@ onBeforeUnmount(() => {
       >
         <li
           class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-          style="padding: 5px 3px; width: 10%"
+          style="padding: 5px 3px 5px 0px; width: 10%"
         >
           <a
             class="btn underline-none shadow-sm d-block"
@@ -1203,7 +1203,7 @@ onBeforeUnmount(() => {
         </li>
         <li
           class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-          style="padding: 5px 3px; width: 10%"
+          style="padding: 5px 0px 5px 3px; width: 10%"
         >
           <a class="btn underline-none shadow-sm d-block" style="padding: 2.8px 0">
             <img

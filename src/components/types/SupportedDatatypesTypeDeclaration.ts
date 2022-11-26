@@ -1,29 +1,3 @@
-export type StringSearchType = {
-  single: string;
-  value: string[];
-  index: number;
-  temporary: string[];
-  bottom: boolean;
-  done: boolean;
-  loading: boolean;
-  addloading: boolean;
-};
-  
-export type MultipleWordsStringConcatenatedFieldType = {
-  [key: string]: {
-    aword: boolean;
-    name: string;
-    attribute?: string | undefined;
-    table?: string | undefined;
-    join?: string | undefined;
-    search?:
-      | (StringSearchType & {
-          include?: StringSearchType | undefined;
-          exclude?: StringSearchType | undefined;
-        })
-      | undefined;
-  };
-};
 
 type StartModifierWildCardType = "@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[";
 
@@ -37,196 +11,6 @@ type DelimiterType = " - " | "-" | "/" | "." | " " | "*" | "" | '' | ', ' | ", "
 
 type DelimiterUnionType = `${DelimiterType}${DelimiterType}`;
 
-export type SingleWordStringConcatenatedFieldType = {
-  [key: string]: {
-    aword: true;
-    name: string;
-    attribute?: string | undefined;
-    table?: string | undefined;
-    join?: string | undefined;
-    search?: StringSearchType | undefined;
-    startmodifierwildcard?: StartModifierWildCardUnionType | StartModifierWildCardType | undefined;
-    endmodifierwildcard?: EndModifierWildCardUnionType | EndModifierWildCardType | undefined;
-  };
-};
-  
-export type MultipleWordsStringConcatenatedType = {
-  fields: MultipleWordsStringConcatenatedFieldType;
-  delimiters: DelimiterType[] | DelimiterType | DelimiterUnionType[] | DelimiterUnionType | undefined;
-};
-  
-export type SingleWordConcatenatedType = {
-  fields: SingleWordStringConcatenatedFieldType;
-  delimiters: DelimiterType[] | DelimiterType | DelimiterUnionType[] | DelimiterUnionType | undefined;
-};
-
-export type KeyToNameMappingType = {
-  keytonamemapping: {
-    [key: string]: string
-  };
-};
-  
-export type DateFormat = {
-  dateFormat:
-    | "yyyy/mm/dd"
-    | "yyyy/mm/d"
-    | "yyyy/m/dd"
-    | "yyyy/m/d"
-    | "yyyy mmmm dd"
-    | "yyyy mmmm d"
-    | "yyyy mmm dd"
-    | "yyyy mmm d"
-    | "ddd, yyyy mmmm dd"
-    | "ddd, yyyy mmmm d"
-    | "ddd, yyyy mmm dd"
-    | "ddd, yyyy mmm d"
-    | "dddd, yyyy mmmm dd"
-    | "dddd, yyyy mmmm d"
-    | "dddd, yyyy mmm dd"
-    | "dddd, yyyy mmm d"
-    | "dddd yyyy mmmm dd"
-    | "dddd yyyy mmmm d"
-    | "dddd yyyy mmm dd"
-    | "dddd yyyy mmm d"
-    | "yyyy.mm.dd"
-    | "yyyy.mm.d"
-    | "yyyy.m.dd"
-    | "yyyy.m.d"
-    | "yyyy. mm. dd"
-    | "yyyy. mm. d"
-    | "yyyy. m. dd"
-    | "yyyy. m. d"
-    | "yyyy-mm-dd"
-    | "yyyy-mm-d"
-    | "yyyy-m-dd"
-    | "yyyy-m-d"
-    //little-endian (day, month, year)
-    | "dd/mm/yyyy"
-    | "dd/m/yyyy"
-    | "d/mm/yyyy"
-    | "d/m/yyyy"
-    | "d/m yyyy"
-    | "dd mmm yyyy"
-    | "d mmm yyyy"
-    | "dd mmmm yyyy"
-    | "d mmmm yyyy"
-    | "dd mmm, yyyy"
-    | "d mmm, yyyy"
-    | "dd mmmm, yyyy"
-    | "d mmmm, yyyy"
-    | "dddd, dd mmmm yyyy"
-    | "dddd, d mmmm yyyy"
-    | "dddd, dd mmm yyyy"
-    | "dddd, d mmm yyyy"
-    | "ddd, dd mmmm yyyy"
-    | "ddd, d mmmm yyyy"
-    | "ddd, dd mmm yyyy"
-    | "ddd, d mmm yyyy"
-    | "dddd, dd mmmm, yyyy"
-    | "dddd, d mmmm, yyyy"
-    | "dddd, dd mmm, yyyy"
-    | "dddd, d mmm, yyyy"
-    | "ddd, dd mmmm, yyyy"
-    | "ddd, d mmmm, yyyy"
-    | "ddd, dd mmm, yyyy"
-    | "ddd, d mmm, yyyy"
-    | "dddd dd mmmm yyyy"
-    | "dddd d mmmm yyyy"
-    | "dddd dd mmm yyyy"
-    | "dddd d mmm yyyy"
-    | "ddd dd mmmm yyyy"
-    | "ddd d mmmm yyyy"
-    | "ddd dd mmm yyyy"
-    | "ddd d mmm yyyy"
-    | "dddd dd mmmm, yyyy"
-    | "dddd d mmmm, yyyy"
-    | "dddd dd mmm, yyyy"
-    | "dddd d mmm, yyyy"
-    | "ddd dd mmmm, yyyy"
-    | "ddd d mmmm, yyyy"
-    | "ddd dd mmm, yyyy"
-    | "ddd d mmm, yyyy"
-    | "dd.mm.yyyy"
-    | "d.mm.yyyy"
-    | "dd.m.yyyy"
-    | "d.m.yyyy"
-    | "dd. mm. yyyy"
-    | "d. mm. yyyy"
-    | "dd. m. yyyy"
-    | "d. m. yyyy"
-    | "d. mmmm yyyy"
-    | "d. mmm yyyy"
-    | "dd. mmmm yyyy"
-    | "dd. mmm yyyy"
-    | "dd-mm-yyyy"
-    | "dd-m-yyyy"
-    | "d-mm-yyyy"
-    | "d-m-yyyy"
-    //middle-endian (month, day, year)
-    | "mm/dd/yyyy"
-    | "mm/d/yyyy"
-    | "m/dd/yyyy"
-    | "m/d/yyyy"
-    | "mmmm/dd/yyyy"
-    | "mmmm/d/yyyy"
-    | "mmm/dd/yyyy"
-    | "mmm/d/yyyy"
-    | "mm.dd.yyyy"
-    | "mm.d.yyyy"
-    | "m.dd.yyyy"
-    | "m.d.yyyy"
-    | "mm. dd. yyyy"
-    | "mm. d. yyyy"
-    | "m. dd. yyyy"
-    | "m. d. yyyy"
-    | "dddd mmmm dd yyyy"
-    | "dddd mmmm d yyyy"
-    | "dddd mmm dd yyyy"
-    | "dddd mmm d yyyy"
-    | "ddd mmmm dd yyyy"
-    | "ddd mmmm d yyyy"
-    | "ddd mmm dd yyyy"
-    | "ddd mmm d yyyy"
-    | "dddd, mmmm dd yyyy"
-    | "dddd, mmmm d yyyy"
-    | "dddd, mmm dd yyyy"
-    | "dddd, mmm d yyyy"
-    | "ddd, mmmm dd yyyy"
-    | "ddd, mmmm d yyyy"
-    | "ddd, mmm dd yyyy"
-    | "ddd, mmm d yyyy"
-    | "dddd, mmmm dd, yyyy"
-    | "dddd, mmmm d, yyyy"
-    | "dddd, mmm dd, yyyy"
-    | "dddd, mmm d, yyyy"
-    | "ddd, mmmm dd, yyyy"
-    | "ddd, mmmm d, yyyy"
-    | "ddd, mmm dd, yyyy"
-    | "ddd, mmm d, yyyy"
-    | "mmmm dd, yyyy"
-    | "mmmm d, yyyy"
-    | "mmm dd, yyyy"
-    | "mmm d, yyyy"
-    | "mm-dd-yyyy"
-    | "mm-d-yyyy"
-    | "m-dd-yyyy"
-    | "m-d-yyyy"
-    | "mmmm-dd-yyyy"
-    | "mmmm-d-yyyy"
-    | "mmm-dd-yyyy"
-    | "mmm-d-yyyy";
-};
-  
-export type TimeFormat = {
-  timeFormat:
-    | "24-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO"
-    | "24-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO"
-    | "12-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO"
-    | "12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO"
-    | "24-HOUR-CLOCK-WITH-SECONDS"
-    | "12-HOUR-CLOCK-WITH-SECONDS";
-};
-  
 export interface IdentityType {
   info: {
     attribute: string;
@@ -265,7 +49,59 @@ export interface YearType extends IdentityType {
     trueorfalse: boolean;
   };
 }
+
+export type StringSearchType = {
+  single: string;
+  value: string[];
+  index: number;
+  temporary: string[];
+  bottom: boolean;
+  done: boolean;
+  loading: boolean;
+  addloading: boolean;
+  tabclicked: boolean;
+  tabref: HTMLButtonElement | undefined;
+};
+
+export type MultipleWordsStringConcatenatedFieldType = {
+  [key: string]: {
+    aword: boolean;
+    name: string;
+    attribute?: string | undefined;
+    table?: string | undefined;
+    join?: string | undefined;
+    search?:
+      | (StringSearchType & {
+          include?: StringSearchType | undefined;
+          exclude?: StringSearchType | undefined;
+        })
+      | undefined;
+  };
+};
+
+export type SingleWordStringConcatenatedFieldType = {
+  [key: string]: {
+    aword: true;
+    name: string;
+    attribute?: string | undefined;
+    table?: string | undefined;
+    join?: string | undefined;
+    search?: StringSearchType | undefined;
+    startmodifierwildcard?: StartModifierWildCardUnionType | StartModifierWildCardType | undefined;
+    endmodifierwildcard?: EndModifierWildCardUnionType | EndModifierWildCardType | undefined;
+  };
+};
+
+export type MultipleWordsStringConcatenatedType = {
+  fields: MultipleWordsStringConcatenatedFieldType;
+  delimiters: DelimiterType[] | DelimiterType | DelimiterUnionType[] | DelimiterUnionType | undefined;
+};
   
+export type SingleWordConcatenatedType = {
+  fields: SingleWordStringConcatenatedFieldType;
+  delimiters: DelimiterType[] | DelimiterType | DelimiterUnionType[] | DelimiterUnionType | undefined;
+};
+
 export interface MultipleWordsStringType extends IdentityType {
   concatenated?: MultipleWordsStringConcatenatedFieldType | undefined;
   concatenatedname?: string | undefined;
@@ -287,6 +123,12 @@ export interface SingleWordStringType extends IdentityType {
 }
   
 export interface NumberStringType extends SingleWordStringType {}
+
+export type KeyToNameMappingType = {
+  keytonamemapping: {
+    [key: string]: string
+  };
+};
   
 export interface KeyToNameType extends IdentityType, KeyToNameMappingType {
   search: {
@@ -496,3 +338,164 @@ export type PrimitiveType =
   | TimeType
   | SingleWordStringType
   | NumberStringType;
+  
+export type DateFormat = {
+  dateFormat:
+    | "yyyy/mm/dd"
+    | "yyyy/mm/d"
+    | "yyyy/m/dd"
+    | "yyyy/m/d"
+    | "yyyy mmmm dd"
+    | "yyyy mmmm d"
+    | "yyyy mmm dd"
+    | "yyyy mmm d"
+    | "ddd, yyyy mmmm dd"
+    | "ddd, yyyy mmmm d"
+    | "ddd, yyyy mmm dd"
+    | "ddd, yyyy mmm d"
+    | "dddd, yyyy mmmm dd"
+    | "dddd, yyyy mmmm d"
+    | "dddd, yyyy mmm dd"
+    | "dddd, yyyy mmm d"
+    | "dddd yyyy mmmm dd"
+    | "dddd yyyy mmmm d"
+    | "dddd yyyy mmm dd"
+    | "dddd yyyy mmm d"
+    | "yyyy.mm.dd"
+    | "yyyy.mm.d"
+    | "yyyy.m.dd"
+    | "yyyy.m.d"
+    | "yyyy. mm. dd"
+    | "yyyy. mm. d"
+    | "yyyy. m. dd"
+    | "yyyy. m. d"
+    | "yyyy-mm-dd"
+    | "yyyy-mm-d"
+    | "yyyy-m-dd"
+    | "yyyy-m-d"
+    //little-endian (day, month, year)
+    | "dd/mm/yyyy"
+    | "dd/m/yyyy"
+    | "d/mm/yyyy"
+    | "d/m/yyyy"
+    | "d/m yyyy"
+    | "dd mmm yyyy"
+    | "d mmm yyyy"
+    | "dd mmmm yyyy"
+    | "d mmmm yyyy"
+    | "dd mmm, yyyy"
+    | "d mmm, yyyy"
+    | "dd mmmm, yyyy"
+    | "d mmmm, yyyy"
+    | "dddd, dd mmmm yyyy"
+    | "dddd, d mmmm yyyy"
+    | "dddd, dd mmm yyyy"
+    | "dddd, d mmm yyyy"
+    | "ddd, dd mmmm yyyy"
+    | "ddd, d mmmm yyyy"
+    | "ddd, dd mmm yyyy"
+    | "ddd, d mmm yyyy"
+    | "dddd, dd mmmm, yyyy"
+    | "dddd, d mmmm, yyyy"
+    | "dddd, dd mmm, yyyy"
+    | "dddd, d mmm, yyyy"
+    | "ddd, dd mmmm, yyyy"
+    | "ddd, d mmmm, yyyy"
+    | "ddd, dd mmm, yyyy"
+    | "ddd, d mmm, yyyy"
+    | "dddd dd mmmm yyyy"
+    | "dddd d mmmm yyyy"
+    | "dddd dd mmm yyyy"
+    | "dddd d mmm yyyy"
+    | "ddd dd mmmm yyyy"
+    | "ddd d mmmm yyyy"
+    | "ddd dd mmm yyyy"
+    | "ddd d mmm yyyy"
+    | "dddd dd mmmm, yyyy"
+    | "dddd d mmmm, yyyy"
+    | "dddd dd mmm, yyyy"
+    | "dddd d mmm, yyyy"
+    | "ddd dd mmmm, yyyy"
+    | "ddd d mmmm, yyyy"
+    | "ddd dd mmm, yyyy"
+    | "ddd d mmm, yyyy"
+    | "dd.mm.yyyy"
+    | "d.mm.yyyy"
+    | "dd.m.yyyy"
+    | "d.m.yyyy"
+    | "dd. mm. yyyy"
+    | "d. mm. yyyy"
+    | "dd. m. yyyy"
+    | "d. m. yyyy"
+    | "d. mmmm yyyy"
+    | "d. mmm yyyy"
+    | "dd. mmmm yyyy"
+    | "dd. mmm yyyy"
+    | "dd-mm-yyyy"
+    | "dd-m-yyyy"
+    | "d-mm-yyyy"
+    | "d-m-yyyy"
+    //middle-endian (month, day, year)
+    | "mm/dd/yyyy"
+    | "mm/d/yyyy"
+    | "m/dd/yyyy"
+    | "m/d/yyyy"
+    | "mmmm/dd/yyyy"
+    | "mmmm/d/yyyy"
+    | "mmm/dd/yyyy"
+    | "mmm/d/yyyy"
+    | "mm.dd.yyyy"
+    | "mm.d.yyyy"
+    | "m.dd.yyyy"
+    | "m.d.yyyy"
+    | "mm. dd. yyyy"
+    | "mm. d. yyyy"
+    | "m. dd. yyyy"
+    | "m. d. yyyy"
+    | "dddd mmmm dd yyyy"
+    | "dddd mmmm d yyyy"
+    | "dddd mmm dd yyyy"
+    | "dddd mmm d yyyy"
+    | "ddd mmmm dd yyyy"
+    | "ddd mmmm d yyyy"
+    | "ddd mmm dd yyyy"
+    | "ddd mmm d yyyy"
+    | "dddd, mmmm dd yyyy"
+    | "dddd, mmmm d yyyy"
+    | "dddd, mmm dd yyyy"
+    | "dddd, mmm d yyyy"
+    | "ddd, mmmm dd yyyy"
+    | "ddd, mmmm d yyyy"
+    | "ddd, mmm dd yyyy"
+    | "ddd, mmm d yyyy"
+    | "dddd, mmmm dd, yyyy"
+    | "dddd, mmmm d, yyyy"
+    | "dddd, mmm dd, yyyy"
+    | "dddd, mmm d, yyyy"
+    | "ddd, mmmm dd, yyyy"
+    | "ddd, mmmm d, yyyy"
+    | "ddd, mmm dd, yyyy"
+    | "ddd, mmm d, yyyy"
+    | "mmmm dd, yyyy"
+    | "mmmm d, yyyy"
+    | "mmm dd, yyyy"
+    | "mmm d, yyyy"
+    | "mm-dd-yyyy"
+    | "mm-d-yyyy"
+    | "m-dd-yyyy"
+    | "m-d-yyyy"
+    | "mmmm-dd-yyyy"
+    | "mmmm-d-yyyy"
+    | "mmm-dd-yyyy"
+    | "mmm-d-yyyy";
+  };
+    
+export type TimeFormat = {
+  timeFormat:
+    | "24-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO"
+    | "24-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO"
+    | "12-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO"
+    | "12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO"
+    | "24-HOUR-CLOCK-WITH-SECONDS"
+    | "12-HOUR-CLOCK-WITH-SECONDS";
+};

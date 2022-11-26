@@ -779,6 +779,14 @@ input[type="text"][readonly] {
   -ms-flex: 0 0 5.25rem; /* IE 10 */
   flex: 0 0 5.25rem; /* NEW, Spec - Opera 12.1, Firefox 20+ */
 }
+.flex-w-6-dot-25-rem {
+  -webkit-box-flex: 0 0 6.25rem; /* OLD - iOS 6-, Safari 3.1-6 */
+  -moz-box-flex: 0 0 6.25rem; /* OLD - Firefox 19- */
+  width: 6.25rem; /* For old syntax, otherwise collapses. */
+  -webkit-flex: 0 0 6.25rem; /* Chrome */
+  -ms-flex: 0 0 6.25rem; /* IE 10 */
+  flex: 0 0 6.25rem; /* NEW, Spec - Opera 12.1, Firefox 20+ */
+}
 .flex-w-8-rem {
   -webkit-box-flex: 0 0 8rem; /* OLD - iOS 6-, Safari 3.1-6 */
   -moz-box-flex: 0 0 8rem; /* OLD - Firefox 19- */
@@ -885,6 +893,10 @@ a.btn.disabled {
 .wh-1-dot-25-rem {
   width: 1.25rem !important;
   height: 1.25rem !important;
+}
+.wh-1-dot-5-rem {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
 }
 .wh-1-dot-75-rem {
   width: 1.75rem !important;

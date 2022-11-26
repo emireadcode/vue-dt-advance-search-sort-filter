@@ -42,11 +42,11 @@ function updateTrueOrFalse(e: KeyboardEvent | MouseEvent) {
     time = setTimeout(() => {
       if(trueorfalse.value) {
         cards.value[index].search.trueorfalse = false;
-        trueorfalse.value = false;
+        //trueorfalse.value = false;
       }
       else {
         cards.value[index].search.trueorfalse = true;
-        trueorfalse.value = true;
+        //trueorfalse.value = true;
       }
 
       triggerRef(cards);
@@ -62,7 +62,7 @@ function updateTrueOrFalse(e: KeyboardEvent | MouseEvent) {
       }
       
       done.value = false;
-      
+
       clearTimeout(time);
       
     }, 50);
@@ -134,7 +134,7 @@ function handleShiftTab(e: KeyboardEvent) {
       @click.stop=""
       @keypress.enter.stop=""
       type="checkbox"
-      vmodel="(trueorfalse as boolean)"
+      v-model="(trueorfalse as boolean)"
     />
     <div
       @keydown.tab="handleShiftTab($event)"

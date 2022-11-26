@@ -43,6 +43,8 @@ function searchStringDefaultObject() {
     done: false,
     loading: false,
     addloading: false,
+    tabclicked: false,
+    tabref: undefined,
   };
 }
 
@@ -58,6 +60,8 @@ function formConcatenatedSearch(
         name: concatcopy[i].name,
         attribute: concatcopy[i].attribute,
         aword: concatcopy[i].aword,
+        table: concatcopy[i].table,
+        join: concatcopy[i].join,
         search: {
           ...searchStringDefaultObject(),
         },
@@ -67,6 +71,8 @@ function formConcatenatedSearch(
         name: concatcopy[i].name,
         attribute: concatcopy[i].attribute,
         aword: concatcopy[i].aword,
+        table: concatcopy[i].table,
+        join: concatcopy[i].join,
         search: {
           ...searchStringDefaultObject(),
           include: {
