@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { inject, type Ref } from "vue";
+import {
+  enableAllCardsTabIndex,
+  disableAllCardsChildrenTabIndex,
+  disableAllCardsFilterItemTabIndex,
+} from "./helperfunctions/accessibility";
 
 let
   accessibility = inject("accessibility") as {
-    attributes: {
-      cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
-      cardRefTabIndex: Ref<Boolean[]>;
-      cardListBoxFocusableDescendantsTabIndex: Ref<Boolean[]>;
-    };
-    methods: {
-      enableAllCardsRefTabIndex: (c: Ref<Boolean[]>) => void;
-      disableOtherCardsFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => void;
-      disableAllCardsListBoxFocusableDescendantsTabIndex: (l: Ref<Boolean[]>) => void;
-    };
+    refreshundoredoclosetabindex: Ref<Boolean>;
+    cardstabindex: Ref<Boolean[]>;
+    cardschildrentabindex: Ref<Boolean[]>;
+    cardsfilteritemtabindex: Ref<Boolean[]>;
   }
 ;
 
@@ -28,24 +27,24 @@ const
 <template>  
   <div class="d-inline-block align-middle">
     <button
-      tabindex="0"
+      :tabindex="accessibility.refreshundoredoclosetabindex.value? 0 : -1"
       aria-pressed="false"
       :aria-label="btnTitle"
       type="button"
       @keyup.enter="() => { 
-        accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(-1, accessibility.attributes.cardFocusableDescendantsTabIndex); 
-        accessibility.methods.disableAllCardsListBoxFocusableDescendantsTabIndex(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex);
-        accessibility.methods.enableAllCardsRefTabIndex(accessibility.attributes.cardRefTabIndex); 
+        disableAllCardsChildrenTabIndex(accessibility.cardschildrentabindex); 
+        disableAllCardsFilterItemTabIndex(accessibility.cardsfilteritemtabindex);
+        enableAllCardsTabIndex(accessibility.cardstabindex); 
       }"
       @click="() => { 
-        accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(-1, accessibility.attributes.cardFocusableDescendantsTabIndex); 
-        accessibility.methods.disableAllCardsListBoxFocusableDescendantsTabIndex(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex);
-        accessibility.methods.enableAllCardsRefTabIndex(accessibility.attributes.cardRefTabIndex); 
+        disableAllCardsChildrenTabIndex(accessibility.cardschildrentabindex); 
+        disableAllCardsFilterItemTabIndex(accessibility.cardsfilteritemtabindex);
+        enableAllCardsTabIndex(accessibility.cardstabindex); 
       }"
       @focus="() => { 
-        accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(-1, accessibility.attributes.cardFocusableDescendantsTabIndex); 
-        accessibility.methods.disableAllCardsListBoxFocusableDescendantsTabIndex(accessibility.attributes.cardListBoxFocusableDescendantsTabIndex);
-        accessibility.methods.enableAllCardsRefTabIndex(accessibility.attributes.cardRefTabIndex); 
+        disableAllCardsChildrenTabIndex(accessibility.cardschildrentabindex); 
+        disableAllCardsFilterItemTabIndex(accessibility.cardsfilteritemtabindex);
+        enableAllCardsTabIndex(accessibility.cardstabindex); 
       }"
       style="background-color:#fff;"
       class="control-img-btn m-0 p-0 cursor-pointer"

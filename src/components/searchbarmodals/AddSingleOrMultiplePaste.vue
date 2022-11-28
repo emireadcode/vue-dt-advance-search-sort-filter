@@ -25,6 +25,7 @@ const props = defineProps<{
     addloading: boolean;
   };
   areatype: string;
+  textAreaHeight: string;
 }>();
 
 const cards = inject("cards") as any;
@@ -411,6 +412,7 @@ function resetDoneClick(tree: {
   tree.done = false;
   nextTick(() => triggerRef(cards));
 }
+
 function deleteIncludeOrExclude(
   tree: { value: string[]; index: number; temporary: string[]; done: boolean },
   index: number
@@ -763,7 +765,7 @@ onBeforeUnmount(() => {
             </a>
           </div>
         </div>
-        <div class="d-block position-relative" style="height: 170px">
+        <div class="d-block position-relative">
           <div class="d-block h-100" style="z-index: 800">
             <textarea
               :ref="(el) => (pastefrommultipleincluderef = el)"
@@ -1221,7 +1223,8 @@ onBeforeUnmount(() => {
         @mouseup="resetDoneClick(tree)"
         :id="current === 0 ? cards[index].scroll.areaid + '-included-' + areatype : ''"
         class="m-0 p-0 d-block overflow-y-auto"
-        style="z-index: 1000; height: 120px; background-color: #eee"
+        style="z-index: 1000; background-color: #eee"
+        :style="props.textAreaHeight"
       >
         <div class="d-block">
           <template v-if="tree.value">

@@ -1,3 +1,4 @@
+
 <script setup lang="ts">
 import { ref, inject, type ShallowRef, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
@@ -11,6 +12,7 @@ import YearSearcherModal from "./searchbarmodals/YearSearcherModal.vue";
 import SingleWordStringSearcherModal from "./searchbarmodals/SingleWordStringSearcherModal.vue";
 import KeyToNameMappingSearcherModal from "./searchbarmodals/KeyToNameMappingSearcherModal.vue";
 */
+
 import MultipleWordsStringSearcherModal from "./searchbarmodals/MultipleWordsStringSearcherModal.vue";
 
 const
@@ -23,10 +25,8 @@ const
 
 let
   accessibility = inject("accessibility") as {
-    attributes: {
-      cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
-      cardSearchBarOpen: Ref<Boolean[]>;
-    };
+    cardschildrentabindex: Ref<Boolean[]>;
+    cardsmultiplesearchopenstatus: Ref<Boolean[]>;
   }
 ;
 </script>
@@ -39,8 +39,8 @@ let
     >
       <div class="flex-w-3-dot-5-rem p-0 m-0 align-self-stretch">
         <Switchable
-          truelabel="A"
-          falselabel="S"
+          truelabel="R"
+          falselabel="U"
           :index="index"
         ></Switchable>
       </div>
@@ -48,31 +48,44 @@ let
         <div
           class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center h-100"
         >
-          <div class="flex-fill p-0 m-0 h-100" style="z-index: 700">
-            <input
-              :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
-              type="text"
-              class="w-100 align-middle h-100"
-            />
-          </div>
-          <div class="flex-w-6-dot-25-rem h-100 p-0 m-0">
-            <div class="d-inline-block w-100 h-100">
-              <button
-                @click="accessibility.attributes.cardSearchBarOpen.value[index]=true"
-                @keyup.enter="accessibility.attributes.cardSearchBarOpen.value[index]=true"
-                :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
-                class="open-search-btn flex-box flex-direction-row w-100 h-100 m-0 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
-              >
-                <span class="font-bold letter-spacing" style="font-size: 0.9rem;padding-right:0.75rem;">Open</span>
-                <img src="/src/assets/icons/search.png" style="height:0.8667rem !important;width:0.8667rem;" />
-              </button>
+          <div class="flex-fill p-0 m-0 h-100">
+            <div
+              class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center h-100"
+            >
+              <div class="flex-fill p-0 m-0 h-100">
+                <input
+                  :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+                  type="text"
+                  class="w-100 align-middle h-100"
+                />
+              </div>
+              <div class="flex-shrink-0 flex-grow-0 p-0 m-0 h-100">
+                <button
+                  :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+                  class="open-search-btn h-100 m-0 cursor-pointer shadow-sm font-bold letter-spacing"
+                  style="font-size: 0.9rem;"
+                >
+                  <img src="/src/assets/icons/search.png" class="align-middle" style="width:20px;height:20px;" />
+                </button>
+              </div>
             </div>
+          </div>
+          <div class="flex-w-24-rem p-0 m-0 h-100">
+            <button
+              @click="accessibility.cardsmultiplesearchopenstatus.value[index]=true"
+              @keyup.enter="accessibility.cardsmultiplesearchopenstatus.value[index]=true"
+              :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+              class="open-search-btn w-100 h-100 m-0 cursor-pointer shadow-sm font-bold letter-spacing"
+              style="font-size: 0.9rem;"
+            >
+              Multiple
+            </button>
           </div>
         </div>
       </div>
     </div>
     <Teleport to="body">
-      <div v-if="accessibility.attributes.cardSearchBarOpen.value[index]" class="d-block position-relative">
+      <div v-if="accessibility.cardsmultiplesearchopenstatus.value[index]" class="d-block position-relative">
         <template v-if="cards[index].info.datatype === 'MultipleWordsString'">
           <MultipleWordsStringSearcherModal :index="index"></MultipleWordsStringSearcherModal>
         </template>

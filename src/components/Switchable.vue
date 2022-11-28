@@ -2,6 +2,9 @@
 import { inject, type ShallowRef, triggerRef, nextTick, ref, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 import { useBooleanDebouncedRef } from "./composable/useBooleanDebouncedRef";
+import {
+  disableOtherCardsChildrenTabIndex
+} from "./helperfunctions/accessibility";
 
 const
   props = defineProps<{
@@ -16,24 +19,16 @@ const
 let
   done = ref(false),
   accessibility = inject("accessibility") as {
-    attributes: {
-      cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
-      cardRefTabIndex: Ref<Boolean[]>;
-      sliderRef: Ref<HTMLDivElement[]>;
-      trueLabelRef: Ref<HTMLAnchorElement[]>;
-      falseLabelRef: Ref<HTMLAnchorElement[]>;
-      sliderOnFocused: Ref<Boolean[]>;
-      shiftTabbed: Ref<Boolean[]>;
-    };
-    methods: {
-      enableCardFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => void;
-      disableOtherCardsFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => void;
-      disableOtherCardsRefTabIndex: (i: number, c: Ref<Boolean[]>) => void;
-    };
-  }
+    cardstabindex: Ref<Boolean[]>;
+    cardschildrentabindex: Ref<Boolean[]>;
+  },
+  sliderRef = ref<HTMLDivElement>(),
+  trueLabelRef = ref<HTMLAnchorElement>(),
+  falseLabelRef = ref<HTMLAnchorElement>(),
+  focusStatus = ref<Boolean>(),
+  shiftTabStatus = ref<Boolean>(),
+  trueorfalse = useBooleanDebouncedRef(cards.value[index].search.trueorfalse)
 ;
-
-let trueorfalse = useBooleanDebouncedRef(cards.value[index].search.trueorfalse);
 
 function updateTrueOrFalse(e: KeyboardEvent | MouseEvent) {
   if(done.value === false) {
@@ -42,19 +37,17 @@ function updateTrueOrFalse(e: KeyboardEvent | MouseEvent) {
     time = setTimeout(() => {
       if(trueorfalse.value) {
         cards.value[index].search.trueorfalse = false;
-        //trueorfalse.value = false;
       }
       else {
         cards.value[index].search.trueorfalse = true;
-        //trueorfalse.value = true;
       }
 
       triggerRef(cards);
         
-      accessibility.methods.enableCardFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
-      accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
+      accessibility.cardschildrentabindex.value[index] = true;
+      disableOtherCardsChildrenTabIndex(index, accessibility.cardschildrentabindex);
         
-      accessibility.attributes.sliderRef.value[index].focus();
+      (sliderRef.value as HTMLDivElement).focus();
 
       if(e instanceof KeyboardEvent) {
         document.getElementById(cards.value[index].scroll.areaid + '-switch')?.click();
@@ -70,13 +63,13 @@ function updateTrueOrFalse(e: KeyboardEvent | MouseEvent) {
 }
 
 function handleShiftTab(e: KeyboardEvent) {
-  accessibility.attributes.shiftTabbed.value[index] = true;
+  shiftTabStatus.value = true;
   nextTick(() => {
     if (e.shiftKey) {
-      accessibility.attributes.sliderRef.value[index]?.blur();
-      accessibility.attributes.trueLabelRef.value[index]?.focus();
-      if(accessibility.attributes.sliderOnFocused.value[index]) {
-        accessibility.attributes.sliderRef.value[index].blur();
+      sliderRef.value?.blur();
+      trueLabelRef.value?.focus();
+      if(focusStatus.value) {
+        (sliderRef.value as HTMLDivElement).blur();
         nextTick(() => {
           document.getElementById('mix-btn-'+cards.value[index].info.attribute)?.focus();
         });
@@ -105,24 +98,24 @@ function handleShiftTab(e: KeyboardEvent) {
     >
       <div class="flex-w-50 bold align-self-stretch h-100">
         <a
-          :ref="(el) => accessibility.attributes.trueLabelRef.value[index] = el as HTMLAnchorElement"
+          :ref="(el) => trueLabelRef = el as HTMLAnchorElement"
           class="d-block underline-none text-center cursor-pointer switch-btn h-100"
-          :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
+          :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
           aria-pressed="true"
           aria-label="relatively"
-          @focus="() => { (trueorfalse? accessibility.attributes.sliderOnFocused.value[index]=true : accessibility.attributes.sliderOnFocused.value[index]=false); accessibility.attributes.sliderOnFocused.value[index]? (accessibility.attributes.sliderRef.value[index] as HTMLDivElement).focus() : (accessibility.attributes.sliderRef.value[index] as HTMLDivElement).blur(); accessibility.attributes.shiftTabbed.value[index] = false; }"
+          @focus="() => { (trueorfalse? focusStatus=true : focusStatus=false); focusStatus? (sliderRef as HTMLDivElement).focus() : (sliderRef as HTMLDivElement).blur(); shiftTabStatus = false; }"
         >
           {{ truelabel }}
         </a>
       </div>
       <div class="flex-w-50 bold align-self-stretch h-100">
         <a
-          :ref="(el) => accessibility.attributes.falseLabelRef.value[index] = el as HTMLAnchorElement"
+          :ref="(el) => falseLabelRef = el as HTMLAnchorElement"
           class="d-block underline-none text-center cursor-pointer switch-btn h-100"
-          :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
+          :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
           aria-pressed="true"
           aria-label="unrelatively"
-          @focus="() => { (trueorfalse? accessibility.attributes.sliderOnFocused.value[index]=false : accessibility.attributes.sliderOnFocused.value[index]=true); accessibility.attributes.sliderOnFocused.value[index]? (accessibility.attributes.sliderRef.value[index] as HTMLDivElement).focus() : (accessibility.attributes.sliderRef.value[index] as HTMLDivElement).blur(); accessibility.attributes.shiftTabbed.value[index] = false; }"
+          @focus="() => { (trueorfalse? focusStatus=false : focusStatus=true); focusStatus? (sliderRef as HTMLDivElement).focus() : (sliderRef as HTMLDivElement).blur(); shiftTabStatus = false; }"
         >
           {{ falselabel }}
         </a>
@@ -138,10 +131,10 @@ function handleShiftTab(e: KeyboardEvent) {
     />
     <div
       @keydown.tab="handleShiftTab($event)"
-      :ref="el => accessibility.attributes.sliderRef.value[index] = el as HTMLDivElement"
-      :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index] && accessibility.attributes.sliderOnFocused.value[index]? 0 : -1"
+      :ref="el => sliderRef = el as HTMLDivElement"
+      :tabindex="accessibility.cardschildrentabindex.value[index] && focusStatus? 0 : -1"
       class="d-block align-middle position-absolute m-0 t-0 h-100 slider"
-      @blur="trueorfalse && accessibility.attributes.shiftTabbed.value[index]? accessibility.attributes.falseLabelRef.value[index].focus() : accessibility.attributes.falseLabelRef.value[index].blur()"
+      @blur="trueorfalse && shiftTabStatus? (falseLabelRef as HTMLAnchorElement).focus() : (falseLabelRef as HTMLAnchorElement).blur()"
     >
       <a 
         class="d-block underline-none text-center cursor-pointer h-100 switch-btn"

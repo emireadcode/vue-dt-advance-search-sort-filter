@@ -38,7 +38,7 @@
                               nospace="true"
                               :index="index"
                               :tree="cards[index].search"
-                              areatype="ORDINARY"
+                              areatype="search"
                             ></AddSingleOrMultiplePaste>
                           </div>
                         </template>
@@ -57,7 +57,7 @@
                                 nospace="true"
                                 :index="index"
                                 :tree="cards[index].search"
-                                areatype="ORDINARY"
+                                areatype="search"
                               ></AddSingleOrMultiplePaste>
                             </div>
                             <template
@@ -76,7 +76,7 @@
                                   nospace="true"
                                   :index="index"
                                   :tree="concatenated.search"
-                                  :areatype="'ORDINARY-' + cindex"
+                                  :areatype="'search-' + cindex"
                                 ></AddSingleOrMultiplePaste>
                               </div>
                             </template>

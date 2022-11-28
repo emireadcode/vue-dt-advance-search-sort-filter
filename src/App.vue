@@ -156,7 +156,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 aword: true,
               },
             },
-            delimiters: [', ', ' - '],
+            delimiters: [', ', ', '],
           },
         },
         {
@@ -217,6 +217,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           limit: 10,
           dateFormat: 'dd-mm-yyyy',
           timeFormat: '12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO',
+          //timeFormat: '12-HCWSAWLZ',
         },
       ],
       numbertypes: [
@@ -706,6 +707,14 @@ input[type="text"][readonly] {
   -webkit-flex: 0 0 25%; /* Chrome */
   -ms-flex: 0 0 25%; /* IE 10 */
   flex: 0 0 25%; /* NEW, Spec - Opera 12.1, Firefox 20+ */
+}
+.flex-w-24-rem {
+  -webkit-box-flex: 0 0 5rem; /* OLD - iOS 6-, Safari 3.1-6 */
+  -moz-box-flex: 0 0 5rem; /* OLD - Firefox 19- */
+  width: 5rem; /* For old syntax, otherwise collapses. */
+  -webkit-flex: 0 0 5rem; /* Chrome */
+  -ms-flex: 0 0 5rem; /* IE 10 */
+  flex: 0 0 5rem; /* NEW, Spec - Opera 12.1, Firefox 20+ */
 }
 .flex-w-100-over-3 {
   -webkit-box-flex: 0 0 33.333333333%; /* OLD - iOS 6-, Safari 3.1-6 */

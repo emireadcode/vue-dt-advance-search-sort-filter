@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { inject, onMounted, nextTick, triggerRef, type ShallowRef, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
+import {
+  disableOtherCardsChildrenTabIndex
+} from "./helperfunctions/accessibility";
 
 const
   props = defineProps<{
@@ -12,15 +15,7 @@ const
 
 let
   accessibility = inject("accessibility") as {
-    attributes: {
-      cardFocusableDescendantsTabIndex: Ref<Boolean[]>;
-      cardRefTabIndex: Ref<Boolean[]>;
-    };
-    methods: {
-      enableCardFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => void;
-      disableOtherCardsFocusableDescendantsTabIndex: (i: number, f: Ref<Boolean[]>) => void;
-      disableOtherCardsRefTabIndex: (i: number, c: Ref<Boolean[]>) => void;
-    };
+    cardschildrentabindex: Ref<Boolean[]>;
   }
 ;
 
@@ -29,13 +24,12 @@ onMounted(() => {
 });
 
 function setSortType(sorttype: string, clicked: boolean) {
-  //set sort type and trigger cards to update itself
   cards.value[index].sorttype = sorttype;
   triggerRef(cards);
 
   if(clicked) {
-    accessibility.methods.enableCardFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
-    accessibility.methods.disableOtherCardsFocusableDescendantsTabIndex(index, accessibility.attributes.cardFocusableDescendantsTabIndex);
+    accessibility.cardschildrentabindex.value[index] = true;
+    disableOtherCardsChildrenTabIndex(index, accessibility.cardschildrentabindex);
   }
 
   nextTick(() => {
@@ -67,7 +61,7 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'asc-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="Ascending"
-        :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
+        :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
         @click.prevent="setSortType('ASC', true)"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
@@ -80,7 +74,7 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'desc-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="Descending"
-        :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
+        :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
         @click.prevent="setSortType('DESC', true)"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
@@ -93,7 +87,7 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'mix-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="No sorting"
-        :tabindex="accessibility.attributes.cardFocusableDescendantsTabIndex.value[index]? 0 : -1"
+        :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
         @click.prevent="setSortType('MIX', true)"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
