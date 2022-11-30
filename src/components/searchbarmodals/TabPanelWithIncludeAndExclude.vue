@@ -4,7 +4,6 @@ import IncludeOrExcludeTabs from './IncludeOrExcludeTabs.vue';
 import IncludeOrExcludeTabPanel from './IncludeOrExcludeTabPanel.vue';
 import { type ShallowRef, inject } from 'vue';
 import type { PrimitiveType, MultipleWordsStringType, StringSearchType, MultipleWordsStringConcatenatedFieldType } from '../types/SupportedDatatypesTypeDeclaration';
-
 const
   props = defineProps<{
     index: number;
@@ -14,13 +13,12 @@ const
   index = props.index,
   concatfieldindex = props.concatfieldindex
 ;
-
 </script>
 
 <template>
   <div class="d-block">
     <div class="d-block" style="padding: 15px 0 10px 0">
-      <DescribeLabel :index="index" :concatfieldindex="concatfieldindex" context="DESCRIBE-MODAL"></DescribeLabel>
+      <DescribeLabel :index="index" :concatfieldindex="(concatfieldindex as number | undefined)" context="DESCRIBE-MODAL"></DescribeLabel>
       <div class="d-block">
         <template v-if="concatfieldindex === undefined">
           <input
@@ -40,22 +38,22 @@ const
         </template>
       </div>
     </div>
-    <IncludeOrExcludeTabs :index="index" :concatfieldindex="concatfieldindex"></IncludeOrExcludeTabs>
+    <IncludeOrExcludeTabs :index="index" :concatfieldindex="(concatfieldindex as number | undefined)"></IncludeOrExcludeTabs>
     <div class="d-block">
       <template v-if="concatfieldindex === undefined">
         <template v-if="((cards[index] as MultipleWordsStringType).search.include as StringSearchType).tabclicked">
-          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="concatfieldindex" context="DESCRIBE-INCLUDE"></IncludeOrExcludeTabPanel>
+          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="(concatfieldindex as undefined)" context="DESCRIBE-INCLUDE"></IncludeOrExcludeTabPanel>
         </template>
         <template v-else>
-          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="concatfieldindex" context="DESCRIBE-EXCLUDE"></IncludeOrExcludeTabPanel>
+          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="(concatfieldindex as undefined)" context="DESCRIBE-EXCLUDE"></IncludeOrExcludeTabPanel>
         </template>
       </template>
       <template v-else>
         <template v-if="(((cards[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[concatfieldindex as number].search?.include as StringSearchType).tabclicked">
-          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="concatfieldindex" context="DESCRIBE-INCLUDE"></IncludeOrExcludeTabPanel>
+          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="(concatfieldindex as number)" context="DESCRIBE-INCLUDE"></IncludeOrExcludeTabPanel>
         </template>
         <template v-else>
-          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="concatfieldindex" context="DESCRIBE-EXCLUDE"></IncludeOrExcludeTabPanel>
+          <IncludeOrExcludeTabPanel :index="index" :concatfieldindex="(concatfieldindex as number)" context="DESCRIBE-EXCLUDE"></IncludeOrExcludeTabPanel>
         </template>
       </template>
     </div>

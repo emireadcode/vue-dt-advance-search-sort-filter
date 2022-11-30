@@ -62,7 +62,8 @@ function setSortType(sorttype: string, clicked: boolean) {
         aria-pressed="false"
         aria-label="Ascending"
         :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-        @click.prevent="setSortType('ASC', true)"
+        @click="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('ASC', true); }"
+        @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('ASC', true); }"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.ascclicked" style="height:1.1667rem !important;width:1.1667rem;" />
@@ -75,7 +76,8 @@ function setSortType(sorttype: string, clicked: boolean) {
         aria-pressed="false"
         aria-label="Descending"
         :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-        @click.prevent="setSortType('DESC', true)"
+        @click="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('DESC', true); }"
+        @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('DESC', true); }"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.descclicked" style="height:1.1667rem !important;width:1.1667rem;" />
@@ -88,10 +90,11 @@ function setSortType(sorttype: string, clicked: boolean) {
         aria-pressed="false"
         aria-label="No sorting"
         :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-        @click.prevent="setSortType('MIX', true)"
+        @click="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('MIX', true); }"
+        @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('MIX', true); }"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
-        <img :src="'./src/assets/icons/' + cards[index].img.mixclicked" style="height:1.1667rem !important;width:1.1667rem;" />
+        <img :src="'./src/assets/icons/' + cards[index].img.mixclicked" style="height:1.1667rem !important;width:1.1667rem !important;" />
         <span class="font-bold letter-spacing font-0-dot-80-rem" style="padding-left:0.175rem;">MIX</span>
       </button>
     </div>

@@ -7,7 +7,7 @@ import MultipleWordsStringAttributeInfoNameTabs from "./MultipleWordsStringAttri
 
 const 
   props = defineProps<{
-    index: any;
+    index: number;
   }>(),
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
   index = props.index
@@ -30,48 +30,58 @@ let
       <div class="modal-mask h-100 w-100 modal-mask-background">
         <div class="modal-wrapper text-center">
           <div class="modal-container" style="width: 480px">
-            <MultipleWordsStringAttributeInfoNameTabs :index="index"></MultipleWordsStringAttributeInfoNameTabs>
-            <div class="d-block m-0" style="padding: 0 10px">
-              <template v-if="!(cards[index] as MultipleWordsStringType).concatenated">
-                <template v-if="(cards[index] as MultipleWordsStringType).search.tabclicked">
-                  <TabPanelWithIncludeAndExclude :index="index"></TabPanelWithIncludeAndExclude>
+            <div class="d-block" style="height:525px !important;">
+              <MultipleWordsStringAttributeInfoNameTabs :index="index"></MultipleWordsStringAttributeInfoNameTabs>
+              <div class="d-block m-0 overflow-hidden" style="padding: 0 10px;">
+                <template v-if="!(cards[index] as MultipleWordsStringType).concatenated">
+                  <template v-if="(cards[index] as MultipleWordsStringType).search.tabclicked">
+                    <TabPanelWithIncludeAndExclude :index="index"></TabPanelWithIncludeAndExclude>
+                  </template>
                 </template>
-              </template>
-              <template v-else>
-                <div class="d-block">
-                  <template v-if="(cards[index] as MultipleWordsStringType).concatenatedname !== undefined">
-                    <template v-if="(cards[index] as MultipleWordsStringType).search.tabclicked">
-                      <TabPanelWithoutIncludeAndExclude :index="index"></TabPanelWithoutIncludeAndExclude>
-                    </template>
-                  </template>
-                  <template v-for="(concatenated, cindex) in (cards[index] as MultipleWordsStringType).concatenated">
-                    <template v-if="!concatenated.aword">
-                      <template v-if="(concatenated.search as StringSearchType).tabclicked">
-                        <TabPanelWithIncludeAndExclude :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithIncludeAndExclude>
+                <template v-else>
+                  <div class="d-block">
+                    <template v-if="(cards[index] as MultipleWordsStringType).concatenatedname !== undefined">
+                      <template v-if="(cards[index] as MultipleWordsStringType).search.tabclicked">
+                        <TabPanelWithoutIncludeAndExclude :index="index"></TabPanelWithoutIncludeAndExclude>
                       </template>
                     </template>
-                    <template v-else>
-                      <template v-if="(concatenated.search as StringSearchType).tabclicked">
-                        <TabPanelWithoutIncludeAndExclude :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithoutIncludeAndExclude>
+                    <template v-for="(concatenated, cindex) in (cards[index] as MultipleWordsStringType).concatenated">
+                      <template v-if="!concatenated.aword">
+                        <template v-if="(concatenated.search as StringSearchType).tabclicked">
+                          <TabPanelWithIncludeAndExclude :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithIncludeAndExclude>
+                        </template>
+                      </template>
+                      <template v-else>
+                        <template v-if="(concatenated.search as StringSearchType).tabclicked">
+                          <TabPanelWithoutIncludeAndExclude :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithoutIncludeAndExclude>
+                        </template>
                       </template>
                     </template>
-                  </template>
-                </div>
-              </template>
-              <div class="d-block">
-                <button
-                  class="btn w-50 shadow-sm"
-                  style="padding: 7px; border-radius: 12px"
-                >
-                  Done
-                </button>
-                <button
-                  class="btn w-50 shadow-sm"
-                  style="padding: 7px; border-radius: 12px"
-                >
-                  Done
-                </button>
+                  </div>
+                </template>
               </div>
+            </div>
+            <div class="flex-box flex-direction-row flex-nowrap justify-content-cent align-items-center w-100" style="padding: 0px 10px;">
+              <button
+                class="btn flex-w-100-over-3 shadow-sm"
+                style="padding: 7px; border-radius: 12px"
+              >
+                Done
+              </button>
+              <button
+                @click="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
+                class="btn flex-w-100-over-3 shadow-sm"
+                style="padding: 7px; border-radius: 12px"
+              >
+                Close
+              </button>
+              <button
+                @click="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
+                class="btn flex-w-100-over-3 shadow-sm"
+                style="padding: 7px; border-radius: 12px"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -100,7 +110,7 @@ let
   border-radius: 2px;
   transition: all 0.3s ease;
   font-family: Helvetica, Arial, sans-serif;
-  height: 550px;
+  height: 580px;
 }
 .modal-enter,
 .modal-leave-active {
@@ -110,10 +120,5 @@ let
 .modal-leave-active .modal-container {
   -webkit-transform: scale(1.1);
   transform: scale(1.1);
-}
-
-.tab {
-  border: none;
-  outline: 1px solid gray;
 }
 </style>

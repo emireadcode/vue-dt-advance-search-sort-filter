@@ -17,8 +17,8 @@ import {
   type ShallowRef,
   type Ref,
 } from "vue";
-import type { CalendarType, VisibleCalendarPropType, VisibleCalendarType, RangeFirstSelectionType, PositionTrackerType, YearMonthClickable } from "./dd_mm_yy_types.vue";
-import { countSelectedDateCells, destroySelections, resetYearMonthDayCalendarHolder, buildCalendar, addDate, deselectAll, getDimensions } from "./dd_mm_yy_utility_fns.vue";
+import type { CalendarType, VisibleCalendarPropType, VisibleCalendarType, RangeFirstSelectionType, PositionTrackerType, YearMonthClickable } from "../types/dd_mm_yy_types.vue";
+import { countSelectedDateCells, destroySelections, resetYearMonthDayCalendarHolder, buildCalendar, addDate, deselectAll, getDimensions } from "../utility/dd_mm_yy_utility_fns.vue";
 
 const props1 = defineProps<{
   vcalendar: VisibleCalendarType;
@@ -50,12 +50,12 @@ let months = [
   ],
   isodays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
   days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-  clickformat = ref(),
+  currentdateformat = ref(),
   visiblecalendar = shallowRef(),
   rangeselectcount = ref(0),
   multipleselectcount = ref(0),
   loadingMovement = ref(false),
-  unwatchclickformat: WatchStopHandle,
+  unwatchcurrentdateformat: WatchStopHandle,
   rangefirstselection = ref<RangeFirstSelectionType>(),
   unwatchmultipleselectcount: WatchStopHandle,
   unwatchupdatecalendarvalue: WatchStopHandle,
@@ -566,8 +566,8 @@ function assignRef(holder: YearMonthClickable<PositionTrackerType> | YearMonthCl
 
 function addDateByClick(holder: CalendarType<PositionTrackerType>[number][number][number][number]) {
   if(holder.status === 'ENABLE') {
-    addDate(rangefirstselection as Ref<RangeFirstSelectionType>, rangeselectcount, multipleselectcount, clickformat, holder.date, true, true, props, visiblecalendar as ShallowRef<VisibleCalendarType>);
-    emits("update:vcalendar-value", { vcalendar: visiblecalendar.value as VisibleCalendarType, pastedclickedornot: true });
+    addDate(rangefirstselection as Ref<RangeFirstSelectionType>, rangeselectcount, multipleselectcount, currentdateformat, holder.date, true, true, props, visiblecalendar as ShallowRef<VisibleCalendarType>);
+    
   }
 }
 
@@ -603,7 +603,7 @@ function mouseMovement(event: { pageX: number; pageY: number; }) {
   nextTick(() => {
     if(loadingMovement.value === false) {
       loadingMovement.value = true;
-      if (clickformat.value === "RANGE") {
+      if (currentdateformat.value === "RANGE") {
         if ((rangefirstselection.value as RangeFirstSelectionType).date) {
           let mousePointedDate = whereisMouse(event.pageX, event.pageY);
           //console.log(mousePointedDate);
@@ -625,7 +625,7 @@ function mouseMovement(event: { pageX: number; pageY: number; }) {
                         new Date(visiblecalendar.value.selections[year][month][week][day].date) <= new Date(mousePointedDate.date)
                         && visiblecalendar.value.selections[year][month][week][day].status === 'ENABLE'
                       ) {
-                        addDate(rangefirstselection as Ref<RangeFirstSelectionType>, rangeselectcount, multipleselectcount, clickformat, visiblecalendar.value.selections[year][month][week][day].date, true, false, props, visiblecalendar as ShallowRef<VisibleCalendarType>);
+                        addDate(rangefirstselection as Ref<RangeFirstSelectionType>, rangeselectcount, multipleselectcount, currentdateformat, visiblecalendar.value.selections[year][month][week][day].date, true, false, props, visiblecalendar as ShallowRef<VisibleCalendarType>);
                         //console.log('HIGHLIGHT ME');
                       }
                       else {
@@ -657,7 +657,7 @@ function mouseMovement(event: { pageX: number; pageY: number; }) {
                         new Date(visiblecalendar.value.selections[year][month][week][day].date) < new Date((rangefirstselection.value as RangeFirstSelectionType).date)
                         && visiblecalendar.value.selections[year][month][week][day].status === 'ENABLE'
                       ) {
-                        addDate(rangefirstselection as Ref<RangeFirstSelectionType>, rangeselectcount, multipleselectcount, clickformat, visiblecalendar.value.selections[year][month][week][day].date, true, false, props, visiblecalendar as ShallowRef<VisibleCalendarType>);
+                        addDate(rangefirstselection as Ref<RangeFirstSelectionType>, rangeselectcount, multipleselectcount, currentdateformat, visiblecalendar.value.selections[year][month][week][day].date, true, false, props, visiblecalendar as ShallowRef<VisibleCalendarType>);
                       }
                       else {
                         if(
@@ -719,7 +719,7 @@ const currentyearandmonthinselections = computed(() => {
 });
 
 onBeforeMount(() => {
-  clickformat.value = props1.cformat;
+  currentdateformat.value = props1.cformat;
   visiblecalendar.value  = props1.vcalendar as VisibleCalendarType;
 });
 
@@ -729,7 +729,7 @@ onMounted(() => {
     (x) => {
       if(x) {
         visiblecalendar.value = props1.vcalendar as VisibleCalendarType;
-        if(clickformat.value === 'MULTIPLE-OR-SINGLE') {
+        if(currentdateformat.value === 'MULTIPLE-OR-SINGLE') {
           if(visiblecalendar.value.selections) {
             multipleselectcount.value = countSelectedDateCells(visiblecalendar as ShallowRef<VisibleCalendarType>);
           }
@@ -740,27 +740,26 @@ onMounted(() => {
       }
     }
   );
-  unwatchclickformat = watch(
+  unwatchcurrentdateformat = watch(
     () => props1.cformat,
     (x) => {
-      clickformat.value = x;
+      currentdateformat.value = x;
       multipleselectcount.value = 0;
       rangeselectcount.value = 0;
       rangefirstselection.value = {year: 0, month: 0, day: 0, date: ""};
       destroySelections(visiblecalendar);
       unTrackVisibleCalendarMouseMovement();
-      emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", {mode:props1.cformat, score: 0 });
     }
   );
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {
-      if(clickformat.value === "MULTIPLE-OR-SINGLE") {
+      if(currentdateformat.value === "MULTIPLE-OR-SINGLE") {
         if(x > 0) {
-          emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", {mode:props1.cformat, score: x});
+
         }
         else {
-          emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", {mode:props1.cformat, score: 0});
+          
         }
       }
     }
@@ -768,14 +767,13 @@ onMounted(() => {
   unwatchrangeselectcount = watch(
     () => rangeselectcount.value,
     (x) => {
-      if (clickformat.value === "RANGE") {
+      if (currentdateformat.value === "RANGE") {
         if (x === 1) {
           trackVisibleCalendarMouseMovement();
-          emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", {mode:props1.cformat, score: x });
         } else {
           unTrackVisibleCalendarMouseMovement();
           if(x === 2) {
-            emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", {mode:props1.cformat, score: x });
+            emits("update:vcalendar-value", { vcalendar: visiblecalendar.value as VisibleCalendarType, pastedclickedornot: true });
           }
           else {
             emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", { mode:props1.cformat, score: x });
@@ -792,7 +790,7 @@ onBeforeUnmount(() => {
   unwatchupdatecalendarvalue();
   unwatchrangeselectcount();
   unwatchmultipleselectcount();
-  unwatchclickformat();
+  unwatchcurrentdateformat();
   unTrackVisibleCalendarMouseMovement();
   window.removeEventListener('resize', processDimensions, true);
   window.removeEventListener('scroll', processDimensions, true);

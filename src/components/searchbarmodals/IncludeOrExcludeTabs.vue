@@ -72,3 +72,10 @@ function updateCard() {
     </ul>
   </div>
 </template>
+
+<style scoped>
+.tab {
+  border: none;
+  outline: 1px solid gray;
+}
+</style>

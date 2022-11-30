@@ -362,7 +362,7 @@ function getMultipleWordStringTypeObject(item: (CardInnerType & {concatenated?: 
   } as MultipleWordsStringType;
 }
   
-function getDateTypeObject(item: CardInnerType & DateFormat) {
+function getDateTypeObject(item: CardInnerType & DateFormat & { isoweek: boolean}) {
   const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
   return {
     ...getIdentityItem(item, attribute, "Date"),
@@ -395,10 +395,11 @@ function getDateTypeObject(item: CardInnerType & DateFormat) {
     },
     searchFrom: "SERVER",
     dateFormat: item.dateFormat,
+    isoweek: item.isoweek,
   } as DateType;
 }
   
-function getDateTimeObject(item: CardInnerType & DateFormat & TimeFormat) {
+function getDateTimeObject(item: CardInnerType & DateFormat & TimeFormat & { isoweek: boolean}) {
   const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
   return {
     ...getIdentityItem(item, attribute, "DateTime"),
@@ -433,6 +434,7 @@ function getDateTimeObject(item: CardInnerType & DateFormat & TimeFormat) {
     searchFrom: "SERVER",
     dateFormat: item.dateFormat,
     timeFormat: item.timeFormat,
+    isoweek: item.isoweek,
   } as DateTimeType;
 }
   

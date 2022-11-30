@@ -22,3 +22,10 @@ const buttonnames = ['starts with', 'contains', 'exactly equal to', 'ends with']
     </ul>
   </div>
 </template>
+
+<style scoped>
+.tab {
+  border: none;
+  outline: 1px solid gray;
+}
+</style>

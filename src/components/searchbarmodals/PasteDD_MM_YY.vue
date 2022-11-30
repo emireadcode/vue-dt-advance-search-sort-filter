@@ -16,9 +16,9 @@ import {
   type WatchStopHandle,
   triggerRef,
 } from "vue";
-import type { VisibleCalendarPropType, VisibleCalendarType } from "./dd_mm_yy_types.vue";
-import type { DuplicateCheckerObjectType } from "./days_months_years_types.vue";
-import { addDate, removeDelimiters, countSelectedDateCells, } from "./dd_mm_yy_utility_fns.vue";
+import type { VisibleCalendarPropType, VisibleCalendarType } from "../types/dd_mm_yy_types";
+import type { DuplicateCheckerObjectType } from "../types/days_months_years_types";
+import { addDate, removeDelimiters, countSelectedDateCells, } from "../utility/dd_mm_yy_utility_fns.vue";
 
 const props = inject("props") as VisibleCalendarPropType;
 
@@ -247,8 +247,7 @@ function openPasteArea() {
   pastedmultiplelinesloading.value = false;
   duplicateCheckerObject = {} as DuplicateCheckerObjectType;
 
-  let tt;
-  clearTimeout(tt);
+  let tt: NodeJS.Timeout;
   tt = setTimeout(() => {
     pasteboxref.value.focus();
     clearTimeout(tt);
@@ -268,8 +267,7 @@ function handlePaste(e: { clipboardData: any; }) {
 function pasteMultilineWordsCopiedFromSomewhere(e) {
   pasteboxref.value.maxLength = 5000;
   actualpasteddata = handlePaste(e);
-  let pastelengthresizetimer;
-  clearTimeout(pastelengthresizetimer);
+  let pastelengthresizetimer: NodeJS.Timeout;
   pastelengthresizetimer = setTimeout(() => {
     pasteboxref.value.maxLength = 0;
     clearTimeout(pastelengthresizetimer);
@@ -322,8 +320,7 @@ onMounted(() => {
       if (pastemultiplelinescounter.value === 0) {
         pastedmultiplelinesloading.value = true;
         pastemultiplelinescounter.value = 1;
-        let pt;
-        clearTimeout(pt);
+        let pt: NodeJS.Timeout;
         pt = setTimeout(() => {
           pastedmultiplelinesloading.value = false;
           pastemultiplelinesexpand.value = true;

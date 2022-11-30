@@ -9,7 +9,14 @@ import {
   onBeforeUnmount,
   nextTick,
   type WatchStopHandle,
+  type Ref,
+  type ShallowRef,
 } from "vue";
+import type { PrimitiveType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
+
+export type DuplicateCheckerObjectType = {
+  [key: string]: string;
+};
 
 const props = defineProps<{
   index: number;
@@ -19,37 +26,38 @@ const props = defineProps<{
     value: string[];
     index: number;
     temporary: string[];
-    done: boolean;
     bottom: boolean;
+    done: boolean;
     loading: boolean;
     addloading: boolean;
+    tabclicked: boolean;
+    tabref: HTMLButtonElement | undefined;
   };
   areatype: string;
   textAreaHeight: string;
 }>();
 
-const cards = inject("cards") as any;
-
-const refincluded = ref([]),
-  includedend = ref(),
-  shouldincludeorstartwithref = ref(),
-  processedpasteincludeedit = ref([]),
-  pastefrommultipleinclude = ref(false),
-  pastefrommultipleincluderef = ref(),
-  pastefrommultipleincludeexpand = ref(false),
-  pastefrommultipleincludetext = ref(""),
-  pastefrommultipleincludeloading = ref(false),
-  processedpasteinclude = ref([]),
-  processedpasteincludeduplicate = ref(0),
-  processedpasteincludeerror = ref(0),
-  processedpasteincludelines = ref(0),
-  pages = ref([]),
-  pastefrommultipleincludecounter = ref(0),
+const cards = inject("cards") as ShallowRef<PrimitiveType[]>;
+const pasteditemsref = ref<HTMLDivElement[]>([]),
+  lastpasteditemsref = ref(),
+  newitementryinputref = ref(),
+  pasteditemeditenabler = ref<Boolean[]>([]),
+  pastetextarearef = ref<HTMLTextAreaElement>(),
+  pasteexpanded = ref(false),
+  pastedtext = ref(""),
+  duplicatecount = ref<number>(0),
+  errorcount = ref(0),
+  pasteditemloading = ref(false),
+  pasteditemcount = ref(0),
+  pages = ref<string[][]>([]),
   current = ref(0),
-  inputpagenumberref = ref();
+  inputpagenumberref = ref(),
+  acceptedpasteditemcount = ref(0),
+  pasteditemvalidity = ref<string[][]>([]),
+  pastemultiplelineitems = ref(false);
 
-let duplicateCheckerObject = {},
-  unwatchpastefrommultipleincludetext: WatchStopHandle,
+let duplicateCheckerObject = {} as DuplicateCheckerObjectType,
+  unwatchpastedtext: WatchStopHandle,
   actualpastedincludedata = "",
   unwatch: WatchStopHandle,
   unwatchcurrent: WatchStopHandle,
@@ -81,7 +89,6 @@ function processPastedTextAndFindRejectedAndAcceptedLines(
 ) {
   let actualtextArray = actualtext.split("\n");
   let textareaacceptedtextArray = textareaacceptedtext.split("\n");
-
   if (textareaacceptedtextArray[textareaacceptedtextArray.length - 1].trim() !== "") {
     if (
       textareaacceptedtextArray[textareaacceptedtextArray.length - 1] !==
@@ -91,20 +98,17 @@ function processPastedTextAndFindRejectedAndAcceptedLines(
       actualtextArray.splice(textareaacceptedtextArray.length - 1, 1);
     }
   }
-
   let lines = textareaacceptedtextArray.length;
-
   for (let i = 0; i < textareaacceptedtextArray.length; i++) {
     if (textareaacceptedtextArray[i].trim() === "") {
       textareaacceptedtextArray.splice(i, 1);
       continue;
     }
   }
-
-  return [lines, removeDuplicateAndValidateLine(textareaacceptedtextArray)];
+  return [lines, ...removeDuplicateAndValidateLine(textareaacceptedtextArray)];
 }
-function removeDuplicateAndValidateLine(acceptedArray: any[]) {
-  let newArray: any[][] = [],
+function removeDuplicateAndValidateLine(acceptedArray: string[]) {
+  let newArray: string[][] = [],
     index = 0,
     duplicate = 0,
     error = 0;
@@ -117,17 +121,17 @@ function removeDuplicateAndValidateLine(acceptedArray: any[]) {
         if (!/^\s*\d+\s*$/g.test(item) && item.length <= 40) {
           duplicateCheckerObject["" + item] = "";
           newArray[index] = [item, "STRING"];
-          processedpasteincludeedit.value[index] = false;
+          pasteditemeditenabler.value[index] = false;
         } else {
           if (/^\s*\d+\s*$/g.test(item)) {
             duplicateCheckerObject["" + item] = "";
             newArray[index] = [item, "NUMERIC"];
-            processedpasteincludeedit.value[index] = false;
+            pasteditemeditenabler.value[index] = false;
           } else {
             if (item.length > 40) {
               duplicateCheckerObject["" + item] = "";
               newArray[index] = [item, "ERROR"];
-              processedpasteincludeedit.value[index] = false;
+              pasteditemeditenabler.value[index] = false;
               error++;
             }
           }
@@ -138,7 +142,6 @@ function removeDuplicateAndValidateLine(acceptedArray: any[]) {
       }
     }
   });
-
   return [newArray, duplicate, error];
 }
 function paginateFurther() {
@@ -169,16 +172,7 @@ function paginateFurther() {
     }
   }
 }
-function addNewIncludeOrExclude(tree: {
-  single: string;
-  value: string[];
-  index: number;
-  temporary: string[];
-  done: boolean;
-  bottom: boolean;
-  loading: boolean;
-  addloading: boolean;
-}) {
+function addNewIncludeOrExclude(tree: StringSearchType) {
   let includeorexclude = tree.single;
   if (includeorexclude.trim() !== "") {
     let increment = true;
@@ -187,7 +181,6 @@ function addNewIncludeOrExclude(tree: {
     } else {
       let tt3: NodeJS.Timeout[] = [],
         tt3Index = 0;
-
       if (current.value !== 0) {
         tree.value = pages.value[pages.value.length - 1];
         current.value = pages.value.length;
@@ -196,14 +189,14 @@ function addNewIncludeOrExclude(tree: {
       for (let i = 0; i < tree.value.length; i++) {
         if (tree.value[i] === includeorexclude) {
           increment = false;
-          scrollToElement(refincluded.value[i]);
-          refincluded.value[i].style.backgroundColor = "red";
-          refincluded.value[i].style.color = "#fff";
+          scrollToElement(pasteditemsref.value[i]);
+          pasteditemsref.value[i].style.backgroundColor = "red";
+          pasteditemsref.value[i].style.color = "#fff";
           tt3[tt3Index] = setTimeout(() => {
-            if (refincluded.value[i] !== undefined && refincluded.value[i] !== null) {
-              if (refincluded.value[i].style.backgroundColor !== "#fff") {
-                refincluded.value[i].style.backgroundColor = "#fff";
-                refincluded.value[i].style.color = "black";
+            if (pasteditemsref.value[i] !== undefined && pasteditemsref.value[i] !== null) {
+              if (pasteditemsref.value[i].style.backgroundColor !== "#fff") {
+                pasteditemsref.value[i].style.backgroundColor = "#fff";
+                pasteditemsref.value[i].style.color = "black";
                 clearTimeout(tt3[tt3Index]);
               }
             }
@@ -234,11 +227,9 @@ function addNewIncludeOrExclude(tree: {
       temporary.value = tree;
       tree.index = tree.value.length;
       paginateFurther();
-
-      let t2: number | NodeJS.Timeout | undefined;
-      clearTimeout(t2);
+      let t2: NodeJS.Timeout;
       t2 = setTimeout(() => {
-        scrollToElement(includedend.value);
+        scrollToElement(lastpasteditemsref.value);
         tree.single = "";
         tree.addloading = false;
         nextTick(() => triggerRef(cards));
@@ -251,113 +242,19 @@ function addNewIncludeOrExclude(tree: {
   }
 }
 function openPasteArea() {
-  pastefrommultipleinclude.value = true;
-  pastefrommultipleincludeexpand.value = false;
-  pastefrommultipleincludetext.value = "";
-  pastefrommultipleincludecounter.value = 0;
-  pastefrommultipleincludeloading.value = false;
+  pastemultiplelineitems.value = true;
+  pasteexpanded.value = false;
+  pastedtext.value = "";
+  pasteditemcount.value = 0;
+  pasteditemloading.value = false;
   duplicateCheckerObject = {};
-  let tt: number | NodeJS.Timeout | undefined;
-  clearTimeout(tt);
+  let tt: NodeJS.Timeout;
   tt = setTimeout(() => {
-    pastefrommultipleincluderef.value.focus();
+    (pastetextarearef.value as HTMLTextAreaElement).focus();
     clearTimeout(tt);
   }, 50);
 }
-function pasteMultilineWordsCopiedFromSomewhere(e: any) {
-  pastefrommultipleincluderef.value.maxLength = 5000;
-  actualpastedincludedata = handlePaste(e);
-  let pastelengthresizetimer: number | NodeJS.Timeout | undefined;
-  clearTimeout(pastelengthresizetimer);
-  pastelengthresizetimer = setTimeout(() => {
-    pastefrommultipleincluderef.value.maxLength = 0;
-    clearTimeout(pastelengthresizetimer);
-  }, 10);
-}
-function addPasted() {
-  let done = false,
-    tt3: NodeJS.Timeout[] = [],
-    tt3Index = 0;
-  for (let i = 0; i < processedpasteinclude.value.length; i++) {
-    let item = processedpasteinclude.value[i];
-    if (item[1] !== "ERROR") {
-      if (item[0].trim() !== "") {
-        let increment = true;
-        if (props.tree.value.length === 0) {
-          increment = true;
-        } else {
-          if (current.value !== 0) {
-            current.value = 0;
-            props.tree.value = pages.value[0];
-            nextTick(() => triggerRef(cards));
-          }
-          for (let i = 0; i < props.tree.value.length; i++) {
-            if (props.tree.value[i] === item[0]) {
-              increment = false;
-              if (refincluded.value[i] !== undefined && refincluded.value[i] !== null) {
-                refincluded.value[i].style.backgroundColor = "red";
-                refincluded.value[i].style.color = "#fff";
-                tt3[tt3Index] = setTimeout(() => {
-                  if (refincluded.value[i].style.backgroundColor !== "#fff") {
-                    refincluded.value[i].style.backgroundColor = "#fff";
-                    refincluded.value[i].style.color = "black";
-                    clearTimeout(tt3[tt3Index]);
-                  }
-                }, 800);
-                tt3Index++;
-              }
-              break;
-            }
-          }
-        }
-        if (increment && props.tree.addloading === false) {
-          props.tree.done = true;
-          props.tree.addloading = true;
-          nextTick(() => triggerRef(cards));
-          if (props.tree.temporary.length > 0) {
-            for (let i = 0; i < props.tree.temporary.length; i++) {
-              if (item[0] === props.tree.temporary[i]) {
-                props.tree.temporary.splice(i, 1);
-                nextTick(() => triggerRef(cards));
-                break;
-              }
-            }
-          }
-          let temp = props.tree.temporary.slice(
-            props.tree.value.length,
-            props.tree.temporary.length
-          );
-          props.tree.value.push(item[0]);
-          let newTree = JSON.parse(JSON.stringify(props.tree.value));
-          props.tree.temporary = newTree;
-          props.tree.temporary.push(...temp);
-          props.tree.index = props.tree.value.length;
-          props.tree.single = "";
-          props.tree.addloading = false;
-          temporary.value = props.tree;
-          paginateFurther();
-          nextTick(() => triggerRef(cards));
-        }
-      } else {
-        props.tree.single = "";
-        nextTick(() => triggerRef(cards));
-      }
-    }
-  }
-  let tt: number | NodeJS.Timeout | undefined;
-  clearTimeout(tt);
-  tt = setTimeout(() => {
-    scrollToElement(includedend.value);
-    clearTimeout(tt);
-  }, 300);
-  pastefrommultipleincludetext.value = "";
-  pastefrommultipleincludecounter.value = 0;
-  pastefrommultipleincludeloading.value = false;
-  pastefrommultipleincludeexpand.value = false;
-  pastefrommultipleinclude.value = false;
-  duplicateCheckerObject = {};
-}
-function saveEditedTooLong(item: string, i: string | number) {
+function saveEditedTooLong(item: string, i: number) {
   if (item.length <= 40) {
     if (item.trim() !== "") {
       if (
@@ -366,225 +263,28 @@ function saveEditedTooLong(item: string, i: string | number) {
       ) {
         if (!/^\s*\d+\s*$/g.test(item)) {
           duplicateCheckerObject["" + item] = "";
-          processedpasteinclude.value[i][1] = "STRING";
-          processedpasteinclude.value[i][0] = item;
-          processedpasteincludeedit.value[i] = false;
+          pasteditemvalidity.value[i][1] = "STRING";
+          pasteditemvalidity.value[i][0] = item;
+          pasteditemeditenabler.value[i] = false;
         } else {
           duplicateCheckerObject["" + item] = "";
-          processedpasteinclude.value[i][1] = "NUMERIC";
-          processedpasteinclude.value[i][0] = item;
-          processedpasteincludeedit.value[i] = false;
+          pasteditemvalidity.value[i][1] = "NUMERIC";
+          pasteditemvalidity.value[i][0] = item;
+          pasteditemeditenabler.value[i] = false;
         }
-        processedpasteincludeerror.value--;
+        errorcount.value--;
       }
     }
   }
-}
-function handlePaste(e: { clipboardData: any; }) {
-  var clipboardData, pastedData;
-
-  // Get pasted data via clipboard API
-  clipboardData = e.clipboardData || window.clipboardData;
-  pastedData = clipboardData.getData("Text");
-
-  return pastedData;
-}
-function deletePasted(index: number) {
-  processedpasteinclude.value.splice(index, 1);
-  if (processedpasteinclude.value.length === 0) {
-    pastefrommultipleincludetext.value = "";
-    pastefrommultipleincludecounter.value = 0;
-    pastefrommultipleincludeloading.value = false;
-    pastefrommultipleincludeexpand.value = false;
-    pastefrommultipleinclude.value = false;
-    duplicateCheckerObject = {};
-  }
-}
-function resetDoneClick(tree: {
-  value: string[];
-  index: number;
-  temporary: string[];
-  done: boolean;
-  loading: boolean;
-  bottom: boolean;
-  addloading: boolean;
-}) {
-  tree.done = false;
-  nextTick(() => triggerRef(cards));
 }
 
-function deleteIncludeOrExclude(
-  tree: { value: string[]; index: number; temporary: string[]; done: boolean },
-  index: number
-) {
-  if (current.value === 0) {
-    for (let i = 0; i < tree.value.length; i++) {
-      if (tree.value[i] === tree.value[index]) {
-        tree.value.splice(i, 1);
-        tree.temporary.splice(i, 1);
-        tree.index--;
-        tree.done = true;
-        break;
-      }
-    }
-    temporary.value = tree;
-  } else {
-    let val = "";
-    for (let i = 0; i < tree.value.length; i++) {
-      if (tree.value[i] === tree.value[index]) {
-        val = tree.value[i];
-        tree.value.splice(i, 1);
-        tree.index--;
-        tree.done = true;
-        break;
-      }
-    }
-    for (let i = 0; i < tree.temporary.length; i++) {
-      if (val === tree.temporary[i]) {
-        tree.temporary.splice(i, 1);
-        break;
-      }
-    }
-    let newpagenum = current.value - 1;
-    if (tree.value.length === 0) {
-      pages.value.splice(newpagenum, 1);
-      if (newpagenum === pages.value.length) {
-        current.value = newpagenum;
-        newpagenum--;
-      }
-      tree.value = pages.value[newpagenum];
-      paginateFurther();
-    } else {
-      paginateFurther();
-      tree.value = pages.value[newpagenum];
-    }
-  }
-  nextTick(() => triggerRef(cards));
-}
-function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
-  if (previousornext === "NEXT") {
-    if (current.value >= 1 && current.value < pages.value.length) {
-      current.value++;
-      if (inputpagenumberref.value) {
-        if (pages.value.length > 10 && pages.value.length < 999) {
-          if (current.value >= 5 && current.value <= pages.value.length - 4) {
-            inputpagenumberref.value.value = current.value;
-          }
-        } else {
-          if (pages.value.length >= 999) {
-            if (current.value >= 5 && current.value <= pages.value.length - 1) {
-              inputpagenumberref.value.value = current.value;
-            }
-          }
-        }
-      }
-    }
-  } else if (previousornext === "PREVIOUS") {
-    if (current.value > 1) {
-      current.value--;
-      if (inputpagenumberref.value) {
-        if (pages.value.length > 10 && pages.value.length < 999) {
-          if (current.value >= 5 && current.value <= pages.value.length - 4) {
-            inputpagenumberref.value.value = current.value;
-          }
-        } else {
-          if (pages.value.length >= 999) {
-            if (current.value >= 5 && current.value <= pages.value.length - 1) {
-              inputpagenumberref.value.value = current.value;
-            }
-          }
-        }
-      }
-    }
-  } else {
-    current.value = inputpagenumberref.value.value;
-  }
-}
-function scrollToElement(el: never) {
+
+function scrollToElement(el: HTMLDivElement) {
   if (el) {
     el.scrollIntoView({ behavior: "smooth" });
   }
 }
-onMounted(() => {
-  let doc = document;
-
-  let includesize = props.tree.temporary.length,
-    suminclude = 0;
-  if (includesize > 0) {
-    for (let j = 0; j < includesize; j++) {
-      suminclude += props.tree.temporary[j].length;
-    }
-    if (suminclude > 300) {
-      for (let j = includesize - 1; j >= 0; j--) {
-        suminclude -= props.tree.temporary[j].length;
-        props.tree.value.splice(j, 1);
-        if (suminclude <= 300) {
-          props.tree.index = props.tree.value.length;
-          break;
-        }
-      }
-    }
-  }
-
-  nextTick(() => triggerRef(cards));
-
-  if (
-    doc.getElementById(
-      cards.value[props.index].scroll.areaid + "-included-" + props.areatype
-    )
-  ) {
-    doc
-      .getElementById(
-        cards.value[props.index].scroll.areaid + "-included-" + props.areatype
-      )
-      .addEventListener("scroll", scrollInclude, true);
-  }
-
-  pastefrommultipleinclude.value = false;
-
-  paginateFurther();
-
-  unwatchcurrent = watch(
-    () => current.value,
-    (num) => {
-      props.tree.value = pages.value[num > 0 ? num - 1 : num];
-    }
-  );
-
-  unwatchpagination = watch(
-    () => temporary.value.temporary.length,
-    (includesize) => {
-      paginateFurther();
-    }
-  );
-
-  unwatchpastefrommultipleincludetext = watch(
-    () => pastefrommultipleincludetext.value,
-    (text) => {
-      if (pastefrommultipleincludecounter.value === 0) {
-        pastefrommultipleincludeloading.value = true;
-        pastefrommultipleincludecounter.value = 1;
-        let pt: number | NodeJS.Timeout | undefined;
-        clearTimeout(pt);
-        pt = setTimeout(() => {
-          pastefrommultipleincludeloading.value = false;
-          pastefrommultipleincludeexpand.value = true;
-          let result = processPastedTextAndFindRejectedAndAcceptedLines(
-            actualpastedincludedata,
-            pastefrommultipleincludetext.value
-          );
-          processedpasteinclude.value = result[1][0];
-          processedpasteincludeduplicate.value = result[1][1];
-          processedpasteincludeerror.value = result[1][2];
-          processedpasteincludelines.value = result[0];
-          clearTimeout(pt);
-        }, 200);
-      }
-    }
-  );
-});
-
-function scrollInclude(e: { srcElement: any; originalTarget: any; }) {
+function scrollInclude(e) {
   let doc = document,
     originalElement = e.srcElement || e.originalTarget,
     el = doc.getElementById(
@@ -592,7 +292,7 @@ function scrollInclude(e: { srcElement: any; originalTarget: any; }) {
     );
   if (originalElement === el) {
     if (props.tree.done === false) {
-      props.tree.bottom = bottomReach(el);
+      props.tree.bottom = bottomReach(el as HTMLDivElement);
       nextTick(() => triggerRef(cards));
       if (props.tree.bottom) {
         if (
@@ -601,8 +301,7 @@ function scrollInclude(e: { srcElement: any; originalTarget: any; }) {
         ) {
           props.tree.loading = true;
           nextTick(() => triggerRef(cards));
-          let time2: number | NodeJS.Timeout | undefined;
-          clearTimeout(time2);
+          let time2: NodeJS.Timeout;
           time2 = setTimeout(() => {
             let sum = 0,
               temp = [],
@@ -635,8 +334,7 @@ function scrollInclude(e: { srcElement: any; originalTarget: any; }) {
     }
   }
 }
-
-function bottomReach(scrollarea: HTMLElement) {
+function bottomReach(scrollarea: HTMLDivElement) {
   if (scrollarea.offsetHeight + scrollarea.scrollTop > scrollarea.scrollHeight - 80) {
     if (
       scrollarea.offsetHeight + scrollarea.scrollTop - (scrollarea.scrollHeight - 80) ===
@@ -647,39 +345,103 @@ function bottomReach(scrollarea: HTMLElement) {
   }
   return false;
 }
-
-onBeforeUnmount(() => {
+onMounted(() => {
   let doc = document;
-
-  if (unwatch) {
-    unwatch();
+  let includesize = props.tree.temporary.length,
+    suminclude = 0;
+  if (includesize > 0) {
+    for (let j = 0; j < includesize; j++) {
+      suminclude += props.tree.temporary[j].length;
+    }
+    if (suminclude > 300) {
+      for (let j = includesize - 1; j >= 0; j--) {
+        suminclude -= props.tree.temporary[j].length;
+        props.tree.value.splice(j, 1);
+        if (suminclude <= 300) {
+          props.tree.index = props.tree.value.length;
+          break;
+        }
+      }
+    }
   }
-
-  if (unwatchpastefrommultipleincludetext) {
-    unwatchpastefrommultipleincludetext();
-  }
-
-  if (unwatchpagination) {
-    unwatchpagination();
-  }
-
-  if (unwatchcurrent) {
-    unwatchcurrent();
-  }
-
-  refincluded.value = [];
-  includedend.value = null;
-  shouldincludeorstartwithref.value = null;
-
+  nextTick(() => triggerRef(cards));
   if (
     doc.getElementById(
       cards.value[props.index].scroll.areaid + "-included-" + props.areatype
     )
   ) {
-    doc
+    (doc
       .getElementById(
         cards.value[props.index].scroll.areaid + "-included-" + props.areatype
-      )
+      ) as HTMLDivElement)
+      .addEventListener("scroll", scrollInclude, true);
+  }
+  pastemultiplelineitems.value = false;
+  paginateFurther();
+  unwatchcurrent = watch(
+    () => current.value,
+    (num) => {
+      props.tree.value = pages.value[num > 0 ? num - 1 : num];
+    }
+  );
+  unwatchpagination = watch(
+    () => temporary.value.temporary.length,
+    (includesize) => {
+      paginateFurther();
+    }
+  );
+  unwatchpastedtext = watch(
+    () => pastedtext.value,
+    (text) => {
+      if (pasteditemcount.value === 0) {
+        pasteditemloading.value = true;
+        pasteditemcount.value = 1;
+        let pt: NodeJS.Timeout;
+        pt = setTimeout(() => {
+          pasteditemloading.value = false;
+          pasteexpanded.value = true;
+          let result = processPastedTextAndFindRejectedAndAcceptedLines(
+            actualpastedincludedata,
+            pastedtext.value
+          );
+          pasteditemvalidity.value = result[1] as string[][];
+          duplicatecount.value = result[2] as number;
+          errorcount.value = result[3] as number;
+          acceptedpasteditemcount.value = result[0] as number;
+          clearTimeout(pt);
+        }, 200);
+
+        //return [lines, newArray, duplicate, error];
+      }
+    }
+  );
+});
+onBeforeUnmount(() => {
+  let doc = document;
+  if (unwatch) {
+    unwatch();
+  }
+  if (unwatchpastedtext) {
+    unwatchpastedtext();
+  }
+  if (unwatchpagination) {
+    unwatchpagination();
+  }
+  if (unwatchcurrent) {
+    unwatchcurrent();
+  }
+  pasteditemsref.value = [];
+  lastpasteditemsref.value = null;
+  newitementryinputref.value = null;
+  if (
+    doc.getElementById(
+      cards.value[props.index].scroll.areaid + "-included-" + props.areatype
+    )
+  ) {
+    (doc
+      .getElementById(
+        cards.value[props.index].scroll.areaid + "-included-" + props.areatype
+      ) as HTMLDivElement)
       .removeEventListener("scroll", scrollInclude, true);
   }
 });
@@ -693,23 +455,23 @@ onBeforeUnmount(() => {
       <div class="flex-fill p-0 m-0 align-self-stretch">
         <template v-if="nospace === 'false'">
           <input
-            ref="shouldincludeorstartwithref"
+            ref="newitementryinputref"
             @keypress.enter="addNewIncludeOrExclude(tree)"
             maxlength="40"
             type="text"
-            v-model="tree.single"
+            v-model="props.tree.single"
             class="w-100"
             style="height: 30px; padding-right: 1.75rem"
           />
         </template>
         <template v-else>
           <input
-            ref="shouldincludeorstartwithref"
+            ref="newitementryinputref"
             @keydown.space.prevent
             @keypress.enter="addNewIncludeOrExclude(tree)"
             maxlength="40"
             type="text"
-            v-model="tree.single"
+            v-model="props.tree.single"
             class="w-100"
             style="height: 30px; padding-right: 1.75rem"
           />
@@ -739,559 +501,11 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </div>
-    <template v-if="pastefrommultipleinclude">
-      <div
-        class="w-100 position-absolute t-0 l-0 shadow-sm"
-        style="height: 188px; background-color: #fff; border: 1px solid #fff"
-      >
-        <div
-          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-          style="height: 30px"
-        >
-          <div class="flex-fill" style="font-size: 0.8rem">
-            Press Ctrl + V on a PC or Command + V on an Apple Mac.
-          </div>
-          <div class="flex-grow-0 flex-shrink-0 text-center">
-            <a
-              @click="pastefrommultipleinclude = false"
-              class="d-inline-block cursor-pointer"
-              title="Close"
-            >
-              <img
-                src="/src/assets/icons/close.png"
-                style="width: 20px; height: 20px"
-                class="align-middle"
-              />
-            </a>
-          </div>
-        </div>
-        <div class="d-block position-relative">
-          <div class="d-block h-100" style="z-index: 800">
-            <textarea
-              :ref="(el) => (pastefrommultipleincluderef = el)"
-              style="border: 1px solid gray; padding: 5px; resize: none"
-              class="w-100 h-100 text-left d-inline-block overflow-auto"
-              maxlength="0"
-              v-model="pastefrommultipleincludetext"
-              @paste="(e) => pasteMultilineWordsCopiedFromSomewhere(e)"
-            ></textarea>
-          </div>
-          <template v-if="pastefrommultipleincludeloading">
-            <div
-              style="padding: 26px 0px; z-index: 900"
-              class="t-0 l-0 w-100 position-absolute m-0 h-100 modal-mask-background-1"
-            >
-              <img
-                src="/src/assets/icons/loading.gif"
-                style="width: 80px; height: 80px"
-                class="align-middle"
-              />
-            </div>
-          </template>
-        </div>
-        <div
-          class="d-block"
-          style="background-color: #fff; height: 26px; padding: 2px 0; font-size: 0.8rem"
-        >
-          Max letters per line = 40, Total Max letters for all lines = 5000
-        </div>
-      </div>
-      <Teleport to="body">
-        <div v-if="pastefrommultipleincludeexpand" class="d-block position-relative">
-          <transition name="modal">
-            <div
-              class="position-fixed h-100 w-100 overflow-auto user-select-none"
-              style="z-index: 1800"
-            >
-              <div class="modal-mask h-100 w-100 modal-mask-background-2">
-                <div class="modal-wrapper text-center">
-                  <div
-                    class="modal-container d-block shadow"
-                    style="height: auto; width: 560px"
-                  >
-                    <div class="d-block m-0 p-0">
-                      <div
-                        class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                        style="height: 30px; padding: 0 3px"
-                      >
-                        <div class="text-left flex-fill" style="font-size: 0.8rem">
-                          Out of {{ processedpasteincludelines }} pasted
-                          {{ processedpasteincludelines > 1 ? "lines" : "line" }}
-                          of words,
-                          {{
-                            processedpasteincludeduplicate > 0
-                              ? processedpasteincludeduplicate
-                              : "no"
-                          }}
-                          {{
-                            processedpasteincludeduplicate > 1
-                              ? "duplicates"
-                              : "duplicate"
-                          }}
-                          removed and
-                          {{
-                            processedpasteincludeerror > 0
-                              ? processedpasteincludeerror
-                              : "no"
-                          }}
-                          {{ processedpasteincludeerror > 1 ? "lines" : "line" }}
-                          of words are too long
-                        </div>
-                        <div class="flex-grow-0 flex-shrink-0 text-center">
-                          <a
-                            @click="
-                              () => {
-                                pastefrommultipleincludetext = '';
-                                pastefrommultipleincludecounter = 0;
-                                pastefrommultipleincludeloading = false;
-                                pastefrommultipleincludeexpand = false;
-                                pastefrommultipleinclude = false;
-                                duplicateCheckerObject = {};
-                              }
-                            "
-                            class="d-inline-block cursor-pointer"
-                            title="Close"
-                          >
-                            <img
-                              src="/src/assets/icons/close.png"
-                              style="width: 20px; height: 20px"
-                              class="align-middle"
-                            />
-                          </a>
-                        </div>
-                      </div>
-                      <div class="d-block" style="padding: 10px">
-                        <button
-                          @click="addPasted()"
-                          class="btn shadow-sm d-inline-block w-100"
-                          style="background-color: green; color: #fff"
-                        >
-                          Add pasted
-                        </button>
-                      </div>
-                      <div class="d-block">
-                        <ul class="d-block list-style-none m-0 p-0">
-                          <li
-                            v-for="(item, i) in processedpasteinclude"
-                            :key="'expand-include-' + i"
-                          >
-                            <div class="d-block" style="padding: 5px">
-                              <template v-if="processedpasteincludeedit[i]">
-                                <div
-                                  class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center"
-                                >
-                                  <div class="flex-fill p-0 m-0 align-self-stretch">
-                                    <input
-                                      type="text"
-                                      class="w-100"
-                                      v-model="item[0]"
-                                      style="
-                                        border-radius: 20px;
-                                        padding: 8px;
-                                        background-color: #ffcccb;
-                                      "
-                                    />
-                                  </div>
-                                  <div
-                                    class="position-absolute flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
-                                    style="
-                                      background-color: #eee;
-                                      outline: 1px solid rgba(0, 0, 0, 0.2);
-                                      border-top-right-radius: 20px;
-                                      border-bottom-right-radius: 20px;
-                                    "
-                                  >
-                                    <a
-                                      class="cursor-pointer d-block text-center"
-                                      style="padding: 7px 0"
-                                      @click="saveEditedTooLong(item[0], i)"
-                                    >
-                                      <img
-                                        src="/src/assets/icons/save.png"
-                                        class="wh-1-dot-25-rem align-middle"
-                                      />
-                                    </a>
-                                  </div>
-                                </div>
-                              </template>
-                              <template v-else>
-                                <div
-                                  :style="
-                                    item[1] === 'ERROR'
-                                      ? 'background-color:red;color:#fff;'
-                                      : 'background-color:#fff;'
-                                  "
-                                  class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                                  style="border-radius: 20px; padding: 8px"
-                                >
-                                  <div
-                                    class="ellipsis overflow-hidden text-left flex-fill letter-spacing font-0-dot-875-rem"
-                                  >
-                                    {{ item[0] }}
-                                  </div>
-                                  <div
-                                    class="flex-shrink-0 flex-grow-0 flex-w-3-dot-5-rem"
-                                  >
-                                    <div
-                                      class="flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center"
-                                    >
-                                      <template v-if="item[1] === 'ERROR'">
-                                        <div
-                                          class="flex-shrink-0 flex-grow-0"
-                                          style="padding-right: 4px"
-                                        >
-                                          <a
-                                            @click="processedpasteincludeedit[i] = true"
-                                            class="d-inline-block cursor-pointer"
-                                          >
-                                            <img
-                                              src="/src/assets/icons/edit.png"
-                                              style="width: 18px; height: 18px"
-                                              class="align-middle"
-                                            />
-                                          </a>
-                                        </div>
-                                      </template>
-                                      <div
-                                        class="flex-shrink-0 flex-grow-0"
-                                        style="padding-left: 4px"
-                                      >
-                                        <a
-                                          @click="deletePasted(i)"
-                                          class="d-inline-block cursor-pointer"
-                                        >
-                                          <img
-                                            src="/src/assets/icons/delete.png"
-                                            style="width: 18px; height: 18px"
-                                            class="align-middle"
-                                          />
-                                        </a>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </template>
-                            </div>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </transition>
-        </div>
-      </Teleport>
+    <template v-if="pastemultiplelineitems">
+      <ReceiveFromClipboardAndShowPastedItemValidity></ReceiveFromClipboardAndShowPastedItemValidity>
     </template>
-    <div class="d-block">
-      <ul
-        class="m-0 p-0 flex-box flex-direction-row flex-nowrap list-style-none justify-content-center align-items-center w-100"
-      >
-        <li
-          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-          style="padding: 5px 3px 5px 0px; width: 10%"
-        >
-          <a
-            class="btn underline-none shadow-sm d-block"
-            style="font-size: 0.8rem; padding: 5.2px 0"
-            :style="current === 0 && pages.length > 1 ? 'background-color: #F0E68C;' : ''"
-            @click="current = 0"
-          >
-            All
-          </a>
-        </li>
-        <li class="flex-fill align-self-stretch" style="width: 90%">
-          <template v-if="pages.length > 1">
-            <ul
-              class="m-0 p-0 flex-box flex-direction-row flex-nowrap list-style-none justify-content-center align-items-center w-100"
-            >
-              <li
-                style="padding: 5px 3px"
-                class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                :style="
-                  pages.length < 11
-                    ? 'width:' + 100 / (pages.length + 2) + '%'
-                    : 'width:' + 100 / 11 + '%'
-                "
-              >
-                <a
-                  @click="previousOrNextClicked('PREVIOUS')"
-                  class="btn underline-none shadow-sm d-block"
-                  style="padding: 2.7px 0"
-                >
-                  <img
-                    src="/src/assets/icons/previous.png"
-                    class="align-middle"
-                    style="width: 15px; height: 15px"
-                  />
-                </a>
-              </li>
-              <template v-if="pages.length <= 10">
-                <li
-                  style="padding: 5px 3px"
-                  class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                  v-for="pageindex in pages.length"
-                  :key="pageindex + '-pagination'"
-                  :style="
-                    pages.length < 11
-                      ? 'width:' + 100 / (pages.length + 2) + '%'
-                      : 'width:' + 100 / 11 + '%'
-                  "
-                >
-                  <a
-                    class="btn underline-none shadow-sm d-block"
-                    style="font-size: 0.8rem; padding: 5.2px 0px"
-                    :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
-                    @click="current = pageindex"
-                  >
-                    {{ pageindex }}
-                  </a>
-                </li>
-              </template>
-              <template v-else-if="pages.length > 10 && pages.length < 999">
-                <template v-for="pageindex in pages.length">
-                  <template v-if="pageindex < 5">
-                    <li
-                      style="padding: 5px 3px; width: 8.333333333%"
-                      class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                      :key="pageindex + '-pagination'"
-                    >
-                      <a
-                        class="btn underline-none shadow-sm d-block"
-                        style="font-size: 0.8rem; padding: 5.2px 0px"
-                        :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
-                        @click="current = pageindex"
-                      >
-                        {{ pageindex }}
-                      </a>
-                    </li>
-                  </template>
-                  <template v-else-if="pageindex === 5">
-                    <li
-                      style="padding: 5px 3px; width: 16.666666667%"
-                      class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                      :key="pageindex + '-pagination'"
-                    >
-                      <input
-                        :ref="(el) => (inputpagenumberref = el)"
-                        type="number"
-                        class="shadow-sm w-100 text-center"
-                        style="font-size: 0.8rem; padding: 5.2px 0px"
-                        :style="
-                          current >= 5 && current <= pages.length - 4
-                            ? 'background-color: #F0E68C;'
-                            : ''
-                        "
-                        min="5"
-                        :max="pages.length - 4"
-                        maxlength="3"
-                        size="4"
-                        value="5"
-                        @keypress.enter="previousOrNextClicked('INPUT')"
-                      />
-                    </li>
-                  </template>
-                  <template v-else>
-                    <template v-if="pageindex + 4 > pages.length">
-                      <li
-                        style="padding: 5px 3px; width: 8.333333333%"
-                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                        :key="pageindex + '-pagination'"
-                      >
-                        <a
-                          class="btn underline-none shadow-sm d-block"
-                          style="font-size: 0.8rem; padding: 5.2px 0px"
-                          :style="
-                            current === pageindex ? 'background-color: #F0E68C;' : ''
-                          "
-                          @click="current = pageindex"
-                        >
-                          {{ pageindex }}
-                        </a>
-                      </li>
-                    </template>
-                  </template>
-                </template>
-              </template>
-              <template v-else>
-                <template v-for="pageindex in pages.length">
-                  <template v-if="pageindex < 5">
-                    <li
-                      style="padding: 5px 3px; width: 8.333333333%"
-                      class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                      :key="pageindex + '-pagination'"
-                    >
-                      <a
-                        class="btn underline-none shadow-sm d-block"
-                        style="font-size: 0.8rem; padding: 5.2px 0px"
-                        :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
-                        @click="current = pageindex"
-                      >
-                        {{ pageindex }}
-                      </a>
-                    </li>
-                  </template>
-                  <template v-else-if="pageindex === 5">
-                    <li
-                      style="padding: 5px 3px; width: 24.999999%"
-                      class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                      :key="pageindex + '-pagination'"
-                    >
-                      <input
-                        :ref="(el) => (inputpagenumberref = el)"
-                        type="number"
-                        class="shadow-sm w-100 text-center"
-                        style="font-size: 0.8rem; padding: 5.2px 0px"
-                        :style="
-                          current >= 5 && current <= pages.length - 1
-                            ? 'background-color: #F0E68C;'
-                            : ''
-                        "
-                        min="5"
-                        :max="pages.length - 1"
-                        maxlength="5"
-                        size="6"
-                        value="5"
-                        @keypress.enter="previousOrNextClicked('INPUT')"
-                      />
-                    </li>
-                  </template>
-                  <template v-else>
-                    <template v-if="pageindex + 1 > pages.length">
-                      <li
-                        style="padding: 5px 3px; width: 24.999999%"
-                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                        :key="pageindex + '-pagination'"
-                      >
-                        <a
-                          class="btn underline-none shadow-sm d-block"
-                          style="font-size: 0.8rem; padding: 5.2px 0px"
-                          :style="
-                            current === pageindex ? 'background-color: #F0E68C;' : ''
-                          "
-                          @click="current = pageindex"
-                        >
-                          {{ pageindex }}
-                        </a>
-                      </li>
-                    </template>
-                  </template>
-                </template>
-              </template>
-              <li
-                style="padding: 5px 3px"
-                class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                :style="
-                  pages.length < 11
-                    ? 'width:' + 100 / (pages.length + 2) + '%'
-                    : 'width:' + 100 / 11 + '%'
-                "
-              >
-                <a
-                  @click="previousOrNextClicked('NEXT')"
-                  class="btn underline-none shadow-sm d-block"
-                  style="padding: 2.7px 0"
-                >
-                  <img
-                    src="/src/assets/icons/next.png"
-                    class="align-middle"
-                    style="width: 15px; height: 15px"
-                  />
-                </a>
-              </li>
-            </ul>
-          </template>
-        </li>
-        <li
-          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-          style="padding: 5px 0px 5px 3px; width: 10%"
-        >
-          <a class="btn underline-none shadow-sm d-block" style="padding: 2.8px 0">
-            <img
-              src="/src/assets/icons/expand.png"
-              class="align-middle"
-              style="width: 15px; height: 15px"
-            />
-          </a>
-        </li>
-      </ul>
-    </div>
-    <div class="d-block">
-      <div
-        @mousedown="resetDoneClick(tree)"
-        @mouseup="resetDoneClick(tree)"
-        :id="current === 0 ? cards[index].scroll.areaid + '-included-' + areatype : ''"
-        class="m-0 p-0 d-block overflow-y-auto"
-        style="z-index: 1000; background-color: #eee"
-        :style="props.textAreaHeight"
-      >
-        <div class="d-block">
-          <template v-if="tree.value">
-            <ul
-              class="m-0 p-0 flex-box flex-direction-row flex-wrap list-style-none justify-content-start w-100"
-            >
-              <li
-                style="padding: 5px"
-                class="flex-grow-0 flex-shrink-0"
-                v-for="(included, includeindex) in tree.value"
-                :key="includeindex + 'include'"
-              >
-                <div
-                  :ref="
-                    (el) => {
-                      refincluded[includeindex] = el;
-                    }
-                  "
-                  class="d-inline-block shadow-sm cursor-pointer"
-                  style="
-                    border-radius: 9px;
-                    background-color: #fff;
-                    padding: 4px 7px;
-                    font-size: 10px;
-                  "
-                >
-                  <a
-                    @click="deleteIncludeOrExclude(tree, includeindex)"
-                    class="d-inline-block underline-none"
-                    ><img
-                      src="/src/assets/icons/close.png"
-                      style="width: 18px; height: 18px"
-                      class="align-middle"
-                  /></a>
-                  <span
-                    class="font-0-dot-90-rem d-inline-block align-middle"
-                    style="padding-left: 5px"
-                    >{{ included }}</span
-                  >
-                </div>
-              </li>
-              <template v-if="tree.addloading">
-                <li style="padding: 5px" class="flex-grow-0 flex-shrink-0">
-                  <img
-                    src="/src/assets/icons/loading.gif"
-                    style="width: 32px; height: 32px"
-                    class="align-middle"
-                  />
-                </li>
-              </template>
-              <li ref="includedend"></li>
-            </ul>
-          </template>
-        </div>
-        <div class="d-block">
-          <template v-if="tree.loading">
-            <div class="d-block text-center" style="padding: 20px 0">
-              <img
-                src="/src/assets/icons/loading.gif"
-                style="width: 40px; height: 40px"
-                class="align-middle"
-              />
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
+    <Pagination></Pagination>
+    <DisplayPastedMultipleOrSingleWord></DisplayPastedMultipleOrSingleWord>
   </div>
 </template>
 

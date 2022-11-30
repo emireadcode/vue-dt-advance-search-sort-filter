@@ -14,16 +14,16 @@ const
 
 const info = computed(() => {
   if(props.context === 'DESCRIBE-MODAL') {
-    if(!(cards.value[index] as MultipleWordsStringType).concatenated) {
-      return (cards.value[index] as MultipleWordsStringType).info.name
-    }
-    else {
-      if((cards.value[index] as MultipleWordsStringType).concatenatedname !== undefined) {
-        return (cards.value[index] as MultipleWordsStringType).concatenatedname;
+    if(props.concatfieldindex === undefined) {
+      if(!(cards.value[index] as MultipleWordsStringType).concatenated) {
+        return (cards.value[index] as MultipleWordsStringType).info.name
       }
       else {
-        return (((cards.value[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[props.concatfieldindex as number]).name;
+        return (cards.value[index] as MultipleWordsStringType).concatenatedname;
       }
+    }
+    else {
+      return (((cards.value[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[props.concatfieldindex as number]).name;
     }
   }
   else {
@@ -56,7 +56,7 @@ const info = computed(() => {
         {{ context === 'DESCRIBE-INCLUDE'? 'show' : 'do not show' }}
         <span
           class="font-bold"
-          style="padding-right: 4px; padding-left: 4px"
+          style="padding-right: 4px; padding-left: 2px"
         >
           {{ info }}
         </span>that

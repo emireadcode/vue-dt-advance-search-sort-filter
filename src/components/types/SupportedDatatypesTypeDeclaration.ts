@@ -212,6 +212,7 @@ export interface DateType extends IdentityType {
   };
   dateFormat: DateFormat["dateFormat"];
   searchFrom?: string | undefined; //DOM or SERVER
+  isoweek: boolean;
 }
   
 export interface DateTimeType extends IdentityType {
@@ -222,6 +223,7 @@ export interface DateTimeType extends IdentityType {
   searchFrom?: string | undefined; //DOM or SERVER
   timeFormat: TimeFormat["timeFormat"] | {};
   dateFormat: DateFormat["dateFormat"];
+  isoweek: boolean;
 }
   
 export interface NumberType extends IdentityType {
@@ -296,10 +298,10 @@ export type CardType<T> =
   multiplewordsstringtypes?:
     | (T & { concatenated?: MultipleWordsStringConcatenatedType | undefined })[]
     | undefined;
-  datetypes?: (T & DateFormat)[] | undefined;
+  datetypes?: (T & DateFormat & { isoweek: boolean; })[] | undefined;
   numbertypes?: T[] | undefined;
   keytonamemappingtypes?: (T & KeyToNameMappingType)[] | undefined;
-  datetimetypes?: (T & DateFormat & TimeFormat)[] | undefined;
+  datetimetypes?: (T & DateFormat & TimeFormat & { isoweek: boolean; })[] | undefined;
   timetypes?: (T & TimeFormat)[] | undefined;
   singlewordstringtypes?:
     | (T & {

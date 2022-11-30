@@ -196,6 +196,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           table: 'payment',
           limit: 10,
           dateFormat: 'ddd dd mmm, yyyy',
+          isoweek: true,
         },
       ],
       timetypes: [
@@ -218,6 +219,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           dateFormat: 'dd-mm-yyyy',
           timeFormat: '12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO',
           //timeFormat: '12-HCWSAWLZ',
+          isoweek: true,
         },
       ],
       numbertypes: [
@@ -510,7 +512,7 @@ input[type="text"]:focus {
   background-color: #fff;
   outline-color: #80bdff;
   border: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 0.115rem rgba(0, 123, 255, 0.25);
   z-index: 1200;
 }
 input[type="text"]::-webkit-input-placeholder {
@@ -637,6 +639,9 @@ input[type="text"][readonly] {
 }
 .overflow-x-hidden {
   overflow-x: hidden !important;
+}
+.overflow-x-scroll {
+  overflow-x: scroll !important;
 }
 .underline-none {
   text-decoration: none !important;

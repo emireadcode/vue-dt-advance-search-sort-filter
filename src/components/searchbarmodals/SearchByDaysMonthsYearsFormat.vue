@@ -12,42 +12,16 @@ import {
 import DayPicker from "./DayPicker.vue";
 import MonthPicker from "./MonthPicker.vue";
 import YearPicker from "./YearPicker.vue";
-import type { YearSelectionType, MonthSelectionType, DaySelectionType } from "./days_months_years_types.vue";
-import { getDayDimensions, getMonthDimensions, calculateRemainder, getYearDimensions } from "./days_months_years_utility_fns.vue";
+import type { DaySelectionFormat, MonthSelectionFormat, YearSelectionFormat, YearSelectionType, MonthSelectionType, DaySelectionType } from "../types/days_months_years_types";
+import { getDayDimensions, getMonthDimensions, calculateRemainder, getYearDimensions } from "../utility/days_months_years_utility_fns.vue";
 
 const props = defineProps<{
-  excludedatefor: "ENABLE" | "DISABLE" | "",
-  isoweek: string;
+  isoweek: boolean;
   maxyear: string;
   minyear: string;
-  dayselectionsandformat: {
-    format: "RANGE" | "MULTIPLE-OR-SINGLE";
-    days: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-        index: number;
-        name: "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
-      }[];
-    } | {};
-  };
-  monthselectionsandformat: {
-    format: "RANGE" | "MULTIPLE-OR-SINGLE";
-    months: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-        index: number;
-        name: "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec";
-      }[];
-    } | {};
-  };
-  yearselectionsandformat: {
-    format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN";
-    years: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-      }[];
-    } | number | {};
-  };
+  dayselectionsandformat?: DaySelectionFormat | undefined;
+  monthselectionsandformat?: MonthSelectionFormat | undefined;
+  yearselectionsandformat?: YearSelectionFormat | undefined;
 }>();
 
 provide("yearprops", {
@@ -59,12 +33,6 @@ provide("yearprops", {
 provide("monthprops", props.monthselectionsandformat);
 
 provide("dayprops", props.dayselectionsandformat);
-
-const emits = defineEmits<{
-  (e: "enableday:daysmonthsyearsexcludecanceldonereadiness", action: {action: boolean; score: number; }): void;
-  (e: "enablemonth:daysmonthsyearsexcludecanceldonereadiness", action: {action: boolean; score: number; }): void;
-  (e: "enableyear:daysmonthsyearsexcludecanceldonereadiness", action: {action: boolean; score: number; }): void;
-}>();
 
 let years = shallowRef<YearSelectionType>(),
   months = shallowRef<MonthSelectionType>(),
@@ -283,7 +251,7 @@ function fillMonthArray() {
 }
 
 function fillDayArray() {
-  for(let index=0; index< ((props.isoweek === 'true')? isodayNames.length: dayNames.length); index++) {
+  for(let index=0; index< ((props.isoweek)? isodayNames.length: dayNames.length); index++) {
     days.value = {
       ...days.value,
       [index]: {
@@ -292,7 +260,7 @@ function fillDayArray() {
         y1: 0,
         x2: 0,
         y2: 0,
-        name: (props.isoweek === 'true')? isodayNames[index] : dayNames[index],
+        name: (props.isoweek)? isodayNames[index] : dayNames[index],
         selected: "DESELECTED",
       },
     } as DaySelectionType;
@@ -305,9 +273,9 @@ function fillDayArray() {
 }
 
 onBeforeMount(() => {
-  yearformat.value = props.yearselectionsandformat.format;
-  monthformat.value = props.monthselectionsandformat.format;
-  dayformat.value = props.dayselectionsandformat.format;
+  yearformat.value = props.yearselectionsandformat?.format;
+  monthformat.value = props.monthselectionsandformat?.format;
+  dayformat.value = props.dayselectionsandformat?.format;
   fillYearArray();
   fillMonthArray();
   fillDayArray();
@@ -317,35 +285,12 @@ onBeforeMount(() => {
 
 <template>
   <div class="d-block position-relative" style="padding: 0 10px;">
-    <Teleport to="body">
-      <div v-if="excludedatefor === 'ENABLE'" class="d-block position-relative">
-        <transition name="modal">
-          <div
-            class="position-fixed h-100 w-100 overflow-auto user-select-none"
-            style="z-index: 1800"
-          >
-            <div class="modal-mask h-100 w-100 modal-mask-background-2">
-              <div class="modal-wrapper text-center">
-                <div
-                  class="modal-container d-block shadow"
-                  style="height: auto; width: 560px"
-                >
-                  <div class="d-block m-0 p-0">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </transition>
-      </div>
-    </Teleport>
     <div class="d-block" style="padding: 12px 0px 5px 0px;">
       <DayPicker
         :isoweek="isoweek"
         :ddays="(days as DaySelectionType)"
         :dformat="dayformat as 'RANGE' | 'MULTIPLE-OR-SINGLE'"
         @update:days-value="$val => updateDaysValueFn($val)"
-        @send:daysmonthsyearsexcludecanceldonereadiness="$val => emits('enableday:daysmonthsyearsexcludecanceldonereadiness', $val)"
       ></DayPicker>
     </div>
     <div class="d-block" style="padding: 7px 0px 5px 0px;">
@@ -353,12 +298,10 @@ onBeforeMount(() => {
         :mmonths="(months as MonthSelectionType)"
         :mformat="monthformat as 'RANGE' | 'MULTIPLE-OR-SINGLE'"
         @update:months-value="$val => updateMonthsValueFn($val)"
-        @send:daysmonthsyearsexcludecanceldonereadiness="$val => emits('enablemonth:daysmonthsyearsexcludecanceldonereadiness', $val)"
       ></MonthPicker>
     </div>
     <div class="d-block" style="padding: 7px 0px 2px 0px;">
       <YearPicker
-        @send:daysmonthsyearsexcludecanceldonereadiness="$val => emits('enableyear:daysmonthsyearsexcludecanceldonereadiness', $val)"
         :yyears="(years as YearSelectionType)"
         :yformat="yearformat as 'RANGE' | 'MULTIPLE-OR-SINGLE' | 'GREATER-THAN' | 'LESS-THAN' | 'FROM-TO'"
         :ppage="yearpage"

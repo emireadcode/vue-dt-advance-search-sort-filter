@@ -10,7 +10,7 @@ const
   cards = inject("cards") as ShallowRef<PrimitiveType[]>
 ;
 
-function updateAttributeButtonTabClicked(clickedtype: string, bindex: number | undefined) {
+function updateAttributeButtonTabClicked(clickedtype: string, bindex?: number | undefined) {
   if(clickedtype === 'CONCATENATED-NAME-FIELD') {
     (cards.value[index] as MultipleWordsStringType).search.tabclicked = true;
     Object.values((cards.value[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType).forEach((concatenated, i) => {
@@ -91,7 +91,7 @@ onMounted(() => {
 <template>
   <div
     style="background-color: #fff; padding: 10px 5px 0 5px;white-space: nowrap;"
-    class="shadow-sm d-block overflow-x-auto"
+    class="shadow-sm d-block overflow-x-scroll"
   >
     <template v-if="!(cards[index] as MultipleWordsStringType).concatenated">
       <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
@@ -141,3 +141,10 @@ onMounted(() => {
     </template>           
   </div>
 </template>
+
+<style scoped>
+.tab {
+  border: none;
+  outline: 1px solid gray;
+}
+</style>

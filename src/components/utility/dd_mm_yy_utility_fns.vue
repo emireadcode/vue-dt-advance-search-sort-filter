@@ -18,7 +18,7 @@ import {
   type Ref,
   triggerRef,
 } from "vue";
-import type { VisibleCalendarPropType, VisibleCalendarType, PositionTrackerType, CalendarType, YearMonthClickable, RangeFirstSelectionType, DateSelectionsType } from "./dd_mm_yy_types.vue";
+import type { VisibleCalendarPropType, VisibleCalendarType, PositionTrackerType, CalendarType, YearMonthClickable, RangeFirstSelectionType, DateSelectionsType } from "../types/dd_mm_yy_types";
 
 export function removeDelimiters(item: string) {
   let newItem = item;
@@ -142,7 +142,7 @@ export function getYearMonthAndDate(pasteddate: string, clickedorpasted: boolean
     day,
     teststringdate = "";
   if (clickedorpasted) {
-    if (props.isoweek === "true") {
+    if (props.isoweek) {
       let splitedfdate = pasteddate.split("-");
       year = splitedfdate[0];
       month = parseInt(splitedfdate[1]) - 1;
@@ -185,7 +185,7 @@ export function getYearMonthAndDate(pasteddate: string, clickedorpasted: boolean
         "-" +
         delimiterRemovedDateArray[1];
     }
-    if (props.isoweek === "true") {
+    if (props.isoweek) {
       year = getISOWeekYear(new Date(teststringdate));
       month = getMonth(new Date(teststringdate));
       day = getDate(new Date(teststringdate));
@@ -248,7 +248,7 @@ export function buildCalendar(
     weeksInMonth = getWeeksInMonth(new Date(year, month, 1)),
     daysInMonth = getDaysInMonth(new Date(year, month, 1));
 
-  if (props.isoweek === "true") {
+  if (props.isoweek) {
     diffBtwWkStartAndMnthStart = differenceInCalendarDays(
       new Date(year, month, 1),
       startOfISOWeek(new Date(year, month, 1))
@@ -312,26 +312,26 @@ export function buildCalendar(
             ...calendar[j],
             [k]: {
               status: differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
                 new Date(props.mindate)
               ) >= 0 && differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
                 new Date(props.maxdate)
               ) <= 0 ? "ENABLE" : "DISABLE",
               readonlystatus: differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
                 new Date(props.mindate)
               ) >= 0 && differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
@@ -339,7 +339,7 @@ export function buildCalendar(
               ) <= 0 ? "ENABLE" : "DISABLE",
               day: counter,
               date:
-                ''+(props.isoweek === "true"
+                ''+(props.isoweek
                   ? formatISO(new Date(year, month, counter), { representation: "date" })
                   : format(new Date(year, month, counter), "yyyy-MM-dd")),
             } as CalendarType<{}>[number][number],
@@ -368,26 +368,26 @@ export function buildCalendar(
             ...calendar[j],
             [k]: {
               status: differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
                 new Date(props.mindate)
               ) >= 0 && differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
                 new Date(props.maxdate)
               ) <= 0 ? "ENABLE" : "DISABLE",
               readonlystatus: differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
                 new Date(props.mindate)
               ) >= 0 && differenceInCalendarDays(
-                props.isoweek === "true"
+                props.isoweek
                   ? new Date(formatISO(new Date(year, month, counter), { representation: "date" }))
                   : new Date(format(new Date(year, month, counter), "yyyy-MM-dd"))
                 ,
@@ -395,7 +395,7 @@ export function buildCalendar(
               ) <= 0 ? "ENABLE" : "DISABLE",
               day: counter,
               date:
-                ''+(props.isoweek === "true"
+                ''+(props.isoweek
                   ? formatISO(new Date(year, month, counter), { representation: "date" })
                   : format(new Date(year, month, counter), "yyyy-MM-dd")),
             } as CalendarType<{}>[number][number],

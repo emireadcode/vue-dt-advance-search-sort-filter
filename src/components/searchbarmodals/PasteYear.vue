@@ -13,8 +13,8 @@ import {
   type WatchStopHandle,
   triggerRef,
 } from "vue";
-import type { DuplicateCheckerObjectType, YearSelectionType, } from "./days_months_years_types.vue";
-import { addYear } from "./days_months_years_utility_fns.vue";
+import type { DuplicateCheckerObjectType, YearSelectionType, } from "../types/days_months_years_types";
+import { addYear } from "../utility/days_months_years_utility_fns.vue";
 
 const props1 = defineProps<{
   yyears: YearSelectionType;

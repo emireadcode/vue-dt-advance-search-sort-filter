@@ -3,8 +3,8 @@
 import { ref, inject, type ShallowRef, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 import Switchable from "./Switchable.vue";
+
 /*
-import DateSearcherModal from "./searchbarmodals/DateSearcherModal.vue"
 import DateTimeSearcherModal from "./searchbarmodals/DateTimeSearcherModal.vue";
 import NumberSearcherModal from "./searchbarmodals/NumberSearcherModal.vue";
 import TimeSearcherModal from "./searchbarmodals/TimeSearcherModal.vue";
@@ -14,6 +14,7 @@ import KeyToNameMappingSearcherModal from "./searchbarmodals/KeyToNameMappingSea
 */
 
 import MultipleWordsStringSearcherModal from "./searchbarmodals/MultipleWordsStringSearcherModal.vue";
+import DateSearcherModal from "./searchbarmodals/DateSearcherModal.vue";
 
 const
   props = defineProps<{
@@ -29,6 +30,7 @@ let
     cardsmultiplesearchopenstatus: Ref<Boolean[]>;
   }
 ;
+
 </script>
 
 <template>
@@ -61,24 +63,27 @@ let
               </div>
               <div class="flex-shrink-0 flex-grow-0 p-0 m-0 h-100">
                 <button
+                  @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
+                  @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
                   :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-                  class="open-search-btn h-100 m-0 cursor-pointer shadow-sm font-bold letter-spacing"
+                  class="open-search-btn h-100 m-0 cursor-pointer shadow-sm font-bold letter-spacing flex-box flex-direct-row flex-nowrap justify-content-center align-items-center w-100"
                   style="font-size: 0.9rem;"
                 >
-                  <img src="/src/assets/icons/search.png" class="align-middle" style="width:20px;height:20px;" />
+                  <img src="/src/assets/icons/search.png" style="width:15px;height:15px;" />
                 </button>
               </div>
             </div>
           </div>
-          <div class="flex-w-24-rem p-0 m-0 h-100">
+          <div class="flex-shrink-0 flex-grow-0 p-0 m-0 h-100">
             <button
-              @click="accessibility.cardsmultiplesearchopenstatus.value[index]=true"
-              @keyup.enter="accessibility.cardsmultiplesearchopenstatus.value[index]=true"
+              title="Multiple"
+              @click="() => { accessibility.cardschildrentabindex.value[index] = true; accessibility.cardsmultiplesearchopenstatus.value[index]=true; }"
+              @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; accessibility.cardsmultiplesearchopenstatus.value[index]=true; }"
               :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-              class="open-search-btn w-100 h-100 m-0 cursor-pointer shadow-sm font-bold letter-spacing"
-              style="font-size: 0.9rem;"
+              class="open-search-btn m-0 letter-spacing flex-box flex-direct-row flex-nowrap justify-content-center align-items-center w-100 h-100 cursor-pointer shadow-sm font-bold letter-spacing"
+              style="font-size: 1.5rem;"
             >
-              Multiple
+              M
             </button>
           </div>
         </div>
@@ -88,6 +93,9 @@ let
       <div v-if="accessibility.cardsmultiplesearchopenstatus.value[index]" class="d-block position-relative">
         <template v-if="cards[index].info.datatype === 'MultipleWordsString'">
           <MultipleWordsStringSearcherModal :index="index"></MultipleWordsStringSearcherModal>
+        </template>
+        <template v-if="cards[index].info.datatype === 'Date'">
+          <DateSearcherModal :index="index"></DateSearcherModal>
         </template>
       </div>
     </Teleport>

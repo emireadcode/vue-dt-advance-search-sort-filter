@@ -4,7 +4,6 @@ import type { PrimitiveType, MultipleWordsStringType, MultipleWordsStringConcate
 import DescribeLabel from "./DescribeLabel.vue";
 import StartWithContainExactlyEqualToAndEndsWithTabs from "./StartWithContainExactlyEqualToAndEndsWithTabs.vue";
 import AddSingleOrMultiplePaste from "./AddSingleOrMultiplePaste.vue";
-
 const 
   props = defineProps<{
     index: number;
@@ -14,7 +13,6 @@ const
   index = props.index,
   cards = inject("cards") as ShallowRef<PrimitiveType[]>
 ;
-
 </script>
 
 <template>
@@ -22,7 +20,7 @@ const
     <template v-if="concatfieldindex === undefined">
       <DescribeLabel 
         :index="index" 
-        :concatfieldindex="concatfieldindex" 
+        :concatfieldindex="(concatfieldindex as undefined)" 
         :context="context"
       ></DescribeLabel>
       <StartWithContainExactlyEqualToAndEndsWithTabs></StartWithContainExactlyEqualToAndEndsWithTabs>
@@ -41,13 +39,13 @@ const
           :
           'search-include'
         "
-        :text-area-height="'height: 120px;'"
+        :text-area-height="'height: 128px;'"
       ></AddSingleOrMultiplePaste>
     </template>
     <template v-else>
       <DescribeLabel 
         :index="index" 
-        :concatfieldindex="concatfieldindex" 
+        :concatfieldindex="(concatfieldindex as number)" 
         :context="context"
       ></DescribeLabel>
       <StartWithContainExactlyEqualToAndEndsWithTabs></StartWithContainExactlyEqualToAndEndsWithTabs>
@@ -66,7 +64,7 @@ const
           :
           'concatenated-search-include-' + concatfieldindex
         "
-        :text-area-height="'height: 120px;'"
+        :text-area-height="'height: 128px;'"
       ></AddSingleOrMultiplePaste>
     </template>
   </div>
