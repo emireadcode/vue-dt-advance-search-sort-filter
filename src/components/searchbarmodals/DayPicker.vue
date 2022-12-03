@@ -12,8 +12,8 @@ import {
   type WatchStopHandle,
   type ShallowRef,
 } from "vue";
-import type { DaySelectionType, DayRangeFirstSelectionType } from "../types/days_months_years_types.vue";
-import { getDayDimensions } from "../utility/days_months_years_utility_fns.vue";
+import type { DaySelectionType, DayRangeFirstSelectionType } from "../types/days_months_years_types";
+import { getDayDimensions } from "../utility/days_months_years_utility_fns";
 
 const props1 = defineProps<{
   ddays: DaySelectionType;

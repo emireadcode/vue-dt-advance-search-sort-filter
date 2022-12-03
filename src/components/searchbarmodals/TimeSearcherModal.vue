@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { provide, ref, triggerRef, inject } from "vue";
-import Switchable from "./Switchable.vue";
-import AscDescOrMix from "./AscDescOrMix.vue";
-import FilterableResultDisplayer from "./FilterableResultDisplayer.vue";
+import Switchable from "../Switchable.vue";
+import AscDescOrMix from "../AscDescOrMix.vue";
+import FilterableResultDisplayer from "../FilterableResultDisplayer.vue";
 
 const props = defineProps<{
   index: number;

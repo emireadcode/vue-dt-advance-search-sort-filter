@@ -14,7 +14,7 @@ import {
   triggerRef,
 } from "vue";
 import type { DuplicateCheckerObjectType, YearSelectionType, } from "../types/days_months_years_types";
-import { addYear } from "../utility/days_months_years_utility_fns.vue";
+import { addYear } from "../utility/days_months_years_utility_fns";
 
 const props1 = defineProps<{
   yyears: YearSelectionType;

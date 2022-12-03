@@ -478,7 +478,7 @@ onBeforeUnmount(() => {
         </template>
       </div>
       <div
-        class="position-absolute flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
+        class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
         style="background-color: #eee; outline: 1px solid rgba(0, 0, 0, 0.2)"
       >
         <a

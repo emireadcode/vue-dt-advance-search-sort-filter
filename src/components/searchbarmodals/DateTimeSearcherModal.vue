@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { provide, ref, triggerRef, inject } from "vue";
-import SearchableCalendarDatePicker from "./SearchableCalendarDatePicker.vue";
 import SearchByDaysMonthsYearsFormat from "./SearchByDaysMonthsYearsFormat.vue";
-import Switchable from "./Switchable.vue";
-import AscDescOrMix from "./AscDescOrMix.vue";
-import FilterableResultDisplayer from "./FilterableResultDisplayer.vue";
+import Switchable from "../Switchable.vue";
+import AscDescOrMix from "../AscDescOrMix.vue";
+import FilterableResultDisplayer from "../FilterableResultDisplayer.vue";
 import { format } from "date-fns";
 
 const props = defineProps<{

@@ -16,16 +16,12 @@ import {
   type WatchStopHandle,
   triggerRef,
 } from "vue";
-import type { VisibleCalendarPropType, VisibleCalendarType } from "../types/dd_mm_yy_types";
+import type { VisibleCalendarType } from "../types/dd_mm_yy_types";
 import type { DuplicateCheckerObjectType } from "../types/days_months_years_types";
-import { addDate, removeDelimiters, countSelectedDateCells, } from "../utility/dd_mm_yy_utility_fns.vue";
+import { addDate, removeDelimiters, countSelectedDateCells, } from "../utility/dd_mm_yy_utility_fns";
 
-const props = inject("props") as VisibleCalendarPropType;
 
 const parentprops = defineProps<{
-  vcalendar: VisibleCalendarType;
-  cformat: "RANGE" | "MULTIPLE-OR-SINGLE";
-  updatevcalendarvalue: boolean;
 }>();
 
 const emits = defineEmits<{
@@ -338,6 +334,28 @@ onMounted(() => {
       }
     }
   );
+
+
+
+
+  /*
+
+
+      :vcalendar="(visiblecalendar as VisibleCalendarType)"
+      :updatevcalendarvalue="pupdatevcalendarvalue"
+      @update:vcalendar-value="$vcalendarvalue => updateVCalendarValueFn($vcalendarvalue, 'PASTED')"
+      @change:clickformat="$val => updateFormat($val)"
+      :cformat="(clickformat as 'RANGE' | 'MULTIPLE-OR-SINGLE')"
+
+
+
+
+  vcalendar: VisibleCalendarType;
+  cformat: "RANGE" | "MULTIPLE-OR-SINGLE";
+  updatevcalendarvalue: boolean;
+  */
+
+
 });
 
 </script>

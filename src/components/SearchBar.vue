@@ -46,7 +46,7 @@ let
           :index="index"
         ></Switchable>
       </div>
-      <div class="flex-fill m-0 align-self-stretch" style="padding:0 0 0 1px;">
+      <div class="flex-fill m-0 align-self-stretch p-0">
         <div
           class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center h-100"
         >
@@ -54,7 +54,7 @@ let
             <div
               class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center h-100"
             >
-              <div class="flex-fill p-0 m-0 h-100">
+              <div class="flex-fill m-0 h-100" style="padding: 0 1px;">
                 <input
                   :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
                   type="text"
@@ -66,7 +66,7 @@ let
                   @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
                   @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
                   :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-                  class="open-search-btn h-100 m-0 cursor-pointer shadow-sm font-bold letter-spacing flex-box flex-direct-row flex-nowrap justify-content-center align-items-center w-100"
+                  class="s-search-btn h-100 m-0 cursor-pointer font-bold letter-spacing flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
                   style="font-size: 0.9rem;"
                 >
                   <img src="/src/assets/icons/search.png" style="width:15px;height:15px;" />
@@ -74,14 +74,14 @@ let
               </div>
             </div>
           </div>
-          <div class="flex-shrink-0 flex-grow-0 p-0 m-0 h-100">
+          <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 1px solid gray;">
             <button
               title="Multiple"
+              class="h-100 m-0 p-0 w-100 font-bold m-search-modal-opener-btn cursor-pointer" 
+              style="font-size: 1.2rem;"
               @click="() => { accessibility.cardschildrentabindex.value[index] = true; accessibility.cardsmultiplesearchopenstatus.value[index]=true; }"
               @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; accessibility.cardsmultiplesearchopenstatus.value[index]=true; }"
               :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-              class="open-search-btn m-0 letter-spacing flex-box flex-direct-row flex-nowrap justify-content-center align-items-center w-100 h-100 cursor-pointer shadow-sm font-bold letter-spacing"
-              style="font-size: 1.5rem;"
             >
               M
             </button>
@@ -103,14 +103,18 @@ let
 </template>
 
 <style scoped>
-.open-search-btn {
-  outline: 1px solid grey;
+.m-search-modal-opener-btn,
+.s-search-btn {
   border:none;
+  outline: 1px solid gray;
 }
-.open-search-btn:hover,
-.open-search-btn:focus,
-.open-search-btn:active {
-  outline: 1px solid blue;
+.s-search-btn:hover,
+.s-search-btn:focus,
+.s-search-btn:active,
+.m-search-modal-opener-btn:hover,
+.m-search-modal-opener-btn:focus,
+.m-search-modal-opener-btn:active {
+  outline: 1px solid grey;
   background-color: grey;
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, type WatchStopHandle, type ShallowRef, type Ref, onMounted, nextTick, ref, shallowRef, inject, onBeforeMount, watch, triggerRef, onBeforeUnmount } from "vue";
-import type { YearSelectionType, YearRangeFirstSelectionType } from "../types/days_months_years_types.vue";
-import { addYear, getYearDimensions, unTrackYearBoxMouseMovement, trackYearBoxMouseMovement, deselectAll, } from "../utility/days_months_years_utility_fns.vue";
+import type { YearSelectionType, YearRangeFirstSelectionType } from "../types/days_months_years_types";
+import { addYear, getYearDimensions, unTrackYearBoxMouseMovement, trackYearBoxMouseMovement, deselectAll, } from "../utility/days_months_years_utility_fns";
 import paste_year from "./PasteYear.vue";
 
 let props = inject("yearprops") as {

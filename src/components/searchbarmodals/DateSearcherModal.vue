@@ -1,11 +1,41 @@
 <script setup lang="ts">
-import { type Ref, type ShallowRef, onBeforeMount, provide, ref, triggerRef, inject, computed } from "vue";
-import DD_MM_YYYY from "./DD_MM_YYYY.vue";
+import {
+  type ShallowRef,
+  type Ref,
+  onBeforeMount,
+  provide,
+  ref,
+  triggerRef,
+  inject,
+  nextTick,
+} from "vue";
+import SearchByDDMMYYYYFormat from "./SearchByDDMMYYYYFormat.vue";
 import SearchByDaysMonthsYearsFormat from "./SearchByDaysMonthsYearsFormat.vue";
 import { format } from "date-fns";
-import type { PrimitiveType,  DateType } from "../types/SupportedDatatypesTypeDeclaration";
-import type { DateSelectionsType } from "../types/dd_mm_yy_types";
-import type { DaySelectionFormat, MonthSelectionFormat, YearSelectionFormat } from "../types/days_months_years_types";
+import type { DateType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { VisibleCalendarType } from "../types/dd_mm_yy_types";
+import type { 
+  DaySelectionFormat, 
+  MonthSelectionFormat, 
+  YearSelectionFormat 
+} from "../types/days_months_years_types";
+
+let 
+  previousYearSelection: YearSelectionFormat['years'],
+
+  previousDaySelection: DaySelectionFormat['days'],
+
+  previousMonthSelection: MonthSelectionFormat['months'],
+
+  previousDD_MM_YYY_Selection: VisibleCalendarType['selections'],
+
+  accessibility = inject("accessibility") as {
+    cardsmultiplesearchopenstatus: Ref<Boolean[]>;
+  },
+
+  excludedates = ref<boolean>()
+
+;
 
 const
 
@@ -13,38 +43,21 @@ const
     index: number;
   }>(),
 
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
+  cards = inject("cards") as ShallowRef<DateType[]>
 
-  cformat = ref<"DD/MM/YYYY" | "Day(s), Month(s), Year(s)">(),
-
-  cmaxyear = computed(() => {
-    return ((cards.value[props.index] as DateType).result.max as string).split('-')[0];
-  }),
-
-  cminyear = computed(() => {
-    return (cards.value[props.index].result.min as string).split('-')[0];
-  })
 ;
 
 provide("index", props.index);
 
-
-let
-  accessibility = inject("accessibility") as {
-    cardsmultiplesearchopenstatus: Ref<Boolean[]>;
-  }
-;
-
-function setAndOpenDateFormat(selformat: "DD/MM/YYYY" | "Day(s), Month(s), Year(s)") {
-  ((cards.value[props.index] as DateType).search.format as "DD/MM/YYYY" | "Day(s), Month(s), Year(s)") = selformat;
-  triggerRef(cards);
-  cformat.value = selformat;
+function updateCards() {
+  nextTick(() => {
+    triggerRef(cards);
+  });
 }
 
 onBeforeMount(() => {
-  console.log((cards.value[props.index] as DateType));
-  cformat.value = ((cards.value[props.index] as DateType).search as DateType['search']).format as "DD/MM/YYYY" | "Day(s), Month(s), Year(s)";
-});
+  excludedates.value = false;
+})
 
 </script>
 
@@ -114,8 +127,8 @@ onBeforeMount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @click="setAndOpenDateFormat('DD/MM/YYYY')"
-                      class="font-family ellipsis date-format align-middle underline-none d-block cursor-pointer m-0"
+                      @click="() => { ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
+                      class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
                       :style="(cards[index] as DateType).search.format === 'DD/MM/YYYY'
                         ? 'background-color:green;color: #fff;'
@@ -127,8 +140,8 @@ onBeforeMount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @click="setAndOpenDateFormat('Day(s), Month(s), Year(s)')"
-                      class="font-family ellipsis date-format align-middle underline-none d-block cursor-pointer m-0"
+                      @click="() => { ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
+                      class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
                       :style="
                         ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') === 'Day(s), Month(s), Year(s)'
@@ -144,24 +157,13 @@ onBeforeMount(() => {
                   class="d-block text-wrap overflow-x-hidden overflow-y-auto"
                 >
                   <template v-if="((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') ===  'DD/MM/YYYY'">
-                    <DD_MM_YYYY
-                      :maxdate="(cards[index].result.max as string)"
-                      :mindate="(cards[index].result.min as string)"
-                      :title="cards[index].info.name"
-                      :isoweek="((cards[index] as DateType).isoweek as boolean)"
-                      :format="((cards[index] as DateType).search.dd_mm_yyyy?.format as 'RANGE' | 'MULTIPLE-OR-SINGLE')"
-                      :selections="((cards[index] as DateType).search.dd_mm_yyyy?.dates as DateSelectionsType)"
-                    >
-                    </DD_MM_YYYY>
+                    <SearchByDDMMYYYYFormat
+                      :excludedates="excludedates"
+                    ></SearchByDDMMYYYYFormat>
                   </template>
                   <template v-else>
                     <SearchByDaysMonthsYearsFormat
-                      :isoweek="((cards[index] as DateType).isoweek as boolean)"
-                      :maxyear="cmaxyear"
-                      :minyear="cminyear"
-                      :yearselectionsandformat="((cards[index] as DateType).search.days_months_years?.years as YearSelectionFormat)"
-                      :dayselectionsandformat="((cards[index] as DateType).search.days_months_years?.days as DaySelectionFormat)"
-                      :monthselectionsandformat="((cards[index] as DateType).search.days_months_years?.months as MonthSelectionFormat)"
+                      :excludedates="excludedates"
                     ></SearchByDaysMonthsYearsFormat>
                   </template>
                 </div>
@@ -173,19 +175,20 @@ onBeforeMount(() => {
               >
                 <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
                   <button
-                    @click="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
+                    @click="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
                     class="btn shadow-sm w-100 font-family"
                     style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
                   >
-                    Done
+                    Close
                   </button>
                 </div>
-                <div 
+                <div
                   class="flex-w-100-over-3 align-self-stretch"
                   style="padding-right: 2.5px;"
                 >
-                  
                   <button
+                    @click="excludedates = true"
+                    @keyup.enter="excludedates = true"
                     class="btn shadow-sm w-100 font-family"
                     style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
                   >
@@ -211,7 +214,6 @@ onBeforeMount(() => {
     </div>
   </transition>
 </template>
-
 
 <style scoped>
 .date-format {

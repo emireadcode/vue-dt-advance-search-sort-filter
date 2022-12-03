@@ -1,60 +1,34 @@
+import type { DateType } from "./SupportedDatatypesTypeDeclaration";
 
-
-export type CalendarType<T> = {
-  [key: number]: {
-    [key: number]: (T & {
-      status?: 'ENABLE' | 'DISABLE' | undefined;
-      selected?: "SELECTED" | "DESELECTED" | "HIGHLIGHTED" | undefined;
-      date: string;
-      day: number;
-    })[];
-  }[];
-};
-
-export type DateSelectionsType = {
-  //key is years
-  [key: number]: {
-    //key is months
+export type YearMonthClickable<T> = {
+  month: number;
+  year: number;
+  clickable: boolean;
+  calendar: {
     [key: number]: {
-      //key is week number
-      [key: number]: {
-        [key: number]: {
+      days: {
+        [key: number]: (T & {
           status?: 'ENABLE' | 'DISABLE' | undefined;
+          readonlystatus?: 'ENABLE' | 'DISABLE' | undefined;
           selected?: "SELECTED" | "DESELECTED" | "HIGHLIGHTED" | undefined;
           date: string;
           day: number;
-          readonlystatus?: 'ENABLE' | 'DISABLE' | undefined;
-        }[];
-      }[];
-    }[];
-  }[];
+        });
+      };
+      checked: false | true;
+    };
+  };
 };
 
-export type VisibleCalendarPropType = {
-  maxdate: string;
-  mindate: string;
-  isoweek: string;
-  format: "RANGE" | "MULTIPLE-OR-SINGLE";
-  title: string;
-  selections: DateSelectionsType;
-};
-
-export type RangeFirstSelectionType = {
+export type RangeFirstAndLastSelectionType = {
   date: string;
   year: number;
   month: number;
   day: number;
 };
 
-export type YearMonthClickable<T> = {
-  month: number;
-  year: number;
-  clickable: boolean;
-  calendar: CalendarType<T>;
-};
-
 export type PositionTrackerType = {
-  ref: HTMLLabelElement;
+  ref: HTMLLabelElement | undefined;
   x1: number;
   y1: number;
   x2: number;
@@ -66,5 +40,19 @@ export type VisibleCalendarType = {
   current: YearMonthClickable<PositionTrackerType>;
   last: YearMonthClickable<{}>;
   first: YearMonthClickable<{}>;
-  selections: DateSelectionsType;
+  selections: {
+    //key is years
+    [key: number]: {
+      //key is months
+      [key: number]: YearMonthClickable<{}>['calendar'];
+    }[];
+  };
+};
+
+export type RangeSelectionParamsType = {
+  rangefirstselection: RangeFirstAndLastSelectionType;
+  rangelastselection: RangeFirstAndLastSelectionType;
+  rangeselectcount: number;
+  inselectionmode: boolean;
+  excludedates: boolean;
 };

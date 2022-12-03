@@ -13,15 +13,10 @@ import DayPicker from "./DayPicker.vue";
 import MonthPicker from "./MonthPicker.vue";
 import YearPicker from "./YearPicker.vue";
 import type { DaySelectionFormat, MonthSelectionFormat, YearSelectionFormat, YearSelectionType, MonthSelectionType, DaySelectionType } from "../types/days_months_years_types";
-import { getDayDimensions, getMonthDimensions, calculateRemainder, getYearDimensions } from "../utility/days_months_years_utility_fns.vue";
+import { getDayDimensions, getMonthDimensions, calculateRemainder, getYearDimensions } from "../utility/days_months_years_utility_fns";
 
 const props = defineProps<{
-  isoweek: boolean;
-  maxyear: string;
-  minyear: string;
-  dayselectionsandformat?: DaySelectionFormat | undefined;
-  monthselectionsandformat?: MonthSelectionFormat | undefined;
-  yearselectionsandformat?: YearSelectionFormat | undefined;
+  excludedates: boolean;
 }>();
 
 provide("yearprops", {
@@ -80,7 +75,14 @@ function fillYearArray() {
   //let remainder = calculateRemainder(2022, 2000), maxyear = 2022 + remainder;
   //for(let year=2000; year<=maxyear; year++) {
 
-  let remainder = calculateRemainder(parseInt(props.maxyear), parseInt(props.minyear)), maxyear = parseInt(props.maxyear) + remainder;
+  let 
+    remainder = calculateRemainder(
+      parseInt(props.maxyear), 
+      parseInt(props.minyear)
+    ), 
+    maxyear = parseInt(props.maxyear) + remainder
+  ;
+  
   for(let year=parseInt(props.minyear); year<=maxyear; year++) {
     if(years.value) {
       if(index in years.value) {
@@ -279,6 +281,34 @@ onBeforeMount(() => {
   fillYearArray();
   fillMonthArray();
   fillDayArray();
+
+  /*
+
+  cmaxyear = computed(() => {
+    return ((cards.value[props.index] as DateType).result.max as string).split('-')[0];
+  }),
+
+  cminyear = computed(() => {
+    return (cards.value[props.index].result.min as string).split('-')[0];
+  })
+
+  isoweek: boolean;
+  maxyear: string;
+  minyear: string;
+  dayselectionsandformat?: DaySelectionFormat | undefined;
+  monthselectionsandformat?: MonthSelectionFormat | undefined;
+  yearselectionsandformat?: YearSelectionFormat | undefined;
+
+
+  :isoweek="((cards[index] as DateType).isoweek as boolean)"
+  :maxyear="cmaxyear"
+  :minyear="cminyear"
+  :yearselectionsandformat="((cards[index] as DateType).search.days_months_years?.years as YearSelectionFormat)"
+  :dayselectionsandformat="((cards[index] as DateType).search.days_months_years?.days as DaySelectionFormat)"
+  :monthselectionsandformat="((cards[index] as DateType).search.days_months_years?.months as MonthSelectionFormat)"
+
+  */
+
 });
 
 </script>

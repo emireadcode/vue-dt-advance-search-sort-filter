@@ -689,6 +689,14 @@ input[type="text"][readonly] {
   -ms-flex: 0 0 10%; /* IE 10 */
   flex: 0 0 10%; /* NEW, Spec - Opera 12.1, Firefox 20+ */
 }
+.flex-w-12-dot-5 {
+  -webkit-box-flex: 0 0 12.5%; /* OLD - iOS 6-, Safari 3.1-6 */
+  -moz-box-flex: 0 0 12.5%; /* OLD - Firefox 19- */
+  width: 12.5%; /* For old syntax, otherwise collapses. */
+  -webkit-flex: 0 0 12.5%; /* Chrome */
+  -ms-flex: 0 0 12.5%; /* IE 10 */
+  flex: 0 0 12.5%; /* NEW, Spec - Opera 12.1, Firefox 20+ */
+}
 .flex-w-14-dot-285714 {
   -webkit-box-flex: 0 0 14.285714%; /* OLD - iOS 6-, Safari 3.1-6 */
   -moz-box-flex: 0 0 14.285714%; /* OLD - Firefox 19- */
