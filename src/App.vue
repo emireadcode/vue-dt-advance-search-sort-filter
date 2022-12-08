@@ -456,7 +456,8 @@ button::-moz-focus-inner,
 input[type="radio"],
 input[type="checkbox"] {
   box-sizing: border-box;
-  padding: 0;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 [type="number"]::-webkit-inner-spin-button,
 [type="number"]::-webkit-outer-spin-button {

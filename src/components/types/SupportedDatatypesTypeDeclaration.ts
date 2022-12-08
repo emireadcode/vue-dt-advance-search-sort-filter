@@ -1,3 +1,4 @@
+import type { RangeSelectionParamsType } from './dd_mm_yy_types';
 
 type StartModifierWildCardType = "@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[";
 
@@ -110,7 +111,7 @@ export interface MultipleWordsStringType extends IdentityType {
     exclude?: StringSearchType | undefined;
     trueorfalse: boolean;
   };
-  searchFrom?: string | undefined; //DOM or SERVER
+  searchFrom?: "DOM" | "SERVER";
 }
   
 export interface SingleWordStringType extends IdentityType {
@@ -119,7 +120,7 @@ export interface SingleWordStringType extends IdentityType {
   search: StringSearchType & {
     trueorfalse: boolean;
   };
-  searchFrom?: string | undefined; //DOM or SERVER
+  searchFrom?: "DOM" | "SERVER";
 }
   
 export interface NumberStringType extends SingleWordStringType {}
@@ -141,6 +142,7 @@ export type DateInnerType = {
   dd_mm_yyyy:
     | {
         format: "RANGE" | "MULTIPLE-OR-SINGLE";
+        rangeselectionparams?: RangeSelectionParamsType,
         dates:
           | {
               //key is years
@@ -200,7 +202,7 @@ export interface TimeType extends IdentityType {
     from_to_time: string[]; //[from, to] always in range
     trueorfalse: boolean;
   };
-  searchFrom?: string | undefined; //DOM or SERVER
+  searchFrom?: "DOM" | "SERVER";
   timeFormat: TimeFormat["timeFormat"] | {};
 }
   
@@ -209,7 +211,7 @@ export interface DateType extends IdentityType {
     trueorfalse: boolean;
   };
   dateFormat: DateFormat["dateFormat"];
-  searchFrom?: string | undefined; //DOM or SERVER
+  searchFrom?: "DOM" | "SERVER";
   isoweek: boolean;
 }
   
@@ -218,7 +220,7 @@ export interface DateTimeType extends IdentityType {
     from_to_time: string[]; //[from, to] always in range
     trueorfalse: boolean;
   };
-  searchFrom?: string | undefined; //DOM or SERVER
+  searchFrom?: "DOM" | "SERVER";
   timeFormat: TimeFormat["timeFormat"] | {};
   dateFormat: DateFormat["dateFormat"];
   isoweek: boolean;
@@ -279,7 +281,7 @@ export interface NumberType extends IdentityType {
         }
       | undefined;
   };
-  searchFrom?: string | undefined;
+  searchFrom?: "DOM" | "SERVER";
 }
   
 export type CardInnerType = {
@@ -326,7 +328,7 @@ export type DistinctRecordType = {
     total: number;
     offset: number;
   }; 
-} | null;
+} | undefined;
   
 export type PrimitiveType =
   | YearType

@@ -65,24 +65,26 @@ const
   isodays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
   days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
   visiblecalendar = shallowRef<VisibleCalendarType>(),
+  multipleselectcount = ref(0),
   rangeselectionparams = shallowRef<RangeSelectionParamsType>({
     rangefirstselection: {
       date: '',
       year: 0,
       month: 0,
       day: 0,
+      week: 0,
     },
     rangelastselection: {
       date: '',
       year: 0,
       month: 0,
       day: 0,
+      week: 0,
     },
     rangeselectcount: 0,
     inselectionmode: true,
     excludedates: props.excludedates,
-  }),
-  multipleselectcount = ref(0)
+  })
 ;
 
 let
@@ -243,12 +245,260 @@ onMounted(() => {
     () => props.excludedates,
     (x) => {
       (rangeselectionparams.value as RangeSelectionParamsType).excludedates = x;
-      const maxmin = findRangeSelectionMaxAndMinDate(rangeselectionparams);
+      triggerRef(rangeselectionparams);
+      /*const maxmin = findRangeSelectionMaxAndMinDate(rangeselectionparams);
       (maxdate as string) = maxmin.maxdate;
-      (mindate as string) = maxmin.mindate;
-
+      (mindate as string) = maxmin.mindate;*/
       if(x) {
-
+        if((rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year === (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year) {
+          if((rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month === (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month) {
+            for(let year in (visiblecalendar.value as VisibleCalendarType).selections) {
+              for(let month in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+                for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+                  if(
+                    (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year
+                    === parseInt(year) 
+                    &&
+                    (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month
+                    === parseInt(month)
+                  ) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                      if(
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                        ||
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                      ) {
+                        ((visiblecalendar.value as VisibleCalendarType).selections[parseInt(year)][parseInt(month)][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                        triggerRef(visiblecalendar);
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else {
+            if((rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month > (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month) {
+              for(
+                let i = (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month;
+                i<=(rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month;
+                i++
+              ){
+                for(let week in (visiblecalendar.value as VisibleCalendarType).selections[
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year][i]
+                ) {
+                  for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[
+                    (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                  ][i] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                    if(
+                      ((visiblecalendar.value as VisibleCalendarType).selections[
+                        (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                      ||
+                      ((visiblecalendar.value as VisibleCalendarType).selections[
+                        (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                    ) {
+                      ((visiblecalendar.value as VisibleCalendarType).selections[
+                        (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                      ][i][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                      triggerRef(visiblecalendar);
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+            else {
+              for(
+                let i = (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month;
+                i<=(rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month;
+                i++
+              ){
+                for(let week in (visiblecalendar.value as VisibleCalendarType).selections[
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year][i]
+                ) {
+                  for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[
+                    (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                  ][i] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                    if(
+                      ((visiblecalendar.value as VisibleCalendarType).selections[
+                        (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                      ||
+                      ((visiblecalendar.value as VisibleCalendarType).selections[
+                        (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                    ) {
+                      ((visiblecalendar.value as VisibleCalendarType).selections[
+                        (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
+                      ][i][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                      triggerRef(visiblecalendar);
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        else {
+          if((rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year > (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year) {
+            for(
+              let year = (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year;
+              year <= (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year;
+              year++
+            ) {
+              if(
+                (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year === year
+                ||
+                (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year === year
+              ) {
+                if(
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year === year
+                ) {
+                  for(
+                    let month = (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month;
+                    month < 12;
+                    month++
+                  ) {
+                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                        if(
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ||
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                        ) {
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                          triggerRef(visiblecalendar);
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+                if(
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year === year
+                ) {
+                  for(
+                    let month = 0;
+                    month <= (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month;
+                    month++
+                  ) {
+                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                        if(
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ||
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                        ) {
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                          triggerRef(visiblecalendar);
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              else {
+                for(let month = 0; month < 12; month++) {
+                  for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                      if(
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                        ||
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                      ) {
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                        triggerRef(visiblecalendar);
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else {
+            for(
+              let year = (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year;
+              year <= (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year;
+              year++
+            ) {
+              if(
+                (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year === year
+                ||
+                (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year === year
+              ) {
+                if(
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year === year
+                ) {
+                  for(
+                    let month = 0;
+                    month <= (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month;
+                    month++
+                  ) {
+                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                        if(
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ||
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                        ) {
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                          triggerRef(visiblecalendar);
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+                if(
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year === year
+                ) {
+                  for(
+                    let month = (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month;
+                    month < 12;
+                    month++
+                  ) {
+                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                        if(
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ||
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                        ) {
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                          triggerRef(visiblecalendar);
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              else {
+                for(let month = 0; month < 12; month++) {
+                  for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                      if(
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                        ||
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                      ) {
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<PositionTrackerType>['calendar'][number]).checked = true;
+                        triggerRef(visiblecalendar);
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   );
@@ -257,7 +507,7 @@ onMounted(() => {
     (x) => {
       multipleselectcount.value = 0;
       rangeselectionparams.value.rangeselectcount = 0;
-      rangeselectionparams.value.rangefirstselection = {year: 0, month: 0, day: 0, date: ""};
+      rangeselectionparams.value.rangefirstselection = {year: 0, month: 0, day: 0, date: "", week: 0};
       (visiblecalendar.value as VisibleCalendarType).selections = {};
       triggerRef(visiblecalendar);
       unTrackVisibleCalendarMouseMovement();
@@ -285,7 +535,7 @@ onMounted(() => {
         } else {
           unTrackVisibleCalendarMouseMovement();
           if(x === 2) {
-            emits("update:selections", (visiblecalendar.value as VisibleCalendarType).selections);
+            //emits("update:selections", (visiblecalendar.value as VisibleCalendarType).selections);
           }
           else {
 
@@ -386,9 +636,35 @@ onBeforeUnmount(() => {
                   class="flex-w-12-dot-5 overflow-hidden m-0 align-self-stretch" style="padding:0 2px 0 0;"
                 >
                   <div
-                    class="p-0 m-0 w-100 h-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+                    style="float: left; line-height: 2.805em; height: 2.805em;"
+                    class="p-0 m-0 w-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
                   >
-                    <input v-model="week.checked" class="m-0 p-0 border flex-w-100 h-100 align-self-stretch" :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex" @change="weekCheckboxClicked(week, 'PREVIOUS')" :disabled="weekHasEnable(week)" type="checkbox" />
+                    <template v-if="previousyearandmonthinselections">
+                      <input v-model="(
+                          (visiblecalendar as VisibleCalendarType)['selections'][
+                            (visiblecalendar as VisibleCalendarType).previous.year
+                          ][
+                            (visiblecalendar as VisibleCalendarType).previous.month
+                          ] as YearMonthClickable<PositionTrackerType>['calendar']
+                        )[weekindex].checked"
+                        class="m-0 p-0 border flex-w-100"
+                        :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
+                        @change="weekCheckboxClicked(week, 'PREVIOUS')"
+                        :disabled="weekHasEnable(week)"
+                        type="checkbox"
+                        style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
+                      />
+                    </template>
+                    <template v-else>
+                      <input 
+                        class="m-0 p-0 border flex-w-100"
+                        :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
+                        @change="weekCheckboxClicked(week, 'PREVIOUS')"
+                        :disabled="weekHasEnable(week)"
+                        type="checkbox"
+                        style="float: left; line-height: 2.805em; height: 2.805em;"
+                      />
+                    </template>
                   </div>
                 </div>
               </template>
@@ -562,9 +838,33 @@ onBeforeUnmount(() => {
                   class="flex-w-12-dot-5 overflow-hidden m-0 align-self-stretch" style="padding:0 2px 0 0;"
                 >
                   <div
-                    class="p-0 m-0 w-100 h-100 flex-box flex-direction-row flex-wrap justify-content-center align-items-center"
+                    class="p-0 m-0 w-100 h-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
                   >
-                    <input v-model="week.checked" class="m-0 p-0 border flex-w-100 h-100 align-self-stretch" :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex" @change="weekCheckboxClicked(week, 'CURRENT')" :disabled="weekHasEnable(week)" type="checkbox" />
+                    <template v-if="currentyearandmonthinselections">
+                      <input v-model="(
+                          (visiblecalendar as VisibleCalendarType)['selections'][
+                            (visiblecalendar as VisibleCalendarType).current.year
+                          ][
+                            (visiblecalendar as VisibleCalendarType).current.month
+                          ] as YearMonthClickable<PositionTrackerType>['calendar']
+                        )[weekindex].checked"
+                        class="m-0 p-0 border flex-w-100"
+                        :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
+                        @change="weekCheckboxClicked(week, 'CURRENT')"
+                        :disabled="weekHasEnable(week)"
+                        type="checkbox"
+                        style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
+                      />
+                    </template>
+                    <template v-else>
+                      <input 
+                        class="m-0 p-0 border flex-w-100" 
+                        :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
+                        @change="weekCheckboxClicked(week, 'CURRENT')"
+                        :disabled="weekHasEnable(week)" type="checkbox"
+                        style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
+                      />
+                    </template>
                   </div>
                 </div>
               </template>

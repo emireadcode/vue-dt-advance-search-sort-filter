@@ -25,6 +25,7 @@ export type RangeFirstAndLastSelectionType = {
   year: number;
   month: number;
   day: number;
+  week: number;
 };
 
 export type PositionTrackerType = {

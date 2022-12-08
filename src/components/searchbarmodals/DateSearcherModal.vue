@@ -158,12 +158,12 @@ onBeforeMount(() => {
                 >
                   <template v-if="((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') ===  'DD/MM/YYYY'">
                     <SearchByDDMMYYYYFormat
-                      :excludedates="excludedates"
+                      :excludedates="(excludedates as boolean)"
                     ></SearchByDDMMYYYYFormat>
                   </template>
                   <template v-else>
                     <SearchByDaysMonthsYearsFormat
-                      :excludedates="excludedates"
+                      :excludedates="(excludedates as boolean)"
                     ></SearchByDaysMonthsYearsFormat>
                   </template>
                 </div>

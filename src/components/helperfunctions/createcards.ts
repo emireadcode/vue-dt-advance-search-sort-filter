@@ -23,7 +23,7 @@ import type {
   StringSearchType 
 } from "../types/SupportedDatatypesTypeDeclaration";
 
-let distinctRecords: DistinctRecordType = null;
+let distinctRecords: DistinctRecordType = undefined;
 
 function searchStringDefaultObject() {
   return {
@@ -377,6 +377,23 @@ function getDateTypeObject(item: CardInnerType & DateFormat & { isoweek: boolean
       dd_mm_yyyy: {
         format: "RANGE",
         dates: {},
+        rangeselectionparams: {
+          rangefirstselection: {
+            date: "",
+            day: 0,
+            month: 0,
+            year: 0
+          },
+          rangelastselection: {
+            date: "",
+            day: 0,
+            month: 0,
+            year: 0
+          },
+          rangeselectcount: 0,
+          inselectionmode: false,
+          excludedates: false,
+        }
       },
       days_months_years: {
         days: {

@@ -3,6 +3,8 @@ import {
   nextTick,
   inject,
   triggerRef,
+  ref,
+  onBeforeMount,
   type ShallowRef,
 } from "vue";
 import VisibleCalendarDatePicker from "./VisibleCalendarDatePicker.vue";
@@ -17,7 +19,9 @@ const
   
   props = defineProps<{
     excludedates: boolean;
-  }>()
+  }>(),
+
+  selectionformat = ref()
 
 ;
 
@@ -26,6 +30,10 @@ function updateCards() {
     triggerRef(cards);
   });
 }
+
+onBeforeMount(() => {
+  selectionformat.value = cards.value[index].search.dd_mm_yyyy.format;
+})
 
 </script>
 
@@ -38,9 +46,9 @@ function updateCards() {
     >
       <div class="flex-w-50 align-self-stretch">
         <a
-          @click="() => { cards[index].search.dd_mm_yyyy.format = 'RANGE'; updateCards(); }"
+          @click="() => { selectionformat = 'RANGE'; }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
-          :style="cards[index].search.dd_mm_yyyy.format === 'RANGE'
+          :style="selectionformat === 'RANGE'
             ? 'background-color:green;'
             : 'background-color:gray;'
           "
@@ -51,9 +59,9 @@ function updateCards() {
       </div>
       <div class="flex-w-50 align-self-stretch">
         <a
-          @click="() => { cards[index].search.dd_mm_yyyy.format = 'MULTIPLE-OR-SINGLE'; updateCards(); }"
+          @click="() => { selectionformat = 'MULTIPLE-OR-SINGLE'; }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
-          :style="cards[index].search.dd_mm_yyyy.format === 'MULTIPLE-OR-SINGLE'
+          :style="selectionformat === 'MULTIPLE-OR-SINGLE'
               ? 'background-color:green;'
               : 'background-color:gray;'
           "
@@ -65,7 +73,7 @@ function updateCards() {
     </div>
     <div class="d-block" style="padding-bottom:2px;">
       <VisibleCalendarDatePicker
-        :selectionformat="cards[index].search.dd_mm_yyyy.format"
+        :selectionformat="selectionformat"
         :excludedates="props.excludedates"
         :isoweek="cards[index].isoweek"
         :selections="cards[index].search.dd_mm_yyyy.dates"
