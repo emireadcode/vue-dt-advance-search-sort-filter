@@ -1,25 +1,20 @@
 <script setup lang="ts">
 import { computed, type WatchStopHandle, type ShallowRef, type Ref, onMounted, nextTick, ref, shallowRef, inject, onBeforeMount, watch, triggerRef, onBeforeUnmount } from "vue";
-import type { YearSelectionType, YearRangeFirstSelectionType } from "../types/days_months_years_types";
-import { addYear, getYearDimensions, unTrackYearBoxMouseMovement, trackYearBoxMouseMovement, deselectAll, } from "../utility/days_months_years_utility_fns";
+import type { YearSelectionType, YearRangeFirstSelectionType, YearSelectionFormat } from "../types/days_months_years_types";
+import { 
+  addYear, 
+  getYearDimensions, 
+  unTrackYearBoxMouseMovement, 
+  trackYearBoxMouseMovement, 
+  deselectAll,
+  fillYearArray,
+} from "../utility/days_months_years_utility_fns";
 import paste_year from "./PasteYear.vue";
 
-let props = inject("yearprops") as {
-    maxyear: string;
-    minyear: string;
-    yearselectionsandformat: {
-      format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO";
-      years: {
-        [key: string | number]: {
-          selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-        }[];
-      } | {};
-    };
-  },
+let 
   years = shallowRef<YearSelectionType>(),
   format = ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO">(),
   page = ref(0),
-  updateyyearsvalue = ref<boolean>(false),
   rangecount = ref(0),
   multipleselectcount = ref(0),
   rangefirstselection = ref<YearRangeFirstSelectionType>(),
@@ -39,16 +34,10 @@ let props = inject("yearprops") as {
   unwatchlessthan: WatchStopHandle,
   unwatchfromto: WatchStopHandle;
 
-const props1 = defineProps<{
-  yyears: YearSelectionType;
-  yformat: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO";
-  ppage: number;
-}>();
-
-const emits = defineEmits<{
-  (e: "send:daysmonthsyearsexcludecanceldonereadiness", action: {  action: boolean; score: number; }): void;
-  (e: "update:yyears-and-page-value", action: {years: YearSelectionType; page: number;}): void;
-  (e: "forward:format", action: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO"): void;
+const props = defineProps<{
+  maxyear: number;
+  minyear: number;
+  yearselectionandformat: YearSelectionFormat;
 }>();
 
 const compYearsLength = computed(() => {
@@ -61,33 +50,20 @@ function processDimensions() {
 
 function addYearByClick(year: number, clickedorpasted: boolean) {
   addYear(page, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, rangecount, multipleselectcount, year, clickedorpasted, years as ShallowRef<YearSelectionType>, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO">);
-  emits("update:yyears-and-page-value", { years: years.value as YearSelectionType, page: page.value as number });
-  updateyyearsvalue.value = false;
-
-  nextTick(() => {
-    if(format.value === "MULTIPLE-OR-SINGLE") {
-      updateyyearsvalue.value = true;
-    }
-  });
 }
 
-function updateYYearsValueFn(yearandpage: {years: YearSelectionType; page: number;}) {
-  (years.value as YearSelectionType) = yearandpage.years;
-  page.value = yearandpage.page;
-  triggerRef(years);
-
-  nextTick(() => {
-    emits("update:yyears-and-page-value", yearandpage);
-  });
-}
 
 onBeforeMount(() => {
-  format.value = props1.yformat;
-  years.value = props1.yyears;
-  page.value = props1.ppage;
   rangefirstselection.value = { page: -1, year: -1 };
   rangecount.value = 0;
   multipleselectcount.value = 0;
+  (years.value as YearSelectionType)= (fillYearArray(
+    props.maxyear,
+    props.minyear,
+    props.yearselectionandformat.format,
+    page
+  ) as ShallowRef<YearSelectionType>).value;
+  triggerRef(years);
 });
 
 onBeforeUnmount(() => {
@@ -108,10 +84,8 @@ onMounted(() => {
     (x) => {
       if(format.value !== "RANGE") {
         if(x > 0) {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", {  action: true, score: x });
         }
         else {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", {  action: false, score: x });
         }
       }
     }
@@ -121,10 +95,8 @@ onMounted(() => {
     (x) => {
       if (format.value === "RANGE") {
         if(x === 2) {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", {  action: true, score: x });
         }
         else {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", {  action: false, score: x });
         }
       }
     }
@@ -137,7 +109,6 @@ onMounted(() => {
       rangefirstselection.value = { page: -1, year: -1 };
       rangecount.value = 0;
       multipleselectcount.value = 0;
-      emits("send:daysmonthsyearsexcludecanceldonereadiness", {  action: false, score: 0 });
     }
   );
   unwatchgreaterthan = watch(
@@ -432,13 +403,11 @@ onMounted(() => {
         <a
           @click="
             () => {
-              updateyyearsvalue = false;
               format = 'RANGE';
               from = '';
               to = '';
               greaterthan = '';
               lessthan = '';
-              emits('forward:format', format);
             }
           "
           :style="
@@ -454,13 +423,11 @@ onMounted(() => {
         <a
           @click="
             () => {
-              updateyyearsvalue = false;
               format = 'MULTIPLE-OR-SINGLE';
               from = '';
               to = '';
               greaterthan = '';
               lessthan = '';
-              emits('forward:format', format);
             }
           "
           :style="
@@ -475,7 +442,7 @@ onMounted(() => {
         </a>
       </div>
     </div>
-    <paste_year
+    <!--<paste_year
       :yyears="(years as YearSelectionType)"
       :yformat="(format as 'RANGE' | 'MULTIPLE-OR-SINGLE' | 'GREATER-THAN' | 'LESS-THAN' | 'FROM-TO')"
       :updateyyearsvalue="updateyyearsvalue"
@@ -487,7 +454,7 @@ onMounted(() => {
         }
       "
       @update:yyears-and-page-value="($val) => updateYYearsValueFn($val)"
-    ></paste_year>
+    ></paste_year>-->
     <div
       style="padding: 0 0 7px 0"
       class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
@@ -514,12 +481,10 @@ onMounted(() => {
                 "
                 @focus="
                   () => {
-                    updateyyearsvalue = false;
                     greaterthan = '';
                     from = '';
                     to = '';
                     format = 'LESS-THAN';
-                    emits('forward:format', format);
                   }
                 "
                 type="text"
@@ -547,12 +512,10 @@ onMounted(() => {
                 "
                 @focus="
                   () => {
-                    updateyyearsvalue = false;
                     lessthan = '';
                     from = '';
                     to = '';
                     format = 'GREATER-THAN';
-                    emits('forward:format', format);
                   }
                 "
                 type="text"
@@ -583,11 +546,9 @@ onMounted(() => {
                 v-model.trim="from"
                 @focus="
                   () => {
-                    updateyyearsvalue = false;
                     lessthan = '';
                     greaterthan = '';
                     format = 'FROM-TO';
-                    emits('forward:format', format);
                   }
                 "
                 type="text"
@@ -611,11 +572,9 @@ onMounted(() => {
                 v-model.trim="to"
                 @focus="
                   () => {
-                    updateyyearsvalue = false;
                     lessthan = '';
                     greaterthan = '';
                     format = 'FROM-TO';
-                    emits('forward:format', format);
                   }
                 "
                 type="text"
@@ -652,19 +611,11 @@ onMounted(() => {
               }
             "
           >
-            <svg
-              class="shadow"
+            <svg class="shadow"
               version="1.1"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 32 32"
-              style="
-                border-radius: 50%;
-                height: 20px;
-                width: 20px;
-                color: #fff;
-                stroke: currentcolor;
-                fill: currentcolor;
-              "
+              style="border-radius: 50%;height: 20px;width: 20px;color: #fff;stroke: currentcolor;fill: currentcolor;"
             >
               <path
                 d="M20.943 23.057l-7.057-7.057c0 0 7.057-7.057 7.057-7.057 0.52-0.52 0.52-1.365 0-1.885s-1.365-0.52-1.885 0l-8 8c-0.521 0.521-0.521 1.365 0 1.885l8 8c0.52 0.52 1.365 0.52 1.885 0s0.52-1.365 0-1.885z"
@@ -701,14 +652,7 @@ onMounted(() => {
               version="1.1"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 32 32"
-              style="
-                border-radius: 50%;
-                height: 20px;
-                width: 20px;
-                color: #fff;
-                stroke: currentcolor;
-                fill: currentcolor;
-              "
+              style="border-radius: 50%;height: 20px;width: 20px;color: #fff;stroke: currentcolor;fill: currentcolor;"
             >
               <path
                 d="M12.943 24.943l8-8c0.521-0.521 0.521-1.365 0-1.885l-8-8c-0.52-0.52-1.365-0.52-1.885 0s-0.52 1.365 0 1.885l7.057 7.057c0 0-7.057 7.057-7.057 7.057-0.52 0.52-0.52 1.365 0 1.885s1.365 0.52 1.885 0z"
