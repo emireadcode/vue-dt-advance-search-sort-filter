@@ -8,7 +8,7 @@ import {
   type ShallowRef,
 } from "vue";
 import VisibleCalendarDatePicker from "./VisibleCalendarDatePicker.vue";
-//import PasteDD_MM_YY from "./PasteDD_MM_YY.vue";
+import PasteDD_MM_YY from "./PasteDD_MM_YY.vue";
 import type { DateType } from "../types/SupportedDatatypesTypeDeclaration";
 
 const 
@@ -19,6 +19,10 @@ const
   
   props = defineProps<{
     excludedates: boolean;
+  }>(),
+
+  emits = defineEmits<{
+    (e: "update:excludedates", action: boolean): void;
   }>(),
 
   selectionformat = ref()
@@ -33,20 +37,25 @@ function updateCards() {
 
 onBeforeMount(() => {
   selectionformat.value = cards.value[index].search.dd_mm_yyyy.format;
-})
+});
 
 </script>
 
 <template>
   <div class="d-block" style="padding: 0 10px;">
-    <!--<PasteDD_MM_YY></PasteDD_MM_YY>-->
+    <PasteDD_MM_YY
+      :selectionformat="selectionformat"
+      :isoweek="cards[index].isoweek"
+      :maxdate="(cards[index].result.max as string)"
+      :mindate="(cards[index].result.min as string)"
+    ></PasteDD_MM_YY>
     <div
       class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
       style="border: 1px solid gray"
     >
       <div class="flex-w-50 align-self-stretch">
         <a
-          @click="() => { selectionformat = 'RANGE'; }"
+          @click="() => { selectionformat = 'RANGE'; emits('update:excludedates', false); }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
           :style="selectionformat === 'RANGE'
             ? 'background-color:green;'
@@ -59,7 +68,7 @@ onBeforeMount(() => {
       </div>
       <div class="flex-w-50 align-self-stretch">
         <a
-          @click="() => { selectionformat = 'MULTIPLE-OR-SINGLE'; }"
+          @click="() => { selectionformat = 'MULTIPLE-OR-SINGLE'; emits('update:excludedates', true); }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
           :style="selectionformat === 'MULTIPLE-OR-SINGLE'
               ? 'background-color:green;'

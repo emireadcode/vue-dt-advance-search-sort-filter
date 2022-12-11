@@ -2,7 +2,7 @@
 import { inject, type ShallowRef } from "vue";
 import type { PrimitiveType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
-import AddSingleOrMultiplePaste from "./AddSingleOrMultiplePaste.vue";
+import PasteSingleOrMultipleWords from "./PasteSingleOrMultipleWords.vue";
 const 
   props = defineProps<{
     index: number;
@@ -22,13 +22,13 @@ const
         :concatfieldindex="(concatfieldindex as undefined)" 
         context="DESCRIBE-MODAL"
       ></DescribeLabel>
-      <AddSingleOrMultiplePaste
+      <PasteSingleOrMultipleWords
         nospace="false"
         :index="index"
         :tree="(cards[index] as MultipleWordsStringType).search"
         :areatype="'search'"
         :text-area-height="'height: 297.9px;'"
-      ></AddSingleOrMultiplePaste>
+      ></PasteSingleOrMultipleWords>
     </template>
     <template v-else>
       <DescribeLabel 
@@ -36,7 +36,7 @@ const
         :concatfieldindex="(concatfieldindex as number)" 
         context="DESCRIBE-MODAL"
       ></DescribeLabel>
-      <AddSingleOrMultiplePaste
+      <PasteSingleOrMultipleWords
         nospace="false"
         :index="index"
         :tree="(((cards[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[concatfieldindex as number]).search as StringSearchType"
@@ -44,7 +44,7 @@ const
           'concatenated-search-' + concatfieldindex
         "
         :text-area-height="'height: 297.9px;'"
-      ></AddSingleOrMultiplePaste>
+      ></PasteSingleOrMultipleWords>
     </template>
   </div>
 </template>

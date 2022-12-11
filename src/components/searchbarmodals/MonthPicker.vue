@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { 
-  inject,
   watch,
   nextTick,
   ref,
@@ -12,29 +11,10 @@ import {
   type WatchStopHandle,
   type ShallowRef,
 } from "vue";
-import type { MonthSelectionType, MonthRangeFirstSelectionType } from "../types/days_months_years_types";
-import { getMonthDimensions } from "../utility/days_months_years_utility_fns";
+import type { MonthSelectionFormat, MonthSelectionType, MonthRangeFirstSelectionType } from "../types/days_months_years_types";
+import { getMonthDimensions, fillMonthArray } from "../utility/days_months_years_utility_fns";
 
-const props1 = defineProps<{
-  mmonths: MonthSelectionType;
-  mformat: "RANGE" | "MULTIPLE-OR-SINGLE";
-}>();
-
-const emits = defineEmits<{
-  (e: "update:months-value", action: MonthSelectionType): void;
-  (e: "send:daysmonthsyearsexcludecanceldonereadiness", action: { action: boolean; score: number; }): void;
-}>();
-
-let props = inject("monthprops") as {
-    format: "RANGE" | "MULTIPLE-OR-SINGLE";
-    months: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-        index: number;
-        name: "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec";
-      }[];
-    } | {};
-  },
+let
   format = ref(),
   months = shallowRef(),
   rangecount = ref(0),
@@ -43,7 +23,12 @@ let props = inject("monthprops") as {
   loadingMovement = ref(false),
   unwatchrangecount: WatchStopHandle,
   unwatchmultipleselectcount: WatchStopHandle,
-  unwatchformat: WatchStopHandle;
+  unwatchformat: WatchStopHandle
+;
+
+const props = defineProps<{
+  monthselectionandformat: MonthSelectionFormat;
+}>();
 
 function addMonth(month: number) {
   let found = false;
@@ -97,7 +82,6 @@ function addMonth(month: number) {
   }
   triggerRef(months);
   
-  emits("update:months-value", months.value);
 }
 
 function deselectAll() {
@@ -236,10 +220,8 @@ onMounted(() => {
     (x) => {
       if(format.value === "MULTIPLE-OR-SINGLE") {
         if(x > 0) {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: true, score: x });
         }
         else {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: false, score: x });
         }
       }
     }
@@ -249,10 +231,8 @@ onMounted(() => {
     (x) => {
       if (format.value === "RANGE") {
         if(x === 2) {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: true, score: x });
         }
         else {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: false, score: x });
         }
       }
     }
@@ -265,7 +245,6 @@ onMounted(() => {
       rangefirstselection.value = { month: -1 };
       rangecount.value = 0;
       multipleselectcount.value = 0;
-      emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: false, score: 0 });
     }
   );
   window.addEventListener('resize', processDimensions, true);
@@ -273,9 +252,10 @@ onMounted(() => {
 });
 
 onBeforeMount(() => {
-  format.value = props1.mformat;
-  months.value = props1.mmonths as MonthSelectionType;
+  format.value = props.monthselectionandformat.format;
+  months.value = (fillMonthArray(format) as ShallowRef<MonthSelectionType>).value;
   rangefirstselection.value = { month: -1 };
+  triggerRef(months);
 });
 
 </script>

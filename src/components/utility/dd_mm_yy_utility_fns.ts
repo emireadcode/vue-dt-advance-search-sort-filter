@@ -565,12 +565,8 @@ function handleMultipleSelectionByClick(
   }
 }
 
-function checkAWeekCheckBox(visiblecalendar: ShallowRef<VisibleCalendarType>, day: number, week: number, month: number, year: number) {
-  ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<PositionTrackerType>)['calendar'][week].checked = true;
-  triggerRef(visiblecalendar);
-}
-
 function loopThroughDays(
+  checked: boolean | undefined,
   rules: string[] | string, 
   visiblecalendar: ShallowRef<VisibleCalendarType>, 
   year: number,
@@ -578,7 +574,8 @@ function loopThroughDays(
   week: number,
   returnType: 'COUNTER' | 'DESELECTED-STATUS',
   rangefirstselection: RangeFirstAndLastSelectionType | undefined, 
-  rangelastselection: RangeFirstAndLastSelectionType | undefined
+  rangelastselection: RangeFirstAndLastSelectionType | undefined,
+  boxtype: 'WEEK-BOX' | 'CELL-BOX'
 ) {
   let deselectedcount = 0, deselected = false;
   for(let d in (
@@ -599,24 +596,60 @@ function loopThroughDays(
               ][
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7]
+            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
           ) {
-            if(
-              (
-                (visiblecalendar.value as VisibleCalendarType).selections[
-                  year
-                ][
-                  month
-                ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
-            ) {
-              if(returnType === "COUNTER") {
-                deselectedcount++;
+            if(boxtype === 'WEEK-BOX') {
+              if(typeof checked === 'boolean') {
+                if(checked) {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "HIGHLIGHTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 0;
+                  }
+                  else {
+                    deselected = false;
+                  }
+                }
+                else {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "DESELECTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 1;
+                  }
+                  else {
+                    deselected = true;
+                  }
+                }
               }
-              else {
-                deselected = true;
+            }
+            else {
+              if(
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected === "DESELECTED"
+              ) {
+                if(returnType === "COUNTER") {
+                  deselectedcount++;
+                }
+                else {
+                  deselected = true;
+                }
+                break;
               }
-              break;
             }
           }
         }
@@ -634,8 +667,99 @@ function loopThroughDays(
               ][
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7])
+            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
           ) {
+            if(boxtype === 'WEEK-BOX') {
+              if(typeof checked === 'boolean') {
+                if(checked) {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "HIGHLIGHTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 0;
+                  }
+                  else {
+                    deselected = false;
+                  }
+                }
+                else {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "DESELECTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 1;
+                  }
+                  else {
+                    deselected = true;
+                  }
+                }
+              }
+            }
+            else {
+              if(
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected === "DESELECTED"
+              ) {
+                if(returnType === "COUNTER") {
+                  deselectedcount++;
+                }
+                else {
+                  deselected = true;
+                }
+                break;
+              }
+            } 
+          }
+        }
+        else {
+          if(boxtype === 'WEEK-BOX') {
+            if(typeof checked === 'boolean') {
+              if(checked) {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "HIGHLIGHTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 0;
+                }
+                else {
+                  deselected = false;
+                }
+              }
+              else {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "DESELECTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 1;
+                }
+                else {
+                  deselected = true;
+                }
+              }
+            }
+          }
+          else {
             if(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
@@ -652,26 +776,7 @@ function loopThroughDays(
                 deselected = true;
               }
               break;
-            } 
-          }
-        }
-        else {
-          if(
-            (
-              (visiblecalendar.value as VisibleCalendarType).selections[
-                year
-              ][
-                month
-              ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected === "DESELECTED"
-          ) {
-            if(returnType === "COUNTER") {
-              deselectedcount++;
             }
-            else {
-              deselected = true;
-            }
-            break;
           }
         }
       }
@@ -684,7 +789,7 @@ function loopThroughDays(
               ][
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7]
+            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
             &&
             (
               rules === '>=rangelastselection.day'?
@@ -694,7 +799,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangelastselection as RangeFirstAndLastSelectionType).day)
+                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day)
                 :
                 (
                   rules === '<=rangelastselection.day'?
@@ -704,7 +809,7 @@ function loopThroughDays(
                       ][
                         month
                       ] as YearMonthClickable<{}>['calendar']
-                    )[week].days[d].day <= (rangelastselection as RangeFirstAndLastSelectionType).day)
+                    )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day)
                     :
                     (
                       rules === '<=rangefirstselection.day'?
@@ -714,7 +819,7 @@ function loopThroughDays(
                           ][
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day <= (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day)
                         :
                         ((
                           (visiblecalendar.value as VisibleCalendarType).selections[
@@ -722,27 +827,63 @@ function loopThroughDays(
                           ][
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day >= (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day)
                     )
                 )
             )
           ) {
-            if(
-              (
-                (visiblecalendar.value as VisibleCalendarType).selections[
-                  year
-                ][
-                  month
-                ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
-            ) {
-              if(returnType === "COUNTER") {
-                deselectedcount++;
+            if(boxtype === 'WEEK-BOX') {
+              if(typeof checked === 'boolean') {
+                if(checked) {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "HIGHLIGHTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 0;
+                  }
+                  else {
+                    deselected = false;
+                  }
+                }
+                else {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "DESELECTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 1;
+                  }
+                  else {
+                    deselected = true;
+                  }
+                }
               }
-              else {
-                deselected = true;
+            }
+            else {
+              if(
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected === "DESELECTED"
+              ) {
+                if(returnType === "COUNTER") {
+                  deselectedcount++;
+                }
+                else {
+                  deselected = true;
+                }
+                break;
               }
-              break;
             }
           }
         }
@@ -760,7 +901,7 @@ function loopThroughDays(
               ][
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7])
+            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
             &&
             (
               rules === '>=rangelastselection.day'?
@@ -770,7 +911,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangelastselection as RangeFirstAndLastSelectionType).day)
+                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day)
                 :
                 (
                   rules === '<=rangelastselection.day'?
@@ -780,7 +921,7 @@ function loopThroughDays(
                       ][
                         month
                       ] as YearMonthClickable<{}>['calendar']
-                    )[week].days[d].day <= (rangelastselection as RangeFirstAndLastSelectionType).day)
+                    )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day)
                     :
                     (
                       rules === '<=rangefirstselection.day'?
@@ -790,7 +931,7 @@ function loopThroughDays(
                           ][
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day <= (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day)
                         :
                         ((
                           (visiblecalendar.value as VisibleCalendarType).selections[
@@ -798,27 +939,63 @@ function loopThroughDays(
                           ][
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day >= (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day)
                     )
                 )
             )
           ) {
-            if(
-              (
-                (visiblecalendar.value as VisibleCalendarType).selections[
-                  year
-                ][
-                  month
-                ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
-            ) {
-              if(returnType === "COUNTER") {
-                deselectedcount++;
+            if(boxtype === 'WEEK-BOX') {
+              if(typeof checked === 'boolean') {
+                if(checked) {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "HIGHLIGHTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 0;
+                  }
+                  else {
+                    deselected = false;
+                  }
+                }
+                else {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "DESELECTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 1;
+                  }
+                  else {
+                    deselected = true;
+                  }
+                }
               }
-              else {
-                deselected = true;
+            }
+            else {
+              if(
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected === "DESELECTED"
+              ) {
+                if(returnType === "COUNTER") {
+                  deselectedcount++;
+                }
+                else {
+                  deselected = true;
+                }
+                break;
               }
-              break;
             } 
           }
         }
@@ -832,7 +1009,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangelastselection as RangeFirstAndLastSelectionType).day)
+                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day)
                 :
                 (
                   rules === '<=rangelastselection.day'?
@@ -842,7 +1019,7 @@ function loopThroughDays(
                       ][
                         month
                       ] as YearMonthClickable<{}>['calendar']
-                    )[week].days[d].day <= (rangelastselection as RangeFirstAndLastSelectionType).day)
+                    )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day)
                     :
                     (
                       rules === '<=rangefirstselection.day'?
@@ -852,7 +1029,7 @@ function loopThroughDays(
                           ][
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day <= (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day)
                         :
                         ((
                           (visiblecalendar.value as VisibleCalendarType).selections[
@@ -860,27 +1037,63 @@ function loopThroughDays(
                           ][
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day >= (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day)
                     )
                 )
             )
           ) {
-            if(
-              (
-                (visiblecalendar.value as VisibleCalendarType).selections[
-                  year
-                ][
-                  month
-                ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
-            ) {
-              if(returnType === "COUNTER") {
-                deselectedcount++;
+            if(boxtype === 'WEEK-BOX') {
+              if(typeof checked === 'boolean') {
+                if(checked) {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "HIGHLIGHTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 0;
+                  }
+                  else {
+                    deselected = false;
+                  }
+                }
+                else {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[week].days[d].selected = "DESELECTED";
+                  if(returnType === "COUNTER") {
+                    deselectedcount = 1;
+                  }
+                  else {
+                    deselected = true;
+                  }
+                }
               }
-              else {
-                deselected = true;
+            }
+            else {
+              if(
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected === "DESELECTED"
+              ) {
+                if(returnType === "COUNTER") {
+                  deselectedcount++;
+                }
+                else {
+                  deselected = true;
+                }
+                break;
               }
-              break;
             }
           }
         }
@@ -895,7 +1108,7 @@ function loopThroughDays(
             ][
               month
             ] as YearMonthClickable<{}>['calendar']
-          )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7]
+          )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
           &&
           (
             (rules[0] === '<=rangefirstselection.day' && rules[1] === '>=rangelastselection.day') ?
@@ -906,7 +1119,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangelastselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -914,7 +1127,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day <= (rangefirstselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
               :
               (
@@ -926,7 +1139,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day <= (rangelastselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -934,26 +1147,62 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangefirstselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
           )
         ) {
-          if(
-            (
-              (visiblecalendar.value as VisibleCalendarType).selections[
-                year
-              ][
-                month
-              ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected === "DESELECTED"
-          ) {
-            if(returnType === 'COUNTER') {
-              deselectedcount++;
+          if(boxtype === 'WEEK-BOX') {
+            if(typeof checked === 'boolean') {
+              if(checked) {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "HIGHLIGHTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 0;
+                }
+                else {
+                  deselected = false;
+                }
+              }
+              else {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "DESELECTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 1;
+                }
+                else {
+                  deselected = true;
+                }
+              }
             }
-            else {
-              deselected = true;
+          }
+          else {
+            if(
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][
+                  month
+                ] as YearMonthClickable<{}>['calendar']
+              )[week].days[d].selected === "DESELECTED"
+            ) {
+              if(returnType === 'COUNTER') {
+                deselectedcount++;
+              }
+              else {
+                deselected = true;
+              }
+              break;
             }
-            break;
           }
         }
       }
@@ -971,7 +1220,7 @@ function loopThroughDays(
             ][
               month
             ] as YearMonthClickable<{}>['calendar']
-          )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7])
+          )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
           &&
           (
             (rules[0] === '<=rangefirstselection.day' && rules[1] === '>=rangelastselection.day') ?
@@ -982,7 +1231,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangelastselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -990,7 +1239,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day <= (rangefirstselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
               :
               (
@@ -1002,7 +1251,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day <= (rangelastselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -1010,26 +1259,62 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangefirstselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
           )
         ) {
-          if(
-            (
-              (visiblecalendar.value as VisibleCalendarType).selections[
-                year
-              ][
-                month
-              ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected === "DESELECTED"
-          ) {
-            if(returnType === 'COUNTER') {
-              deselectedcount++;
+          if(boxtype === 'WEEK-BOX') {
+            if(typeof checked === 'boolean') {
+              if(checked) {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "HIGHLIGHTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 0;
+                }
+                else {
+                  deselected = false;
+                }
+              }
+              else {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "DESELECTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 1;
+                }
+                else {
+                  deselected = true;
+                }
+              }
             }
-            else {
-              deselected = true;
+          }
+          else {
+            if(
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][
+                  month
+                ] as YearMonthClickable<{}>['calendar']
+              )[week].days[d].selected === "DESELECTED"
+            ) {
+              if(returnType === 'COUNTER') {
+                deselectedcount++;
+              }
+              else {
+                deselected = true;
+              }
+              break;
             }
-            break;
           }
         }
       }
@@ -1044,7 +1329,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangelastselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -1052,7 +1337,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day <= (rangefirstselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
               :
               (
@@ -1064,7 +1349,7 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day <= (rangelastselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -1072,26 +1357,62 @@ function loopThroughDays(
                   ][
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day >= (rangefirstselection as RangeFirstAndLastSelectionType).day
+                )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
           )
         ) {
-          if(
-            (
-              (visiblecalendar.value as VisibleCalendarType).selections[
-                year
-              ][
-                month
-              ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected === "DESELECTED"
-          ) {
-            if(returnType === 'COUNTER') {
-              deselectedcount++;
+          if(boxtype === 'WEEK-BOX') {
+            if(typeof checked === 'boolean') {
+              if(checked) {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "HIGHLIGHTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 0;
+                }
+                else {
+                  deselected = false;
+                }
+              }
+              else {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[week].days[d].selected = "DESELECTED";
+                if(returnType === "COUNTER") {
+                  deselectedcount = 1;
+                }
+                else {
+                  deselected = true;
+                }
+              }
             }
-            else {
-              deselected = true;
+          }
+          else {
+            if(
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][
+                  month
+                ] as YearMonthClickable<{}>['calendar']
+              )[week].days[d].selected === "DESELECTED"
+            ) {
+              if(returnType === 'COUNTER') {
+                deselectedcount++;
+              }
+              else {
+                deselected = true;
+              }
+              break;
             }
-            break;
           }
         }
       }
@@ -1103,13 +1424,15 @@ function loopThroughDays(
     return deselected;
 }
 
-function handleCellIncludeAndExclude(
+export function highlightOrDeselectWeekWithRangeFirstOrLastSelection(
+  checked: boolean | undefined,
   year: number, 
   month: number, 
   week: number, 
   rangefirstselection: RangeFirstAndLastSelectionType, 
   rangelastselection: RangeFirstAndLastSelectionType, 
-  visiblecalendar: ShallowRef<VisibleCalendarType>
+  visiblecalendar: ShallowRef<VisibleCalendarType>,
+  boxtype: 'WEEK-BOX' | 'CELL-BOX'
 ) {
   let deselectedcount = 0;
   if(year === rangelastselection.year) {
@@ -1117,6 +1440,7 @@ function handleCellIncludeAndExclude(
       if(week === rangelastselection.week) {
         if(rangefirstselection.day > rangelastselection.day) {
           deselectedcount = loopThroughDays(
+            checked,
             ['<=rangefirstselection.day','>=rangelastselection.day'], 
             visiblecalendar, 
             year,
@@ -1124,18 +1448,13 @@ function handleCellIncludeAndExclude(
             week,
             'COUNTER',
             rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
+            rangelastselection as RangeFirstAndLastSelectionType,
+            boxtype
           ) as number;
-          if(deselectedcount > 0) {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-          }
-          else {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-          }
-          triggerRef(visiblecalendar);
         }
         else {
           deselectedcount = loopThroughDays(
+            checked,
             ['<=rangelastselection.day','>=rangefirstselection.day'], 
             visiblecalendar, 
             year,
@@ -1143,20 +1462,15 @@ function handleCellIncludeAndExclude(
             week,
             'COUNTER',
             rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
+            rangelastselection as RangeFirstAndLastSelectionType,
+            boxtype
           ) as number;
-          if(deselectedcount > 0) {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-          }
-          else {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-          }
-          triggerRef(visiblecalendar);
         }
       }
       else {
         if(week > rangelastselection.week) {
           deselectedcount = loopThroughDays(
+            checked,
             '<=rangefirstselection.day', 
             visiblecalendar, 
             year,
@@ -1164,18 +1478,13 @@ function handleCellIncludeAndExclude(
             week,
             'COUNTER',
             rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
+            rangelastselection as RangeFirstAndLastSelectionType,
+            boxtype
           ) as number;
-          if(deselectedcount > 0) {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-          }
-          else {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-          }
-          triggerRef(visiblecalendar);
         }
         else {
           deselectedcount = loopThroughDays(
+            checked,
             '>=rangefirstselection.day', 
             visiblecalendar, 
             year,
@@ -1183,22 +1492,24 @@ function handleCellIncludeAndExclude(
             week,
             'COUNTER',
             rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
+            rangelastselection as RangeFirstAndLastSelectionType,
+            boxtype
           ) as number;
-          if(deselectedcount > 0) {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-          }
-          else {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-          }
-          triggerRef(visiblecalendar);
         }
       }
+      if(deselectedcount > 0) {
+        (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+      }
+      else {
+        (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+      }
+      triggerRef(visiblecalendar);
     }
     else {
       let deselected = false;
       if(month > rangelastselection.month) {
         deselected = loopThroughDays(
+          checked,
           '<=rangefirstselection.day', 
           visiblecalendar, 
           year,
@@ -1206,7 +1517,8 @@ function handleCellIncludeAndExclude(
           week,
           'DESELECTED-STATUS',
           rangefirstselection as RangeFirstAndLastSelectionType, 
-          rangelastselection as RangeFirstAndLastSelectionType
+          rangelastselection as RangeFirstAndLastSelectionType,
+          boxtype
         ) as boolean;
         if(week === 0) {
           if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
@@ -1234,6 +1546,7 @@ function handleCellIncludeAndExclude(
                   ].days[0].day !== 1
                 ) {
                   deselectedcount = loopThroughDays(
+                    checked,
                     '>=rangelastselection.day', 
                     visiblecalendar, 
                     year,
@@ -1249,7 +1562,8 @@ function handleCellIncludeAndExclude(
                     ),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
-                    rangelastselection as RangeFirstAndLastSelectionType
+                    rangelastselection as RangeFirstAndLastSelectionType,
+                    boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
                     (visiblecalendar.value.selections[year][
@@ -1298,7 +1612,7 @@ function handleCellIncludeAndExclude(
                     (visiblecalendar.value.selections[year][
                       month
                     ] as YearMonthClickable<{}>['calendar'])[
-                      rangefirstselection.week
+                      week
                     ].checked = false;
                   }
                   else {
@@ -1324,6 +1638,7 @@ function handleCellIncludeAndExclude(
                   ].days[0].day !== 1
                 ) {
                   deselectedcount = loopThroughDays(
+                    checked,
                     '', 
                     visiblecalendar, 
                     year,
@@ -1339,7 +1654,8 @@ function handleCellIncludeAndExclude(
                     ),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
-                    rangelastselection as RangeFirstAndLastSelectionType
+                    rangelastselection as RangeFirstAndLastSelectionType,
+                    boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
                     (visiblecalendar.value.selections[year][
@@ -1404,111 +1720,95 @@ function handleCellIncludeAndExclude(
             }
             else {
               if(
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month
+                  ] as YearMonthClickable<{}>['calendar']
+                )[
+                  week
+                ].days[0].day !== 1
+              ) {
+                deselectedcount = loopThroughDays(
+                  checked,
+                  '', 
+                  visiblecalendar, 
+                  year,
+                  month-1,
                   (
-                    (visiblecalendar.value as VisibleCalendarType).selections[
-                      year
-                    ][
-                      month
-                    ] as YearMonthClickable<{}>['calendar']
-                  )[
-                    week
-                  ].days[0].day !== 1
-                ) {
-                  deselectedcount = loopThroughDays(
-                    '', 
-                    visiblecalendar, 
-                    year,
-                    month-1,
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year
+                      ][
+                        month-1
+                      ] as YearMonthClickable<{}>['calendar']
+                    ).length - 1
+                  ),
+                  'COUNTER',
+                  rangefirstselection as RangeFirstAndLastSelectionType, 
+                  rangelastselection as RangeFirstAndLastSelectionType,
+                  boxtype
+                ) as number;
+                if(deselectedcount > 0 || deselected) {
+                  (visiblecalendar.value.selections[year][
+                    month - 1
+                  ] as YearMonthClickable<{}>['calendar'])[
                     (
                       Object.values(
                         (visiblecalendar.value as VisibleCalendarType).selections[
                           year
                         ][
-                          month-1
+                          month - 1
                         ] as YearMonthClickable<{}>['calendar']
                       ).length - 1
-                    ),
-                    'COUNTER',
-                    rangefirstselection as RangeFirstAndLastSelectionType, 
-                    rangelastselection as RangeFirstAndLastSelectionType
-                  ) as number;
-                  if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
-                      month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      (
-                        Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
-                            year
-                          ][
-                            month - 1
-                          ] as YearMonthClickable<{}>['calendar']
-                        ).length - 1
-                      )
-                    ].checked = false;
-                    (visiblecalendar.value.selections[year][
-                      month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = false;
-                  }
-                  else {
-                    (visiblecalendar.value.selections[year][
-                      month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      (
-                        Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
-                            year
-                          ][
-                            month - 1
-                          ] as YearMonthClickable<{}>['calendar']
-                        ).length - 1
-                      )
-                    ].checked = true;
-                    (visiblecalendar.value.selections[year][
-                      month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = true;
-                  }
-                  triggerRef(visiblecalendar);
+                    )
+                  ].checked = false;
+                  (visiblecalendar.value.selections[year][
+                    month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = false;
                 }
                 else {
-                  if(deselected) {
-                    (visiblecalendar.value.selections[year][
-                      month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = false;
-                  }
-                  else {
-                    (visiblecalendar.value.selections[year][
-                      month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = true;
-                  }
-                  triggerRef(visiblecalendar);
+                  (visiblecalendar.value.selections[year][
+                    month - 1
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    (
+                      Object.values(
+                        (visiblecalendar.value as VisibleCalendarType).selections[
+                          year
+                        ][
+                          month - 1
+                        ] as YearMonthClickable<{}>['calendar']
+                      ).length - 1
+                    )
+                  ].checked = true;
+                  (visiblecalendar.value.selections[year][
+                    month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = true;
                 }
-              }
-            }
-            else {
-              if(deselected) {
-                (visiblecalendar.value.selections[year][
-                  month
-                ] as YearMonthClickable<{}>['calendar'])[
-                  week
-                ].checked = false;
+                triggerRef(visiblecalendar);
               }
               else {
-                (visiblecalendar.value.selections[year][
-                  month
-                ] as YearMonthClickable<{}>['calendar'])[
-                  week
-                ].checked = true;
+                if(deselected) {
+                  (visiblecalendar.value.selections[year][
+                    month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = false;
+                }
+                else {
+                  (visiblecalendar.value.selections[year][
+                    month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = true;
+                }
+                triggerRef(visiblecalendar);
               }
-              triggerRef(visiblecalendar);
             }
           }
           else {
@@ -1520,7 +1820,6 @@ function handleCellIncludeAndExclude(
               ].checked = false;
             }
             else {
-              
               (visiblecalendar.value.selections[year][
                 month
               ] as YearMonthClickable<{}>['calendar'])[
@@ -1531,16 +1830,37 @@ function handleCellIncludeAndExclude(
           }
         }
         else {
-          deselected = loopThroughDays(
-            '>=rangefirstselection.day', 
-            visiblecalendar, 
-            year,
-            month,
-            week,
-            'DESELECTED-STATUS',
-            rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
-          ) as boolean;
+          if(deselected) {
+            (visiblecalendar.value.selections[year][
+              month
+            ] as YearMonthClickable<{}>['calendar'])[
+              week
+            ].checked = false;
+          }
+          else {
+            
+            (visiblecalendar.value.selections[year][
+              month
+            ] as YearMonthClickable<{}>['calendar'])[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+      else {
+        deselected = loopThroughDays(
+          checked,
+          '>=rangefirstselection.day', 
+          visiblecalendar, 
+          year,
+          month,
+          week,
+          'DESELECTED-STATUS',
+          rangefirstselection as RangeFirstAndLastSelectionType, 
+          rangelastselection as RangeFirstAndLastSelectionType,
+          boxtype
+        ) as boolean;
         if(week === (
           Object.values(
             (visiblecalendar.value as VisibleCalendarType).selections[
@@ -1563,6 +1883,7 @@ function handleCellIncludeAndExclude(
                   )[0].days[0].day !== 1
                 ) {
                   deselectedcount = loopThroughDays(
+                    checked,
                     '<=rangelastselection.day', 
                     visiblecalendar, 
                     year,
@@ -1570,7 +1891,8 @@ function handleCellIncludeAndExclude(
                     0,
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
-                    rangelastselection as RangeFirstAndLastSelectionType
+                    rangelastselection as RangeFirstAndLastSelectionType,
+                    boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
                     (visiblecalendar.value.selections[year][
@@ -1623,6 +1945,7 @@ function handleCellIncludeAndExclude(
                   )[0].days[0].day !== 1
                 ) {
                   deselectedcount = loopThroughDays(
+                    checked,
                     '', 
                     visiblecalendar, 
                     year,
@@ -1630,7 +1953,8 @@ function handleCellIncludeAndExclude(
                     0,
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
-                    rangelastselection as RangeFirstAndLastSelectionType
+                    rangelastselection as RangeFirstAndLastSelectionType,
+                    boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
                     (visiblecalendar.value.selections[year][
@@ -1684,6 +2008,7 @@ function handleCellIncludeAndExclude(
                 )[0].days[0].day !== 1
               ) {
                 deselectedcount = loopThroughDays(
+                  checked,
                   '', 
                   visiblecalendar, 
                   year,
@@ -1691,65 +2016,48 @@ function handleCellIncludeAndExclude(
                   0,
                   'COUNTER',
                   rangefirstselection as RangeFirstAndLastSelectionType, 
-                  rangelastselection as RangeFirstAndLastSelectionType
+                  rangelastselection as RangeFirstAndLastSelectionType,
+                  boxtype
                 ) as number;
                 if(deselectedcount > 0 || deselected) {
                   (visiblecalendar.value.selections[year][
-                      month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[0].checked = false;
-                    (visiblecalendar.value.selections[year][
-                      month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = false;
-                  }
-                  else {
-                    (visiblecalendar.value.selections[year][
-                      month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[0].checked = true;
-                    (visiblecalendar.value.selections[year][
-                      month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = true;
-                  }
-                  triggerRef(visiblecalendar);
+                    month + 1
+                  ] as YearMonthClickable<{}>['calendar'])[0].checked = false;
+                  (visiblecalendar.value.selections[year][
+                    month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = false;
                 }
                 else {
-                  if(deselected) {
-                    (visiblecalendar.value.selections[year][
-                      rangefirstselection.month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = false;
-                  }
-                  else {
-                    (visiblecalendar.value.selections[year][
-                      rangefirstselection.month
-                    ] as YearMonthClickable<{}>['calendar'])[
-                      week
-                    ].checked = true;
-                  }
-                  triggerRef(visiblecalendar);
+                  (visiblecalendar.value.selections[year][
+                    month + 1
+                  ] as YearMonthClickable<{}>['calendar'])[0].checked = true;
+                  (visiblecalendar.value.selections[year][
+                    month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = true;
                 }
-              }
-            }
-            else {
-              if(deselected) {
-                (visiblecalendar.value.selections[year][
-                  month
-                ] as YearMonthClickable<{}>['calendar'])[
-                  week
-                ].checked = false;
+                triggerRef(visiblecalendar);
               }
               else {
-                (visiblecalendar.value.selections[year][
-                  month
-                ] as YearMonthClickable<{}>['calendar'])[
-                  week
-                ].checked = true;
+                if(deselected) {
+                  (visiblecalendar.value.selections[year][
+                    rangefirstselection.month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = false;
+                }
+                else {
+                  (visiblecalendar.value.selections[year][
+                    rangefirstselection.month
+                  ] as YearMonthClickable<{}>['calendar'])[
+                    week
+                  ].checked = true;
+                }
+                triggerRef(visiblecalendar);
               }
-              triggerRef(visiblecalendar);
             }
           }
           else {
@@ -1770,197 +2078,93 @@ function handleCellIncludeAndExclude(
             triggerRef(visiblecalendar);
           }
         }
+        else {
+          if(deselected) {
+            (visiblecalendar.value.selections[year][
+              month
+            ] as YearMonthClickable<{}>['calendar'])[
+              week
+            ].checked = false;
+          }
+          else {
+            (visiblecalendar.value.selections[year][
+              month
+            ] as YearMonthClickable<{}>['calendar'])[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
       }
     }
-    else {
-      let deselected = false;
-      if(year > rangelastselection.year) {
-        if(month === 0) {
-          deselected = loopThroughDays(
-            '<=rangefirstselection.day', 
-            visiblecalendar, 
-            year,
-            month,
-            week,
-            'DESELECTED-STATUS',
-            rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
-          ) as boolean;
-          if(week === 0) {
-            if(
-              (
-                (visiblecalendar.value as VisibleCalendarType).selections[
-                  year
-                ][
-                  month
-                ] as YearMonthClickable<{}>['calendar']
-              )[
-                week
-              ].days[0].day !== 1
-            ) {
-              if((year - 1) in (visiblecalendar.value as VisibleCalendarType).selections) {
-                if(
-                  11 in (visiblecalendar.value as VisibleCalendarType).selections[year - 1]
-                ) {
-                  deselectedcount = loopThroughDays(
-                    '', 
-                    visiblecalendar, 
-                    year-1,
-                    11,
+  }
+  else {
+    let deselected = false;
+    if(year > rangelastselection.year) {
+      if(month === 0) {
+        deselected = loopThroughDays(
+          checked,
+          '<=rangefirstselection.day', 
+          visiblecalendar, 
+          year,
+          month,
+          week,
+          'DESELECTED-STATUS',
+          rangefirstselection as RangeFirstAndLastSelectionType, 
+          rangelastselection as RangeFirstAndLastSelectionType,
+          boxtype
+        ) as boolean;
+        if(week === 0) {
+          if(
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][
+                month
+              ] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].days[0].day !== 1
+          ) {
+            if((year - 1) in (visiblecalendar.value as VisibleCalendarType).selections) {
+              if(
+                11 in (visiblecalendar.value as VisibleCalendarType).selections[year - 1]
+              ) {
+                deselectedcount = loopThroughDays(
+                  checked,
+                  '', 
+                  visiblecalendar, 
+                  year-1,
+                  11,
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year-1
+                      ][
+                        11
+                      ] as YearMonthClickable<{}>['calendar']
+                    ).length - 1
+                  ),
+                  'COUNTER',
+                  rangefirstselection as RangeFirstAndLastSelectionType, 
+                  rangelastselection as RangeFirstAndLastSelectionType,
+                  boxtype
+                ) as number;
+                if(deselectedcount > 0 || deselected) {
+                  (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year-1
+                    ][
+                      11
+                    ] as YearMonthClickable<{}>['calendar']
+                  )[
                     (
                       Object.values(
                         (visiblecalendar.value as VisibleCalendarType).selections[
                           year-1
                         ][
                           11
-                        ] as YearMonthClickable<{}>['calendar']
-                      ).length - 1
-                    ),
-                    'COUNTER',
-                    rangefirstselection as RangeFirstAndLastSelectionType, 
-                    rangelastselection as RangeFirstAndLastSelectionType
-                  ) as number;
-                  if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-                    (
-                      (visiblecalendar.value as VisibleCalendarType).selections[
-                        year-1
-                      ][
-                        11
-                      ] as YearMonthClickable<{}>['calendar']
-                    )[
-                      (
-                        Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
-                            year-1
-                          ][
-                            11
-                          ]
-                        ).length - 1
-                      )
-                    ].checked = false;
-                  }
-                  else {
-                    (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-                    (
-                      (visiblecalendar.value as VisibleCalendarType).selections[
-                        year-1
-                      ][
-                        11
-                      ] as YearMonthClickable<{}>['calendar']
-                    )[
-                      (
-                        Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
-                            year-1
-                          ][
-                            11
-                          ]
-                        ).length - 1
-                      )
-                    ].checked = true;
-                  }
-                  triggerRef(visiblecalendar);
-                }
-                else {
-                  if(deselected) {
-                    (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-                  }
-                  else {
-                    (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-                  }
-                  triggerRef(visiblecalendar);
-                }
-              }
-              else {
-                if(deselected) {
-                  (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-                }
-                else {
-                  (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-                }
-                triggerRef(visiblecalendar);
-              }
-            }
-            else {
-              if(deselected) {
-                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-              }
-              else {
-                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-              }
-              triggerRef(visiblecalendar);
-            }
-          }
-          else {
-            if(deselected) {
-              (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-            }
-            else {
-              (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-            }
-            triggerRef(visiblecalendar);
-          }
-        }
-        else {
-          deselected = loopThroughDays(
-            '<=rangefirstselection.day', 
-            visiblecalendar, 
-            year,
-            month,
-            week,
-            'DESELECTED-STATUS',
-            rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
-          ) as boolean;
-          if(week === 0) {
-            if(
-              (
-                (visiblecalendar.value as VisibleCalendarType).selections[
-                  year
-                ][
-                  month
-                ] as YearMonthClickable<{}>['calendar']
-              )[
-                week
-              ].days[0].day !== 1
-            ) {
-              if(
-                (month - 1) in (visiblecalendar.value as VisibleCalendarType).selections[year]
-              ) {
-                deselectedcount = loopThroughDays(
-                  '', 
-                  visiblecalendar, 
-                  year,
-                  month - 1,
-                  (
-                    Object.values(
-                      (visiblecalendar.value as VisibleCalendarType).selections[
-                        year
-                      ][
-                        month - 1
-                      ] as YearMonthClickable<{}>['calendar']
-                    ).length - 1
-                  ),
-                  'COUNTER',
-                  rangefirstselection as RangeFirstAndLastSelectionType, 
-                  rangelastselection as RangeFirstAndLastSelectionType
-                ) as number;
-                if(deselectedcount > 0 || deselected) {
-                  (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).selections[
-                      year
-                    ][
-                      month - 1
-                    ] as YearMonthClickable<{}>['calendar']
-                  )[
-                    (
-                      Object.values(
-                        (visiblecalendar.value as VisibleCalendarType).selections[
-                          year
-                        ][
-                          month - 1
                         ]
                       ).length - 1
                     )
@@ -1970,17 +2174,17 @@ function handleCellIncludeAndExclude(
                   (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
-                      year
+                      year-1
                     ][
-                      month - 1
+                      11
                     ] as YearMonthClickable<{}>['calendar']
                   )[
                     (
                       Object.values(
                         (visiblecalendar.value as VisibleCalendarType).selections[
-                          year
+                          year-1
                         ][
-                          month - 1
+                          11
                         ]
                       ).length - 1
                     )
@@ -2018,69 +2222,203 @@ function handleCellIncludeAndExclude(
             triggerRef(visiblecalendar);
           }
         }
+        else {
+          if(deselected) {
+            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+          }
+          else {
+            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
       }
       else {
-        if(month === 11) {
-          deselected = loopThroughDays(
-            '>=rangefirstselection.day', 
-            visiblecalendar, 
-            year,
-            month,
-            week,
-            'DESELECTED-STATUS',
-            rangefirstselection as RangeFirstAndLastSelectionType, 
-            rangelastselection as RangeFirstAndLastSelectionType
-          ) as boolean;
-          if(week === (
-            Object.values(
-              (
-                visiblecalendar.value as VisibleCalendarType
-              ).selections[year][month] as YearMonthClickable<{}>['calendar']
-            ).length - 1
-          )) {
-            if((year + 1) === rangelastselection.year && rangelastselection.month === 0 && rangelastselection.week === 0) {
-              if(
+        deselected = loopThroughDays(
+          checked,
+          '<=rangefirstselection.day', 
+          visiblecalendar, 
+          year,
+          month,
+          week,
+          'DESELECTED-STATUS',
+          rangefirstselection as RangeFirstAndLastSelectionType, 
+          rangelastselection as RangeFirstAndLastSelectionType,
+          boxtype
+        ) as boolean;
+        if(week === 0) {
+          if(
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][
+                month
+              ] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].days[0].day !== 1
+          ) {
+            if(
+              (month - 1) in (visiblecalendar.value as VisibleCalendarType).selections[year]
+            ) {
+              deselectedcount = loopThroughDays(
+                checked,
+                '', 
+                visiblecalendar, 
+                year,
+                month - 1,
+                (
+                  Object.values(
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][
+                      month - 1
+                    ] as YearMonthClickable<{}>['calendar']
+                  ).length - 1
+                ),
+                'COUNTER',
+                rangefirstselection as RangeFirstAndLastSelectionType, 
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
+              ) as number;
+              if(deselectedcount > 0 || deselected) {
+                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
-                    year + 1
+                    year
+                  ][
+                    month - 1
+                  ] as YearMonthClickable<{}>['calendar']
+                )[
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year
+                      ][
+                        month - 1
+                      ]
+                    ).length - 1
+                  )
+                ].checked = false;
+              }
+              else {
+                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][
+                    month - 1
+                  ] as YearMonthClickable<{}>['calendar']
+                )[
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year
+                      ][
+                        month - 1
+                      ]
+                    ).length - 1
+                  )
+                ].checked = true;
+              }
+              triggerRef(visiblecalendar);
+            }
+            else {
+              if(deselected) {
+                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+              }
+              else {
+                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+              }
+              triggerRef(visiblecalendar);
+            }
+          }
+          else {
+            if(deselected) {
+              (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+            }
+            else {
+              (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+            }
+            triggerRef(visiblecalendar);
+          }
+        }
+        else {
+          if(deselected) {
+            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+          }
+          else {
+            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+    }
+    else {
+      if(month === 11) {
+        deselected = loopThroughDays(
+          checked,
+          '>=rangefirstselection.day', 
+          visiblecalendar, 
+          year,
+          month,
+          week,
+          'DESELECTED-STATUS',
+          rangefirstselection as RangeFirstAndLastSelectionType, 
+          rangelastselection as RangeFirstAndLastSelectionType,
+          boxtype
+        ) as boolean;
+        if(week === (
+          Object.values(
+            (
+              visiblecalendar.value as VisibleCalendarType
+            ).selections[year][month] as YearMonthClickable<{}>['calendar']
+          ).length - 1
+        )) {
+          if((year + 1) === rangelastselection.year && rangelastselection.month === 0 && rangelastselection.week === 0) {
+            if(
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year + 1
+                ][
+                  0
+                ] as YearMonthClickable<{}>['calendar']
+              )[
+                0
+              ].days[0].day !== 1
+            ) {
+              deselectedcount = loopThroughDays(
+                checked,
+                '<=rangelastselection.day', 
+                visiblecalendar, 
+                year+1,
+                0,
+                0,
+                'COUNTER',
+                rangefirstselection as RangeFirstAndLastSelectionType, 
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
+              ) as number;
+              if(deselectedcount > 0 || deselected) {
+                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year+1
                   ][
                     0
                   ] as YearMonthClickable<{}>['calendar']
-                )[
-                  0
-                ].days[0].day !== 1
-              ) {
-                deselectedcount = loopThroughDays(
-                  '<=rangelastselection.day', 
-                  visiblecalendar, 
-                  year+1,
-                  0,
-                  0,
-                  'COUNTER',
-                  rangefirstselection as RangeFirstAndLastSelectionType, 
-                  rangelastselection as RangeFirstAndLastSelectionType
-                ) as number;
-                if(deselectedcount > 0 || deselected) {
-                  (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).selections[
-                      year+1
-                    ][
-                      0
-                    ] as YearMonthClickable<{}>['calendar']
-                  )[0].checked = false;
-                }
-                else {
-                  (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).selections[
-                      year+1
-                    ][
-                      0
-                    ] as YearMonthClickable<{}>['calendar']
-                  )[0].checked = true;
-                }
-                triggerRef(visiblecalendar);
+                )[0].checked = false;
+              }
+              else {
+                (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year+1
+                  ][
+                    0
+                  ] as YearMonthClickable<{}>['calendar']
+                )[0].checked = true;
+              }
+              triggerRef(visiblecalendar);
             }
             else {
               if(deselected) {
@@ -2105,6 +2443,7 @@ function handleCellIncludeAndExclude(
               ].days[0].day !== 1
             ) {
               deselectedcount = loopThroughDays(
+                checked,
                 '', 
                 visiblecalendar, 
                 year+1,
@@ -2112,7 +2451,8 @@ function handleCellIncludeAndExclude(
                 0,
                 'COUNTER',
                 rangefirstselection as RangeFirstAndLastSelectionType, 
-                rangelastselection as RangeFirstAndLastSelectionType
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
               ) as number;
               if(deselectedcount > 0 || deselected) {
                 (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
@@ -2159,6 +2499,7 @@ function handleCellIncludeAndExclude(
       }
       else {
         deselected = loopThroughDays(
+          checked,
           '>=rangefirstselection.day', 
           visiblecalendar, 
           year,
@@ -2166,7 +2507,8 @@ function handleCellIncludeAndExclude(
           week,
           'DESELECTED-STATUS',
           rangefirstselection as RangeFirstAndLastSelectionType, 
-          rangelastselection as RangeFirstAndLastSelectionType
+          rangelastselection as RangeFirstAndLastSelectionType,
+          boxtype
         ) as boolean;
         if(week === (
           Object.values(
@@ -2188,6 +2530,7 @@ function handleCellIncludeAndExclude(
               )[0].days[0].day !== 1
             ) {
               deselectedcount = loopThroughDays(
+                checked,
                 '', 
                 visiblecalendar, 
                 year,
@@ -2195,7 +2538,8 @@ function handleCellIncludeAndExclude(
                 0,
                 'COUNTER',
                 rangefirstselection as RangeFirstAndLastSelectionType, 
-                rangelastselection as RangeFirstAndLastSelectionType
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
               ) as number;
               if(deselectedcount > 0 || deselected) {
                 (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
@@ -2253,6 +2597,957 @@ function handleCellIncludeAndExclude(
   }
 }
 
+export function highlightOrDeselectWeekWithoutRangeFirstOrLastSelection(
+  checked: boolean | undefined,
+  year: number,
+  month: number,
+  week: number,
+  rangefirstselection: RangeFirstAndLastSelectionType,
+  rangelastselection: RangeFirstAndLastSelectionType,
+  visiblecalendar: ShallowRef<VisibleCalendarType>,
+  boxtype: 'WEEK-BOX' | 'CELL-BOX'
+) {
+  let deselected = false, deselectedcount = 0;
+  deselected = loopThroughDays(
+    checked,
+    '', 
+    visiblecalendar,
+    year,
+    month,
+    week,
+    'DESELECTED-STATUS',
+    rangefirstselection as RangeFirstAndLastSelectionType, 
+    rangelastselection as RangeFirstAndLastSelectionType,
+    boxtype
+  ) as boolean;
+  if(month === 0) {
+    if(week === 0) {
+      if(
+        (
+          (visiblecalendar.value as VisibleCalendarType).selections[
+            year
+          ][month] as YearMonthClickable<{}>['calendar']
+        )[week].days[0].day !== 1
+      ) {
+        if((year-1) in (visiblecalendar.value as VisibleCalendarType).selections) {
+          if(11 in (visiblecalendar.value as VisibleCalendarType).selections[year-1]) {
+            if(
+              (
+                rangelastselection.year === (year-1) 
+                && rangelastselection.month === 11 
+                && rangelastselection.week === (
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year-1
+                      ][11] as YearMonthClickable<{}>['calendar']
+                    ).length - 1
+                  )
+                )
+              )
+            ) {
+              deselectedcount = loopThroughDays(
+                checked,
+                '>=rangelastselection.day', 
+                visiblecalendar, 
+                year-1,
+                11,
+                (
+                  Object.values(
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year-1
+                    ][11] as YearMonthClickable<{}>['calendar']
+                  ).length - 1
+                ),
+                'COUNTER',
+                rangefirstselection as RangeFirstAndLastSelectionType, 
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
+              ) as number;
+              if(deselectedcount > 0 || deselected) {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month] as YearMonthClickable<{}>['calendar']
+                )[
+                  week
+                ].checked = false;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year-1
+                  ][11] as YearMonthClickable<{}>['calendar']
+                )[
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year-1
+                      ][11] as YearMonthClickable<{}>['calendar']
+                    ).length - 1
+                  )
+                ].checked = false;
+              }
+              else {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month] as YearMonthClickable<{}>['calendar']
+                )[
+                  week
+                ].checked = true;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year-1
+                  ][11] as YearMonthClickable<{}>['calendar']
+                )[
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year-1
+                      ][11] as YearMonthClickable<{}>['calendar']
+                    ).length - 1
+                  )
+                ].checked = true;
+              }
+              triggerRef(visiblecalendar);
+            }
+            else {
+              deselectedcount = loopThroughDays(
+                checked,
+                '', 
+                visiblecalendar, 
+                year-1,
+                11,
+                (
+                  Object.values(
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year-1
+                    ][11] as YearMonthClickable<{}>['calendar']
+                  ).length - 1
+                ),
+                'COUNTER',
+                rangefirstselection as RangeFirstAndLastSelectionType, 
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
+              ) as number;
+              if(deselectedcount > 0 || deselected) {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month] as YearMonthClickable<{}>['calendar']
+                )[
+                  week
+                ].checked = false;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year-1
+                  ][11] as YearMonthClickable<{}>['calendar']
+                )[
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year-1
+                      ][11] as YearMonthClickable<{}>['calendar']
+                    ).length - 1
+                  )
+                ].checked = false;
+              }
+              else {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month] as YearMonthClickable<{}>['calendar']
+                )[
+                  week
+                ].checked = true;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year-1
+                  ][11] as YearMonthClickable<{}>['calendar']
+                )[
+                  (
+                    Object.values(
+                      (visiblecalendar.value as VisibleCalendarType).selections[
+                        year-1
+                      ][11] as YearMonthClickable<{}>['calendar']
+                    ).length - 1
+                  )
+                ].checked = true;
+              }
+              triggerRef(visiblecalendar);
+            }
+          }
+          else {
+            if(deselected) {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = false;
+            }
+            else {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = true;
+            }
+            triggerRef(visiblecalendar);
+          }
+        }
+        else {
+          if(deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+      else {
+        if(deselected) {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = false;
+        }
+        else {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = true;
+        }
+        triggerRef(visiblecalendar);
+      }
+    }
+    else {
+      if(week === 
+        (
+          Object.values(
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          ).length - 1
+        )
+      ) {
+        if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+          if(
+            rangefirstselection.year === year 
+            && rangefirstselection.month === (month+1) 
+            && rangefirstselection.week === 0
+          ) {
+            deselectedcount = loopThroughDays(
+              checked,
+              '<=rangefirstselection.day', 
+              visiblecalendar,
+              year,
+              month+1,
+              0,
+              'COUNTER',
+              rangefirstselection as RangeFirstAndLastSelectionType, 
+              rangelastselection as RangeFirstAndLastSelectionType,
+              boxtype
+            ) as number;
+          }
+          else {
+            deselectedcount = loopThroughDays(
+              checked,
+              '', 
+              visiblecalendar,
+              year,
+              month+1,
+              0,
+              'COUNTER',
+              rangefirstselection as RangeFirstAndLastSelectionType, 
+              rangelastselection as RangeFirstAndLastSelectionType,
+              boxtype
+            ) as number;
+          }
+          if(deselectedcount > 0 || deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month+1] as YearMonthClickable<{}>['calendar']
+            )[0].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month+1] as YearMonthClickable<{}>['calendar']
+            )[0].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+        else {
+          if(deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+      else {
+        if(deselected) {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = false;
+        }
+        else {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = true;
+        }
+        triggerRef(visiblecalendar);
+      }
+    }
+  }
+  else if(month === 11) {
+    if(week === 0) {
+      if(
+        (
+          (visiblecalendar.value as VisibleCalendarType).selections[
+            year
+          ][month] as YearMonthClickable<{}>['calendar']
+        )[week].days[0].day !== 1
+      ) {
+        if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+          deselectedcount = loopThroughDays(
+            checked,
+            '', 
+            visiblecalendar,
+            year,
+            month-1,
+            (
+              Object.values(
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month-1] as YearMonthClickable<{}>['calendar']
+              ).length - 1
+            ),
+            'COUNTER',
+            rangefirstselection as RangeFirstAndLastSelectionType, 
+            rangelastselection as RangeFirstAndLastSelectionType,
+            boxtype
+          ) as number;
+          if(deselectedcount > 0 || deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month-1] as YearMonthClickable<{}>['calendar']
+            )[
+              (
+                Object.values(
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month-1] as YearMonthClickable<{}>['calendar']
+                ).length - 1
+              )
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month-1] as YearMonthClickable<{}>['calendar']
+            )[
+              (
+                Object.values(
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month-1] as YearMonthClickable<{}>['calendar']
+                ).length - 1
+              )
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+        else {
+          if(deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+      else {
+        if(deselected) {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = false;
+        }
+        else {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = true;
+        }
+        triggerRef(visiblecalendar);
+      }
+    }
+    else {
+      if(week === 
+        (
+          Object.values(
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          ).length - 1
+        )
+      ) {
+        if((year+1) in (visiblecalendar.value as VisibleCalendarType).selections) {
+          if(0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1]) {
+            if(
+              (
+                rangefirstselection.year === (year+1) 
+                && rangefirstselection.month === 0 
+                && rangefirstselection.week === 0
+              )
+            ) {
+              if(
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year+1
+                  ][0] as YearMonthClickable<{}>['calendar']
+                )[0].days[0].day !== 1
+              ) {
+                deselectedcount = loopThroughDays(
+                  checked,
+                  '<=rangefirstselection.day',
+                  visiblecalendar, 
+                  year+1,
+                  0,
+                  0,
+                  'COUNTER',
+                  rangefirstselection as RangeFirstAndLastSelectionType, 
+                  rangelastselection as RangeFirstAndLastSelectionType,
+                  boxtype
+                ) as number;
+                if(deselectedcount > 0 || deselected) {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][month] as YearMonthClickable<{}>['calendar']
+                  )[
+                    week
+                  ].checked = false;
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year+1
+                    ][0] as YearMonthClickable<{}>['calendar']
+                  )[0].checked = false;
+                }
+                else {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][month] as YearMonthClickable<{}>['calendar']
+                  )[
+                    week
+                  ].checked = true;
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year+1
+                    ][0] as YearMonthClickable<{}>['calendar']
+                  )[0].checked = true;
+                }
+                triggerRef(visiblecalendar);
+              }
+              else {
+                if(deselected) {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][month] as YearMonthClickable<{}>['calendar']
+                  )[
+                    week
+                  ].checked = false;
+                }
+                else {
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year
+                    ][month] as YearMonthClickable<{}>['calendar']
+                  )[
+                    week
+                  ].checked = true;
+                }
+                triggerRef(visiblecalendar);
+              }
+            }
+            else {
+              deselectedcount = loopThroughDays(
+                checked,
+                '', 
+                visiblecalendar, 
+                year+1,
+                0,
+                0,
+                'COUNTER',
+                rangefirstselection as RangeFirstAndLastSelectionType, 
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
+              ) as number;
+              if(deselectedcount > 0 || deselected) {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month] as YearMonthClickable<{}>['calendar']
+                )[
+                  week
+                ].checked = false;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year+1
+                  ][0] as YearMonthClickable<{}>['calendar']
+                )[0].checked = false;
+              }
+              else {
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month] as YearMonthClickable<{}>['calendar']
+                )[
+                  week
+                ].checked = true;
+                (
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year+1
+                  ][0] as YearMonthClickable<{}>['calendar']
+                )[0].checked = true;
+              }
+              triggerRef(visiblecalendar);
+            }
+          }
+          else {
+            if(deselected) {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = false;
+            }
+            else {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = true;
+            }
+            triggerRef(visiblecalendar);
+          }
+        }
+        else {
+          if(deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+      else {
+        if(deselected) {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = false;
+        }
+        else {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = true;
+        }
+        triggerRef(visiblecalendar);
+      }
+    }
+  }
+  else {
+    if(week === 0) {
+      if(
+        (
+          (visiblecalendar.value as VisibleCalendarType).selections[
+            year
+          ][month] as YearMonthClickable<{}>['calendar']
+        )[week].days[0].day !== 1
+      ) {
+        if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+          deselectedcount = loopThroughDays(
+            checked,
+            '', 
+            visiblecalendar,
+            year,
+            month-1,
+            (
+              Object.values(
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month-1] as YearMonthClickable<{}>['calendar']
+              ).length - 1
+            ),
+            'COUNTER',
+            rangefirstselection as RangeFirstAndLastSelectionType, 
+            rangelastselection as RangeFirstAndLastSelectionType,
+            boxtype
+          ) as number;
+          if(deselectedcount > 0 || deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month-1] as YearMonthClickable<{}>['calendar']
+            )[
+              (
+                Object.values(
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month-1] as YearMonthClickable<{}>['calendar']
+                ).length - 1
+              )
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month-1] as YearMonthClickable<{}>['calendar']
+            )[
+              (
+                Object.values(
+                  (visiblecalendar.value as VisibleCalendarType).selections[
+                    year
+                  ][month-1] as YearMonthClickable<{}>['calendar']
+                ).length - 1
+              )
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+        else {
+          if(deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+      else {
+        if(deselected) {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = false;
+        }
+        else {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = true;
+        }
+        triggerRef(visiblecalendar);
+      }
+    }
+    else {
+      if(week === 
+        (
+          Object.values(
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          ).length - 1
+        )
+      ) {
+        if(
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month+1] as YearMonthClickable<{}>['calendar']
+          )[0].days[0].day !== 1
+        ) {
+          if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+            if(
+              (
+                rangefirstselection.year === year 
+                && rangefirstselection.month === (month + 1)
+                && rangefirstselection.week === 0
+              )
+            ) {
+              deselectedcount = loopThroughDays(
+                checked,
+                '<=rangefirstselection.day',
+                visiblecalendar, 
+                year,
+                month+1,
+                0,
+                'COUNTER',
+                rangefirstselection as RangeFirstAndLastSelectionType, 
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
+              ) as number;
+            }
+            else {
+              deselectedcount = loopThroughDays(
+                checked,
+                '', 
+                visiblecalendar, 
+                year,
+                month+1,
+                0,
+                'COUNTER',
+                rangefirstselection as RangeFirstAndLastSelectionType, 
+                rangelastselection as RangeFirstAndLastSelectionType,
+                boxtype
+              ) as number;
+            }
+            if(deselectedcount > 0 || deselected) {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = false;
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month+1] as YearMonthClickable<{}>['calendar']
+              )[0].checked = false;
+            }
+            else {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = true;
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month+1] as YearMonthClickable<{}>['calendar']
+              )[0].checked = true;
+            }
+            triggerRef(visiblecalendar);
+          }
+          else {
+            if(deselected) {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = false;
+            }
+            else {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[
+                  year
+                ][month] as YearMonthClickable<{}>['calendar']
+              )[
+                week
+              ].checked = true;
+            }
+            triggerRef(visiblecalendar);
+          }
+        }
+        else {
+          if(deselected) {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = false;
+          }
+          else {
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ][month] as YearMonthClickable<{}>['calendar']
+            )[
+              week
+            ].checked = true;
+          }
+          triggerRef(visiblecalendar);
+        }
+      }
+      else {
+        if(deselected) {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = false;
+        }
+        else {
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[
+              year
+            ][month] as YearMonthClickable<{}>['calendar']
+          )[
+            week
+          ].checked = true;
+        }
+        triggerRef(visiblecalendar);
+      }
+    }
+  }
+}
+
 function handleRangeSelection(
   result: { year: number; month: number; day: number; },
   params: ShallowRef<RangeSelectionParamsType>,
@@ -2293,72 +3588,54 @@ function handleRangeSelection(
         if(
           year === params.value.rangefirstselection.year && month === params.value.rangefirstselection.month && week === params.value.rangefirstselection.week
         ) {
-          handleCellIncludeAndExclude(
+          highlightOrDeselectWeekWithRangeFirstOrLastSelection(
+            undefined,
             year, 
             month, 
             week, 
             params.value.rangefirstselection, 
             params.value.rangelastselection, 
-            visiblecalendar
+            visiblecalendar,
+            'CELL-BOX'
           );
         }
         else {
-          handleCellIncludeAndExclude(
+          highlightOrDeselectWeekWithRangeFirstOrLastSelection(
+            undefined,
             year, 
             month, 
             week, 
-            params.value.rangelastselection, 
+            params.value.rangelastselection,
             params.value.rangefirstselection, 
-            visiblecalendar
+            visiblecalendar,
+            'CELL-BOX'
           );
         }
       }
       else {
-        let deselected = false, deselectedcount = 0;
-        if(month === 11 || month === 0) {
-          if(month === 0) {
-            
-
-
-            if((year-1) in (visiblecalendar.value as VisibleCalendarType).selections) {
-              if(11 in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
-                if(
-                  (
-                    params.value.rangefirstselection.year === (year-1) 
-                    && params.value.rangefirstselection.month === 11 
-                    && params.value.rangefirstselection.week === (
-                      (
-                        Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[year-1][11] as YearMonthClickable<{}>['calendar']
-                        ).length - 1
-                      )
-                    )
-                  ) ||
-                  (
-                    params.value.rangelastselection.year === (year-1) 
-                    && params.value.rangelastselection.month === 11 
-                    && params.value.rangelastselection.week === (
-                      (
-                        Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[year-1][11] as YearMonthClickable<{}>['calendar']
-                        ).length - 1
-                      )
-                    )
-                  )
-                ) {
-
-                }
-              }
-            }
-            else {
-
-            }
-          }
-          else {
-
-          }
+        if(params.value.rangefirstselection.year <= params.value.rangelastselection.year) {
+          highlightOrDeselectWeekWithoutRangeFirstOrLastSelection(
+            undefined,
+            year,
+            month,
+            week,
+            params.value.rangelastselection as RangeFirstAndLastSelectionType,
+            params.value.rangefirstselection as RangeFirstAndLastSelectionType,
+            visiblecalendar,
+            'CELL-BOX'
+          );
         }
         else {
+          highlightOrDeselectWeekWithoutRangeFirstOrLastSelection(
+            undefined,
+            year,
+            month,
+            week,
+            params.value.rangefirstselection as RangeFirstAndLastSelectionType,
+            params.value.rangelastselection as RangeFirstAndLastSelectionType,
+            visiblecalendar,
+            'CELL-BOX'
+          );
         }
       }
     });
@@ -2418,7 +3695,6 @@ function handleRangeSelection(
           (
             visiblecalendar.value.selections[year][month] as YearMonthClickable<PositionTrackerType>['calendar']
           )[week].days[day].selected = "DESELECTED";
-
           params.value.rangefirstselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
           params.value.rangelastselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
           params.value.rangeselectcount = 0;
@@ -3056,10 +4332,6 @@ export function weekHasEnable(week: YearMonthClickable<PositionTrackerType>['cal
     return false;
   else 
     return true;
-}
-
-export function weekCheckboxClicked(week: YearMonthClickable<PositionTrackerType>['calendar'][number], vcalendartype: 'CURRENT' | 'PREVIOUS') {
-  console.log(week.checked);
 }
 
 function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: string, visiblecalendar: ShallowRef<VisibleCalendarType>, mPointedDate: { date: string; status: string; day: string; month: string; year: string; }, rfirstselection: RangeFirstAndLastSelectionType) {

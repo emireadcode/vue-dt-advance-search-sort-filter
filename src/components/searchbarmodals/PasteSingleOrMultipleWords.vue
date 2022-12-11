@@ -12,33 +12,33 @@ import {
   type Ref,
   type ShallowRef,
 } from "vue";
-import type { PrimitiveType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { PrimitiveType } from "../types/SupportedDatatypesTypeDeclaration";
 
 export type DuplicateCheckerObjectType = {
   [key: string]: string;
 };
 
-const props = defineProps<{
-  index: number;
-  nospace: string;
-  tree: {
-    single: string;
-    value: string[];
+const 
+  props = defineProps<{
     index: number;
-    temporary: string[];
-    bottom: boolean;
-    done: boolean;
-    loading: boolean;
-    addloading: boolean;
-    tabclicked: boolean;
-    tabref: HTMLButtonElement | undefined;
-  };
-  areatype: string;
-  textAreaHeight: string;
-}>();
-
-const cards = inject("cards") as ShallowRef<PrimitiveType[]>;
-const pasteditemsref = ref<HTMLDivElement[]>([]),
+    nospace: string;
+    tree: {
+      single: string;
+      value: string[];
+      index: number;
+      temporary: string[];
+      bottom: boolean;
+      done: boolean;
+      loading: boolean;
+      addloading: boolean;
+      tabclicked: boolean;
+      tabref: HTMLButtonElement | undefined;
+    };
+    areatype: string;
+    textAreaHeight: string;
+  }>(),
+  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
+  pasteditemsref = ref<HTMLDivElement[]>([]),
   lastpasteditemsref = ref(),
   newitementryinputref = ref(),
   pasteditemeditenabler = ref<Boolean[]>([]),
@@ -51,10 +51,10 @@ const pasteditemsref = ref<HTMLDivElement[]>([]),
   pasteditemcount = ref(0),
   pages = ref<string[][]>([]),
   current = ref(0),
-  inputpagenumberref = ref(),
   acceptedpasteditemcount = ref(0),
   pasteditemvalidity = ref<string[][]>([]),
-  pastemultiplelineitems = ref(false);
+  pastemultiplelineitems = ref(false)
+;
 
 let duplicateCheckerObject = {} as DuplicateCheckerObjectType,
   unwatchpastedtext: WatchStopHandle,
@@ -62,7 +62,8 @@ let duplicateCheckerObject = {} as DuplicateCheckerObjectType,
   unwatch: WatchStopHandle,
   unwatchcurrent: WatchStopHandle,
   unwatchpagination: WatchStopHandle,
-  temporary = useDebouncedRef(props.tree);
+  temporary = useDebouncedRef(props.tree)
+;
 
 function useDebouncedRef(value: { single: string; value: string[]; index: number; temporary: string[]; done: boolean; bottom: boolean; loading: boolean; addloading: boolean; }, delay = 1) {
   let timeout: NodeJS.Timeout;
@@ -172,22 +173,22 @@ function paginateFurther() {
     }
   }
 }
-function addNewIncludeOrExclude(tree: StringSearchType) {
-  let includeorexclude = tree.single;
+function addNewIncludeOrExclude() {
+  let includeorexclude = props.tree.single;
   if (includeorexclude.trim() !== "") {
     let increment = true;
-    if (tree.value.length === 0) {
+    if (props.tree.value.length === 0) {
       increment = true;
     } else {
       let tt3: NodeJS.Timeout[] = [],
         tt3Index = 0;
       if (current.value !== 0) {
-        tree.value = pages.value[pages.value.length - 1];
+        props.tree.value = pages.value[pages.value.length - 1];
         current.value = pages.value.length;
         nextTick(() => triggerRef(cards));
       }
-      for (let i = 0; i < tree.value.length; i++) {
-        if (tree.value[i] === includeorexclude) {
+      for (let i = 0; i < props.tree.value.length; i++) {
+        if (props.tree.value[i] === includeorexclude) {
           increment = false;
           scrollToElement(pasteditemsref.value[i]);
           pasteditemsref.value[i].style.backgroundColor = "red";
@@ -206,38 +207,38 @@ function addNewIncludeOrExclude(tree: StringSearchType) {
         }
       }
     }
-    if (increment && tree.addloading === false) {
-      tree.done = true;
-      tree.addloading = true;
+    if (increment && props.tree.addloading === false) {
+      props.tree.done = true;
+      props.tree.addloading = true;
       nextTick(() => triggerRef(cards));
-      if (tree.temporary.length > 0) {
-        for (let i = 0; i < tree.temporary.length; i++) {
-          if (includeorexclude === tree.temporary[i]) {
-            tree.temporary.splice(i, 1);
+      if (props.tree.temporary.length > 0) {
+        for (let i = 0; i < props.tree.temporary.length; i++) {
+          if (includeorexclude === props.tree.temporary[i]) {
+            props.tree.temporary.splice(i, 1);
             nextTick(() => triggerRef(cards));
             break;
           }
         }
       }
-      let temp = tree.temporary.slice(tree.value.length, tree.temporary.length);
-      tree.value.push(includeorexclude);
-      let newTree = JSON.parse(JSON.stringify(tree.value));
-      tree.temporary = newTree;
-      tree.temporary.push(...temp);
-      temporary.value = tree;
-      tree.index = tree.value.length;
+      let temp = props.tree.temporary.slice(props.tree.value.length, props.tree.temporary.length);
+      props.tree.value.push(includeorexclude);
+      let newTree = JSON.parse(JSON.stringify(props.tree.value));
+      props.tree.temporary = newTree;
+      props.tree.temporary.push(...temp);
+      temporary.value = props.tree;
+      props.tree.index = props.tree.value.length;
       paginateFurther();
       let t2: NodeJS.Timeout;
       t2 = setTimeout(() => {
         scrollToElement(lastpasteditemsref.value);
-        tree.single = "";
-        tree.addloading = false;
+        props.tree.single = "";
+        props.tree.addloading = false;
         nextTick(() => triggerRef(cards));
         clearTimeout(t2);
       }, 50);
     }
   } else {
-    tree.single = "";
+    props.tree.single = "";
     nextTick(() => triggerRef(cards));
   }
 }
@@ -278,12 +279,12 @@ function saveEditedTooLong(item: string, i: number) {
   }
 }
 
-
 function scrollToElement(el: HTMLDivElement) {
   if (el) {
     el.scrollIntoView({ behavior: "smooth" });
   }
 }
+
 function scrollInclude(e) {
   let doc = document,
     originalElement = e.srcElement || e.originalTarget,
@@ -410,12 +411,11 @@ onMounted(() => {
           acceptedpasteditemcount.value = result[0] as number;
           clearTimeout(pt);
         }, 200);
-
-        //return [lines, newArray, duplicate, error];
       }
     }
   );
 });
+
 onBeforeUnmount(() => {
   let doc = document;
   if (unwatch) {
@@ -456,7 +456,7 @@ onBeforeUnmount(() => {
         <template v-if="nospace === 'false'">
           <input
             ref="newitementryinputref"
-            @keypress.enter="addNewIncludeOrExclude(tree)"
+            @keypress.enter="addNewIncludeOrExclude()"
             maxlength="40"
             type="text"
             v-model="props.tree.single"
@@ -468,7 +468,7 @@ onBeforeUnmount(() => {
           <input
             ref="newitementryinputref"
             @keydown.space.prevent
-            @keypress.enter="addNewIncludeOrExclude(tree)"
+            @keypress.enter="addNewIncludeOrExclude()"
             maxlength="40"
             type="text"
             v-model="props.tree.single"
@@ -484,7 +484,7 @@ onBeforeUnmount(() => {
         <a
           class="cursor-pointer d-block text-center"
           style="padding: 3px 0"
-          @click="addNewIncludeOrExclude(tree)"
+          @click="addNewIncludeOrExclude()"
         >
           <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
         </a>

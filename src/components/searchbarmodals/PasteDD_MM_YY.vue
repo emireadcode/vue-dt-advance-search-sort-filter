@@ -16,21 +16,19 @@ import {
   type WatchStopHandle,
   triggerRef,
 } from "vue";
-import type { VisibleCalendarType } from "../types/dd_mm_yy_types";
 import type { DuplicateCheckerObjectType } from "../types/days_months_years_types";
-import { addDate, removeDelimiters, countSelectedDateCells, } from "../utility/dd_mm_yy_utility_fns";
+import { removeDelimiters } from "../utility/dd_mm_yy_utility_fns";
+import type { DateType } from "../types/SupportedDatatypesTypeDeclaration";
 
-
-const parentprops = defineProps<{
+const props = defineProps<{
+  isoweek: boolean;
+  selectionformat: 'RANGE' | 'MULTIPLE-OR-SINGLE';
+  mindate: string;
+  maxdate: string;
 }>();
 
-const emits = defineEmits<{
-  (e: "send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", action: {mode: 'RANGE' | 'MULTIPLE-OR-SINGLE'; score: number; }): void;
-  (e: "change:clickformat", action: 'MULTIPLE-OR-SINGLE'): void;
-  (e: "update:vcalendar-value", action: { vcalendar: VisibleCalendarType; pastedclickedornot: boolean; }): void;
-}>();
-
-let pastemultiplelines = ref(false),
+let 
+  pastemultiplelines = ref(false),
   pasteboxref = ref(),
   pastedmultiplelinesoftext = ref(""),
   pastedmultiplelinesloading = ref(false),
@@ -38,7 +36,6 @@ let pastemultiplelines = ref(false),
   multipleselectcount = ref(0),
   clickformat = ref(),
   title = ref(),
-  visiblecalendar = shallowRef(),
   hassomethingtopaste = ref(false),
   duplicateCheckerObject = {} as DuplicateCheckerObjectType,
   pasteedit = ref<boolean[]>([]),
@@ -49,13 +46,10 @@ let pastemultiplelines = ref(false),
   pastelines = ref(0),
   pastemultiplelinescounter = ref(0),
   pastemultiplelinesexpand = ref(false),
-  unwatchupdatecalendarvalue: WatchStopHandle,
   unwatchmultipleselectcount: WatchStopHandle,
   unwatchpastedmultiplelinesoftext: WatchStopHandle;
 
 function addPasted() {
-  clickformat.value = "MULTIPLE-OR-SINGLE";
-  emits("change:clickformat", 'MULTIPLE-OR-SINGLE');
   nextTick(() => {
     for (let i = 0; i < paste.value.length; i++) {
       let item = paste.value[i];
@@ -65,10 +59,9 @@ function addPasted() {
         item[1] !== "INDETERMINATE" &&
         (item[0] as string).trim() !== ""
       ) {
-        addDate(undefined, undefined, multipleselectcount, clickformat as Ref<"RANGE" | "MULTIPLE-OR-SINGLE">, item[0], false, true, props, visiblecalendar as ShallowRef<VisibleCalendarType>);
+
       }
     }
-    emits("update:vcalendar-value", { vcalendar: visiblecalendar.value as VisibleCalendarType, pastedclickedornot: true });
     pastemultiplelines.value = false;
     pastemultiplelinesexpand.value = false;
     pastedmultiplelinesoftext.value = "";
@@ -272,40 +265,21 @@ function pasteMultilineWordsCopiedFromSomewhere(e) {
 
 onBeforeUnmount(() => {
   unwatchpastedmultiplelinesoftext();
-  unwatchupdatecalendarvalue();
   unwatchmultipleselectcount();
 });
 
 onBeforeMount(() => {
-  clickformat.value = parentprops.cformat;
-  visiblecalendar.value = parentprops.vcalendar as VisibleCalendarType;
 });
 
 onMounted(() => {
-  title.value = props.title;
+  //title.value = props.title;
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {
       if(clickformat.value === "MULTIPLE-OR-SINGLE") {
         if(x > 0) {
-          emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", {mode:parentprops.cformat, score: x});
         }
         else {
-          emits("send:dd_mm_yyyy_excludecanceldoneforsearchreadiness", {mode:parentprops.cformat, score: 0});
-        }
-      }
-    }
-  );
-  unwatchupdatecalendarvalue = watch(
-    () => parentprops.updatevcalendarvalue,
-    (x) => {
-      if(x) {
-        visiblecalendar.value = parentprops.vcalendar as VisibleCalendarType;
-        triggerRef(visiblecalendar);
-        if(clickformat.value === 'MULTIPLE-OR-SINGLE') {
-          if(visiblecalendar.value.selections) {
-            multipleselectcount.value = countSelectedDateCells(visiblecalendar as ShallowRef<VisibleCalendarType>);
-          }
         }
       }
     }
@@ -334,28 +308,6 @@ onMounted(() => {
       }
     }
   );
-
-
-
-
-  /*
-
-
-      :vcalendar="(visiblecalendar as VisibleCalendarType)"
-      :updatevcalendarvalue="pupdatevcalendarvalue"
-      @update:vcalendar-value="$vcalendarvalue => updateVCalendarValueFn($vcalendarvalue, 'PASTED')"
-      @change:clickformat="$val => updateFormat($val)"
-      :cformat="(clickformat as 'RANGE' | 'MULTIPLE-OR-SINGLE')"
-
-
-
-
-  vcalendar: VisibleCalendarType;
-  cformat: "RANGE" | "MULTIPLE-OR-SINGLE";
-  updatevcalendarvalue: boolean;
-  */
-
-
 });
 
 </script>
@@ -546,17 +498,12 @@ onMounted(() => {
                                   </div>
                                   <div
                                     class="position-absolute flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
-                                    style="
-                                      background-color: #eee;
-                                      outline: 1px solid rgba(0, 0, 0, 0.2);
-                                      border-top-right-radius: 20px;
-                                      border-bottom-right-radius: 20px;
-                                    "
+                                    style="background-color: #eee;outline: 1px solid rgba(0, 0, 0, 0.2);border-top-right-radius: 20px;border-bottom-right-radius: 20px;"
                                   >
                                     <a
                                       class="cursor-pointer d-block text-center"
                                       style="padding: 7px 0"
-                                      @click="saveEditedDate(item[0], i)"
+                                      @click=""
                                     >
                                       <img
                                         src="/src/assets/icons/save.png"
@@ -613,7 +560,7 @@ onMounted(() => {
                                         style="padding-left: 4px"
                                       >
                                         <a
-                                          @click="deletePasted(i)"
+                                          @click=""
                                           class="d-inline-block cursor-pointer"
                                         >
                                           <img

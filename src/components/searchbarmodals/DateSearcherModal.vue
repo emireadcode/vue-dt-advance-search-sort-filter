@@ -57,7 +57,7 @@ function updateCards() {
 
 onBeforeMount(() => {
   excludedates.value = false;
-})
+});
 
 </script>
 
@@ -127,7 +127,7 @@ onBeforeMount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @click="() => { ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
+                      @click="() => { excludedates = false; ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
                       :style="(cards[index] as DateType).search.format === 'DD/MM/YYYY'
@@ -140,7 +140,7 @@ onBeforeMount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @click="() => { ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
+                      @click="() => { excludedates = false; ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
                       :style="
@@ -159,6 +159,7 @@ onBeforeMount(() => {
                   <template v-if="((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') ===  'DD/MM/YYYY'">
                     <SearchByDDMMYYYYFormat
                       :excludedates="(excludedates as boolean)"
+                      @update:excludedates="$val => excludedates = $val"
                     ></SearchByDDMMYYYYFormat>
                   </template>
                   <template v-else>

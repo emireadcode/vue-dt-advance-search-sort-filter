@@ -3,7 +3,7 @@ import { inject, type ShallowRef } from "vue";
 import type { PrimitiveType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import StartWithContainExactlyEqualToAndEndsWithTabs from "./StartWithContainExactlyEqualToAndEndsWithTabs.vue";
-import AddSingleOrMultiplePaste from "./AddSingleOrMultiplePaste.vue";
+import PasteSingleOrMultipleWords from "./PasteSingleOrMultipleWords.vue";
 const 
   props = defineProps<{
     index: number;
@@ -24,7 +24,7 @@ const
         :context="context"
       ></DescribeLabel>
       <StartWithContainExactlyEqualToAndEndsWithTabs></StartWithContainExactlyEqualToAndEndsWithTabs>
-      <AddSingleOrMultiplePaste
+      <PasteSingleOrMultipleWords
         nospace="false"
         :index="index"
         :tree="
@@ -40,7 +40,7 @@ const
           'search-include'
         "
         :text-area-height="'height: 128px;'"
-      ></AddSingleOrMultiplePaste>
+      ></PasteSingleOrMultipleWords>
     </template>
     <template v-else>
       <DescribeLabel 

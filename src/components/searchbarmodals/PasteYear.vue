@@ -50,8 +50,8 @@ let props = inject("yearprops") as {
   duplicateCheckerObject = {} as DuplicateCheckerObjectType,
   processedpasteedit = ref<boolean[]>([]),
   processedpaste = ref<[string, string][]>([]),
-  processedpasteerror = ref(0),
-  processedpasteoutofrange = ref(0),
+  errorcount = ref(0),
+  outofrangecount = ref(0),
   processedpastelines = ref(0),
   pastemultiplelinescounter = ref(0),
   pastemultiplelinesexpand = ref(false),
@@ -232,8 +232,8 @@ onMounted(() => {
             text
           );
           processedpaste.value = result[1][0];
-          processedpasteerror.value = result[1][1];
-          processedpasteoutofrange.value = result[1][2];
+          errorcount.value = result[1][1];
+         outofrangecount.value = result[1][2];
           processedpastelines.value = result[0];
           clearTimeout(pt);
         }, 200);
@@ -333,7 +333,7 @@ onMounted(() => {
                                 class="d-inline-block align-middle"
                                 style="background-color: red; width: 15px; height: 15px"
                               ></div>
-                              Invalid Years = {{ processedpasteerror }}
+                              Invalid Years = {{ errorcount }}
                             </div>
                             <div class="flex-fill text-center">
                               <div
@@ -344,7 +344,7 @@ onMounted(() => {
                                   height: 15px;
                                 "
                               ></div>
-                              Out of Range = {{ processedpasteoutofrange }}
+                              Out of Range = {{outofrangecount }}
                             </div>
                           </div>
                         </div>

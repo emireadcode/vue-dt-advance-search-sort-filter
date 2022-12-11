@@ -32,7 +32,8 @@ import {
   getDimensions,
   handleDateSelectHighlightDeselect,
   weekHasEnable,
-  weekCheckboxClicked,
+  highlightOrDeselectWeekWithoutRangeFirstOrLastSelection,
+  highlightOrDeselectWeekWithRangeFirstOrLastSelection,
   fillVisibleCalendarArray,
 } from "../utility/dd_mm_yy_utility_fns";
 
@@ -95,6 +96,88 @@ let
   maxdate = '',
   mindate = ''
 ;
+
+function weekCheckboxClicked(checked: boolean, weekindex: string, vcalendartype: 'PREVIOUS' | 'CURRENT') {
+  let 
+    year = vcalendartype === 'PREVIOUS'?
+      ((visiblecalendar.value as VisibleCalendarType).previous as YearMonthClickable<PositionTrackerType>).year
+      :
+      ((visiblecalendar.value as VisibleCalendarType).current as YearMonthClickable<PositionTrackerType>).year,
+    month = vcalendartype === 'PREVIOUS'?
+      ((visiblecalendar.value as VisibleCalendarType).previous as YearMonthClickable<PositionTrackerType>).month
+      :
+      ((visiblecalendar.value as VisibleCalendarType).current as YearMonthClickable<PositionTrackerType>).month,
+    week = parseInt(weekindex)
+  ;
+  if(
+    props.selectionformat === 'RANGE'
+    &&
+    year in (visiblecalendar.value as VisibleCalendarType).selections
+    &&
+    month in (visiblecalendar.value as VisibleCalendarType).selections[year]
+  ) {
+    nextTick(() => {
+      if(
+        year === rangeselectionparams.value.rangefirstselection.year && month === rangeselectionparams.value.rangefirstselection.month && week === rangeselectionparams.value.rangefirstselection.week
+        ||
+        year === rangeselectionparams.value.rangelastselection.year && month === rangeselectionparams.value.rangelastselection.month && week === rangeselectionparams.value.rangelastselection.week
+      ) {
+        if(
+          year === rangeselectionparams.value.rangefirstselection.year && month === rangeselectionparams.value.rangefirstselection.month && week === rangeselectionparams.value.rangefirstselection.week
+        ) {
+          highlightOrDeselectWeekWithRangeFirstOrLastSelection(
+            checked as boolean,
+            year,
+            month,
+            week,
+            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
+            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
+            visiblecalendar as ShallowRef<VisibleCalendarType>,
+            'WEEK-BOX'
+          );
+        }
+        else {
+          highlightOrDeselectWeekWithRangeFirstOrLastSelection(
+            checked as boolean,
+            year,
+            month,
+            week,
+            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
+            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
+            visiblecalendar as ShallowRef<VisibleCalendarType>,
+            'WEEK-BOX'
+          );
+        }
+      }
+      else {
+        if(rangeselectionparams.value.rangefirstselection.year <= rangeselectionparams.value.rangelastselection.year) {
+          highlightOrDeselectWeekWithoutRangeFirstOrLastSelection(
+            checked as boolean,
+            year,
+            month,
+            week,
+            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
+            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
+            visiblecalendar as ShallowRef<VisibleCalendarType>,
+            'WEEK-BOX'
+          );
+        }
+        else {
+          highlightOrDeselectWeekWithoutRangeFirstOrLastSelection(
+            checked as boolean,
+            year,
+            month,
+            week,
+            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
+            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
+            visiblecalendar as ShallowRef<VisibleCalendarType>,
+            'WEEK-BOX'
+          );
+        }
+      }
+    });
+  }
+}
 
 function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'][number]['days'][number]) {
   if(day.status === 'ENABLE') {
@@ -238,6 +321,7 @@ onBeforeMount(() => {
     props.isoweek
   );
   (visiblecalendar.value as VisibleCalendarType).selections = props.selections as VisibleCalendarType['selections'];
+  triggerRef(visiblecalendar);
 });
   
 onMounted(() => {
@@ -645,21 +729,31 @@ onBeforeUnmount(() => {
                             (visiblecalendar as VisibleCalendarType).previous.year
                           ][
                             (visiblecalendar as VisibleCalendarType).previous.month
-                          ] as YearMonthClickable<PositionTrackerType>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']
                         )[weekindex].checked"
                         class="m-0 p-0 border flex-w-100"
                         :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
-                        @change="weekCheckboxClicked(week, 'PREVIOUS')"
+                        @change="weekCheckboxClicked((
+                          (visiblecalendar as VisibleCalendarType)['selections'][
+                            (visiblecalendar as VisibleCalendarType).previous.year
+                          ][
+                            (visiblecalendar as VisibleCalendarType).previous.month
+                          ] as YearMonthClickable<{}>['calendar']
+                        )[weekindex].checked, ''+weekindex, 'PREVIOUS')"
                         :disabled="weekHasEnable(week)"
                         type="checkbox"
                         style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
                       />
                     </template>
                     <template v-else>
-                      <input 
+                      <input v-model="(
+                          (visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                        )[weekindex].checked"
                         class="m-0 p-0 border flex-w-100"
                         :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
-                        @change="weekCheckboxClicked(week, 'PREVIOUS')"
+                        @change="weekCheckboxClicked((
+                          (visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                        )[weekindex].checked, ''+weekindex,'PREVIOUS')"
                         :disabled="weekHasEnable(week)"
                         type="checkbox"
                         style="float: left; line-height: 2.805em; height: 2.805em;"
@@ -850,17 +944,27 @@ onBeforeUnmount(() => {
                         )[weekindex].checked"
                         class="m-0 p-0 border flex-w-100"
                         :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
-                        @change="weekCheckboxClicked(week, 'CURRENT')"
+                        @change="weekCheckboxClicked((
+                          (visiblecalendar as VisibleCalendarType)['selections'][
+                            (visiblecalendar as VisibleCalendarType).current.year
+                          ][
+                            (visiblecalendar as VisibleCalendarType).current.month
+                          ] as YearMonthClickable<PositionTrackerType>['calendar']
+                        )[weekindex].checked, ''+weekindex, 'CURRENT')"
                         :disabled="weekHasEnable(week)"
                         type="checkbox"
                         style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
                       />
                     </template>
                     <template v-else>
-                      <input 
+                      <input  v-model="(
+                          (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                        )[weekindex].checked"
                         class="m-0 p-0 border flex-w-100" 
                         :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
-                        @change="weekCheckboxClicked(week, 'CURRENT')"
+                        @change="weekCheckboxClicked((
+                          (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                        )[weekindex].checked, ''+weekindex, 'CURRENT')"
                         :disabled="weekHasEnable(week)" type="checkbox"
                         style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
                       />

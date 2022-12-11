@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { 
-  inject,
   watch,
   nextTick,
   ref,
@@ -12,29 +11,12 @@ import {
   type WatchStopHandle,
   type ShallowRef,
 } from "vue";
-import type { DaySelectionType, DayRangeFirstSelectionType } from "../types/days_months_years_types";
-import { getDayDimensions } from "../utility/days_months_years_utility_fns";
+import type { DaySelectionFormat, DaySelectionType, DayRangeFirstSelectionType } from "../types/days_months_years_types";
+import { getDayDimensions, fillDayArray } from "../utility/days_months_years_utility_fns";
 
-const props1 = defineProps<{
-  ddays: DaySelectionType;
-  dformat: "RANGE" | "MULTIPLE-OR-SINGLE";
-}>();
-
-const emits = defineEmits<{
-  (e: "update:days-value", action: DaySelectionType): void;
-  (e: "send:daysmonthsyearsexcludecanceldonereadiness", action: {  action: boolean; score: number; }): void;
-}>();
-
-let props = inject("dayprops") as {
-    format: "RANGE" | "MULTIPLE-OR-SINGLE";
-    days: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-        index: number;
-        name: "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
-      }[];
-    } | {};
-  },
+let 
+  dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  isodayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   format = ref(),
   days = shallowRef(),
   rangecount = ref(0),
@@ -43,7 +25,13 @@ let props = inject("dayprops") as {
   loadingMovement = ref(false),
   unwatchrangecount: WatchStopHandle,
   unwatchmultipleselectcount: WatchStopHandle,
-  unwatchformat: WatchStopHandle;
+  unwatchformat: WatchStopHandle
+;
+
+const props = defineProps<{
+  dayselectionandformat: DaySelectionFormat;
+  isoweek: boolean;
+}>();
 
 
 function addDay(day: number) {
@@ -87,7 +75,6 @@ function addDay(day: number) {
     }
   }
   triggerRef(days);
-  emits("update:days-value", days.value);
 }
 
 function deselectAll() {
@@ -187,10 +174,8 @@ onMounted(() => {
     (x) => {
       if(format.value === "MULTIPLE-OR-SINGLE") {
         if(x > 0) {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: true, score: x });
         }
         else {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: false, score: x });
         }
       }
     }
@@ -200,10 +185,8 @@ onMounted(() => {
     (x) => {
       if (format.value === "RANGE") {
         if(x === 2) {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: true, score: x });
         }
         else {
-          emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: false, score: x });
         }
       }
     }
@@ -217,7 +200,6 @@ onMounted(() => {
       rangefirstselection.value = { day: -1 };
       rangecount.value = 0;
       multipleselectcount.value = 0;
-      emits("send:daysmonthsyearsexcludecanceldonereadiness", { action: false, score: 0 });
     }
   );
   window.addEventListener('resize', processDimensions, true);
@@ -225,9 +207,10 @@ onMounted(() => {
 });
 
 onBeforeMount(() => {
-  format.value = props1.dformat;
-  days.value = props1.ddays as DaySelectionType;
+  format.value = props.dayselectionandformat.format;
+  days.value = (fillDayArray(props.isoweek, format) as ShallowRef<DaySelectionType>).value;
   rangefirstselection.value = { day: -1 };
+  triggerRef(days);
 });
 
 </script>

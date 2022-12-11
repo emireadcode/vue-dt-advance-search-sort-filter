@@ -1,6 +1,25 @@
 import { nextTick, triggerRef, } from "vue";
 import type { YearRangeFirstSelectionType, YearSelectionType, MonthSelectionType, DaySelectionType, } from '../types/days_months_years_types';
-import type { ShallowRef, Ref } from "vue";
+import { type ShallowRef, type Ref, shallowRef, ref, } from "vue";
+
+const 
+  monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ],
+  dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  isodayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+;
 
 export function getOffset(el: HTMLLabelElement) {
   if (el) {
@@ -262,4 +281,221 @@ export function addYear(page: Ref<number>, rangefirstselection: Ref<YearRangeFir
   }
   
   triggerRef(years);
+}
+
+export function fillYearArray(
+  _maxyear: number, 
+  minyear: number, 
+  yearselectionformat: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN",
+  page: Ref<number>
+) {
+  let index = 0, row = 0, col = 0, counter = 0, years = shallowRef<YearSelectionType>();
+
+  //let remainder = calculateRemainder(2022, 2000), maxyear = 2022 + remainder;
+  //for(let year=2000; year<=maxyear; year++) {
+
+  let 
+    remainder = calculateRemainder(
+      _maxyear, 
+      minyear
+    ), 
+    maxyear = _maxyear + remainder
+  ;
+  
+  for(let year=minyear; year<=maxyear; year++) {
+    if(years.value) {
+      if(index in years.value) {
+        if(row in years.value[index]) {
+          years.value[index][row] = {
+            ...years.value[index][row],
+            [col]: {
+              ref: null,
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: 0,
+              year: year,
+              status: (maxyear - year) >= remainder ? 'ENABLE' : 'DISABLE',
+              selected: "DESELECTED",
+            }
+          } as YearSelectionType[number][number];
+        }
+        else {
+          years.value[index] = {
+            ...years.value[index],
+            [row]: {
+              [col]: {
+                ref: null,
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 0,
+                year: year,
+                status: (maxyear - year) >= remainder ? 'ENABLE' : 'DISABLE',
+                selected: "DESELECTED",
+              }
+            }
+          } as YearSelectionType[number];
+        }
+        col++;
+      }
+      else {
+        years.value = {
+          ...years.value,
+          [index]: {
+            [row]: {
+              [col]: {
+                ref: null,
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 0,
+                year: year,
+                status: (maxyear - year) >= remainder ? 'ENABLE' : 'DISABLE',
+                selected: "DESELECTED",
+              }
+            }
+          }
+        } as YearSelectionType;
+        col++;
+      }
+    }
+    else {
+      years.value = {
+        [index]: {
+          [row]: {
+            [col]: {
+              ref: null,
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: 0,
+              year: year,
+              status: (maxyear - year) >= remainder ? 'ENABLE' : 'DISABLE',
+              selected: "DESELECTED",
+            }
+          }
+        }
+      } as unknown as YearSelectionType;
+      col++;
+    }
+    if(col === 5) {
+      row++;
+      col = 0;
+      counter++;
+    }
+    if(counter === 3) {
+      index++;
+      counter = 0;
+      row = 0;
+    }
+  }
+
+  page.value = Object.keys(years.value as YearSelectionType).length-1;
+
+  if(yearselectionformat === 'RANGE') {
+    nextTick(() => {
+      getYearDimensions(years as ShallowRef<YearSelectionType>, page as Ref<number>);
+    });
+  }
+  
+  triggerRef(years);
+
+  return years;
+}
+
+export function fillMonthArray(monthselectionformat: Ref<"RANGE" | "MULTIPLE-OR-SINGLE">) {
+  let row = 0, col = 0, months = shallowRef<MonthSelectionType>();
+  for(let index=0; index<monthNames.length; index++) {
+    if(months.value) {
+      if(row in months.value) {
+        (months as ShallowRef<MonthSelectionType>).value[row] = {
+          ...months.value[row],
+          [col]: {
+            monthnumber: index,
+            monthname: monthNames[index],
+            selected: "DESELECTED",
+            ref: null,
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 0,
+          },
+        } as MonthSelectionType[number];
+        col++;
+      }
+      else {
+        months.value = {
+          ...months.value,
+          [row]: {
+            [col]: {
+              ref: null,
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: 0,
+              monthname: monthNames[index],
+              monthnumber: index,
+              selected: "DESELECTED",
+            }
+          },
+        } as MonthSelectionType;
+        col++;
+      }
+    }
+    else {
+      months.value = {
+        [row]: {
+          [col]: {
+            ref: null,
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 0,
+            monthname: monthNames[index],
+            monthnumber: index,
+            selected: "DESELECTED",
+          }
+        },
+      } as unknown as MonthSelectionType;
+      col++
+    }
+    if(col === 4) {
+      row++;
+      col = 0;
+    }
+  }
+  if(monthselectionformat.value === "RANGE") {
+    nextTick(() => {
+      getMonthDimensions(months as ShallowRef<MonthSelectionType>);
+    });
+  }
+  triggerRef(months);
+
+  return months;
+}
+
+export function fillDayArray(isoweek: boolean, dayselectionformat: Ref<"RANGE" | "MULTIPLE-OR-SINGLE">) {
+  let days = shallowRef<DaySelectionType>();
+  for(let index=0; index< ((isoweek)? isodayNames.length: dayNames.length); index++) {
+    days.value = {
+      ...days.value,
+      [index]: {
+        ref: null,
+        x1: 0,
+        y1: 0,
+        x2: 0,
+        y2: 0,
+        name: (isoweek)? isodayNames[index] : dayNames[index],
+        selected: "DESELECTED",
+      },
+    } as DaySelectionType;
+  }
+
+  if(dayselectionformat.value === "RANGE") {
+    nextTick(() => getDayDimensions(days as ShallowRef<DaySelectionType>));
+  }
+  triggerRef(days);
+
+  return days;
 }
