@@ -3,12 +3,13 @@ import { inject, type ShallowRef } from "vue";
 import type { PrimitiveType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import StartWithContainExactlyEqualToAndEndsWithTabs from "./StartWithContainExactlyEqualToAndEndsWithTabs.vue";
-import PasteSingleOrMultipleWords from "./PasteSingleOrMultipleWords.vue";
+import Paste from "./Paste.vue";
 const 
   props = defineProps<{
     index: number;
-    concatfieldindex?: number | undefined;
+    concatfieldindex?: string | number | undefined;
     context: string;
+    wordtype: "MULTIPLE" | "SINGLE";
   }>(),
   index = props.index,
   cards = inject("cards") as ShallowRef<PrimitiveType[]>
@@ -19,53 +20,39 @@ const
   <div class="d-block" style="padding: 7px 0;">
     <template v-if="concatfieldindex === undefined">
       <DescribeLabel 
+        :wordtype="wordtype"
         :index="index" 
         :concatfieldindex="(concatfieldindex as undefined)" 
         :context="context"
       ></DescribeLabel>
       <StartWithContainExactlyEqualToAndEndsWithTabs></StartWithContainExactlyEqualToAndEndsWithTabs>
-      <PasteSingleOrMultipleWords
-        nospace="false"
-        :index="index"
-        :tree="
-          context==='DESCRIBE-EXCLUDE'?
-          ((cards[index] as MultipleWordsStringType).search.exclude as StringSearchType)
-          :
-          ((cards[index] as MultipleWordsStringType).search.include as StringSearchType)
-        "
+      <Paste
         :areatype="
           context==='DESCRIBE-EXCLUDE'?
           'search-exclude'
           :
           'search-include'
         "
-        :text-area-height="'height: 128px;'"
-      ></PasteSingleOrMultipleWords>
+        :text-area-height="'height:240px;'"
+      ></Paste>
     </template>
     <template v-else>
       <DescribeLabel 
+        :wordtype="wordtype"
         :index="index" 
         :concatfieldindex="(concatfieldindex as number)" 
         :context="context"
       ></DescribeLabel>
       <StartWithContainExactlyEqualToAndEndsWithTabs></StartWithContainExactlyEqualToAndEndsWithTabs>
-      <AddSingleOrMultiplePaste
-        nospace="false"
-        :index="index"
-        :tree="
-          context==='DESCRIBE-EXCLUDE'?
-          ((((cards[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[concatfieldindex as number]).search?.exclude as StringSearchType)
-          :
-          ((((cards[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[concatfieldindex as number]).search?.include as StringSearchType)
-        "
+      <Paste
         :areatype="
           context==='DESCRIBE-EXCLUDE'?
           'concatenated-search-exclude-' + concatfieldindex
           :
           'concatenated-search-include-' + concatfieldindex
         "
-        :text-area-height="'height: 128px;'"
-      ></AddSingleOrMultiplePaste>
+        :text-area-height="'height:240px;'"
+      ></Paste>
     </template>
   </div>
 </template>

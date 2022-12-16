@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { inject, type ShallowRef, computed } from "vue";
-import type { PrimitiveType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { PrimitiveType, SingleWordStringType, MultipleWordsStringType, SingleWordStringConcatenatedFieldType, MultipleWordsStringConcatenatedFieldType } from "../types/SupportedDatatypesTypeDeclaration";
 
 const 
   props = defineProps<{
     index: number;
-    concatfieldindex?: number | undefined;
+    concatfieldindex?: string | number | undefined;
     context: string;
   }>(),
   index = props.index,
@@ -13,31 +13,11 @@ const
 ;
 
 const info = computed(() => {
-  if(props.context === 'DESCRIBE-MODAL') {
-    if(props.concatfieldindex === undefined) {
-      if(!(cards.value[index] as MultipleWordsStringType).concatenated) {
-        return (cards.value[index] as MultipleWordsStringType).info.name
-      }
-      else {
-        return (cards.value[index] as MultipleWordsStringType).concatenatedname;
-      }
-    }
-    else {
-      return (((cards.value[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[props.concatfieldindex as number]).name;
-    }
+  if(props.concatfieldindex === undefined) {
+    return (cards.value[index] as PrimitiveType).info.name
   }
   else {
-    if(!(cards.value[index] as MultipleWordsStringType).concatenated) {
-      return (cards.value[index] as MultipleWordsStringType).info.name
-    }
-    else {
-      if((cards.value[index] as MultipleWordsStringType).concatenatedname !== undefined) {
-        return (cards.value[index] as MultipleWordsStringType).concatenatedname;
-      }
-      else {
-        return (((cards.value[index] as MultipleWordsStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[props.concatfieldindex as number]).name;
-      }
-    }
+    return (((cards.value[index] as MultipleWordsStringType | SingleWordStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[props.concatfieldindex as number]).name;
   }
 });
 

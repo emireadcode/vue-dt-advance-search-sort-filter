@@ -6,15 +6,14 @@ import Switchable from "./Switchable.vue";
 
 /*
 import DateTimeSearcherModal from "./searchbarmodals/DateTimeSearcherModal.vue";
-import NumberSearcherModal from "./searchbarmodals/NumberSearcherModal.vue";
 import TimeSearcherModal from "./searchbarmodals/TimeSearcherModal.vue";
 import YearSearcherModal from "./searchbarmodals/YearSearcherModal.vue";
-import SingleWordStringSearcherModal from "./searchbarmodals/SingleWordStringSearcherModal.vue";
 import KeyToNameMappingSearcherModal from "./searchbarmodals/KeyToNameMappingSearcherModal.vue";
 */
 
-import MultipleWordsStringSearcherModal from "./searchbarmodals/MultipleWordsStringSearcherModal.vue";
 import DateSearcherModal from "./searchbarmodals/DateSearcherModal.vue";
+import MultipleSingleOrNumberStringWordSearcherModal from "./searchbarmodals/MultipleSingleOrNumberStringWordSearcherModal.vue";
+import NumberSearcherModal from "./searchbarmodals/NumberSearcherModal.vue";
 
 const
   props = defineProps<{
@@ -91,11 +90,14 @@ let
     </div>
     <Teleport to="body">
       <div v-if="accessibility.cardsmultiplesearchopenstatus.value[index]" class="d-block position-relative">
-        <template v-if="cards[index].info.datatype === 'MultipleWordsString'">
-          <MultipleWordsStringSearcherModal :index="index"></MultipleWordsStringSearcherModal>
-        </template>
         <template v-if="cards[index].info.datatype === 'Date'">
           <DateSearcherModal :index="index"></DateSearcherModal>
+        </template>
+        <template v-if="cards[index].info.datatype === 'MultipleWordsString' || cards[index].info.datatype === 'SingleWordString' || cards[index].info.datatype === 'NumberString'">
+          <MultipleSingleOrNumberStringWordSearcherModal :index="index"></MultipleSingleOrNumberStringWordSearcherModal>
+        </template>
+        <template v-if="cards[index].info.datatype === 'Number'">
+          <NumberSearcherModal :index="index"></NumberSearcherModal>
         </template>
       </div>
     </Teleport>

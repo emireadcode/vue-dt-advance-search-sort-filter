@@ -6,7 +6,7 @@ import type {
   KeyToNameType, 
   NumberType, 
   YearType, 
-  DateTimeType, 
+  DateTimeType,
   DateType, 
   MultipleWordsStringType, 
   SingleWordStringConcatenatedFieldType, 
@@ -47,32 +47,46 @@ function formConcatenatedSearch(
 ) {
   let concatcopy = JSON.parse(JSON.stringify(concatenated));
   for (let i in concatcopy) {
-    if (concatcopy[i].aword) {
+    if(concatcopy[i].disableincludeandexclude !== undefined) {
+      if (concatcopy[i].disableincludeandexclude) {
+        concatcopy[i] = {
+          name: concatcopy[i].name,
+          attribute: concatcopy[i].attribute,
+          disableincludeandexclude: concatcopy[i].disableincludeandexclude,
+          table: concatcopy[i].table,
+          join: concatcopy[i].join,
+          search: {
+            ...searchStringDefaultObject(),
+          },
+        };
+      } else {
+        concatcopy[i] = {
+          name: concatcopy[i].name,
+          attribute: concatcopy[i].attribute,
+          disableincludeandexclude: concatcopy[i].disableincludeandexclude,
+          table: concatcopy[i].table,
+          join: concatcopy[i].join,
+          search: {
+            ...searchStringDefaultObject(),
+            include: {
+              ...searchStringDefaultObject(),
+            },
+            exclude: {
+              ...searchStringDefaultObject(),
+            },
+          },
+        };
+      }
+    }
+    else {
       concatcopy[i] = {
         name: concatcopy[i].name,
         attribute: concatcopy[i].attribute,
-        aword: concatcopy[i].aword,
+        disableincludeandexclude: undefined,
         table: concatcopy[i].table,
         join: concatcopy[i].join,
         search: {
           ...searchStringDefaultObject(),
-        },
-      };
-    } else {
-      concatcopy[i] = {
-        name: concatcopy[i].name,
-        attribute: concatcopy[i].attribute,
-        aword: concatcopy[i].aword,
-        table: concatcopy[i].table,
-        join: concatcopy[i].join,
-        search: {
-          ...searchStringDefaultObject(),
-          include: {
-            ...searchStringDefaultObject(),
-          },
-          exclude: {
-            ...searchStringDefaultObject(),
-          },
         },
       };
     }
@@ -222,22 +236,7 @@ function getIdentityItem(item: CardInnerType, attribute: string, datatype: strin
     bottom: false,
   } as IdentityType;
 }
-  
-function shouldShowFullConcatOrNot(
-  concatenated:
-    | MultipleWordsStringConcatenatedFieldType
-    | SingleWordStringConcatenatedFieldType
-) {
-  let show = true;
-  for (let i in concatenated) {
-    if (concatenated[i].aword === false) {
-      show = false;
-      break;
-    }
-  }
-  return show;
-}
-  
+
 function getKeyToNameTypeObject(item: CardInnerType & KeyToNameMappingType) {
   const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
   return {
@@ -339,6 +338,7 @@ function getMultipleWordStringTypeObject(item: (CardInnerType & {concatenated?: 
       descclicked: "sort-z-a.png",
       mixclicked: "mix.png",
     },
+    disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
       ...searchStringDefaultObject(),
       include: {
@@ -350,11 +350,6 @@ function getMultipleWordStringTypeObject(item: (CardInnerType & {concatenated?: 
       trueorfalse: false,
     },
     searchFrom: "SERVER",
-    concatenatedname:
-      item.concatenated !== undefined &&
-      shouldShowFullConcatOrNot(item.concatenated.fields)
-        ? item.name
-        : undefined,
     concatenated:
       item.concatenated !== undefined
         ? formConcatenatedSearch(item.concatenated.fields)
@@ -482,20 +477,22 @@ function getNumberStringTypeObject(item: CardInnerType & {concatenated?: SingleW
       descclicked: "sort-9-1.png",
       mixclicked: "mix.png",
     },
+    disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
-      trueorfalse: false,
       ...searchStringDefaultObject(),
+      include: {
+        ...searchStringDefaultObject(),
+      },
+      exclude: {
+        ...searchStringDefaultObject(),
+      },
+      trueorfalse: false,
     },
+    searchFrom: "SERVER",
     concatenated:
       item.concatenated !== undefined
         ? formConcatenatedSearch(item.concatenated.fields)
         : undefined,
-    concatenatedname:
-      item.concatenated !== undefined &&
-      shouldShowFullConcatOrNot(item.concatenated.fields)
-        ? item.name
-        : undefined,
-    searchFrom: "SERVER",
   } as NumberStringType;
 }
   
@@ -508,20 +505,22 @@ function getSingleWordStringTypeObject(item: CardInnerType & {concatenated?: Sin
       descclicked: "sort-z-a.png",
       mixclicked: "mix.png",
     },
+    disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
-      trueorfalse: false,
       ...searchStringDefaultObject(),
+      include: {
+        ...searchStringDefaultObject(),
+      },
+      exclude: {
+        ...searchStringDefaultObject(),
+      },
+      trueorfalse: false,
     },
+    searchFrom: "SERVER",
     concatenated:
       item.concatenated !== undefined
         ? formConcatenatedSearch(item.concatenated.fields)
         : undefined,
-    concatenatedname:
-      item.concatenated !== undefined &&
-      shouldShowFullConcatOrNot(item.concatenated.fields)
-        ? item.name
-        : undefined,
-    searchFrom: "SERVER",
   } as SingleWordStringType;
 }
   

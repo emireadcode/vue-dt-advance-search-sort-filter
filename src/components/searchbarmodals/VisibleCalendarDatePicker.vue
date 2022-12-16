@@ -196,7 +196,7 @@ function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'
           mindate as string,
           maxdate as string,
           visiblecalendar as ShallowRef<VisibleCalendarType>
-        )
+        );
       }
       else {
         handleDateSelectHighlightDeselect(
@@ -208,7 +208,7 @@ function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'
           props.mindate,
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
-        )
+        );
       }
     });
   }

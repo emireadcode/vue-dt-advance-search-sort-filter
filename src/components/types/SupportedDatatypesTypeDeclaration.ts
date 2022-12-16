@@ -1,3 +1,5 @@
+import type { Ref } from "vue";
+
 import type { RangeSelectionParamsType } from './dd_mm_yy_types';
 
 type StartModifierWildCardType = "@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[";
@@ -34,8 +36,8 @@ export interface IdentityType {
     data: { row: string; checked: boolean; selected: boolean }[] | [];
     total: number;
     offset: number;
-    max: number | string;
-    min: number | string;
+    max: string;
+    min: string;
     totalselection: number;
   };
   loading: boolean;
@@ -66,7 +68,7 @@ export type StringSearchType = {
 
 export type MultipleWordsStringConcatenatedFieldType = {
   [key: string]: {
-    aword: boolean;
+    disableincludeandexclude?: boolean | undefined;
     name: string;
     attribute?: string | undefined;
     table?: string | undefined;
@@ -75,19 +77,43 @@ export type MultipleWordsStringConcatenatedFieldType = {
       | (StringSearchType & {
           include?: StringSearchType | undefined;
           exclude?: StringSearchType | undefined;
+          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '';
         })
       | undefined;
   };
 };
 
+export type AtNumber<T> = {
+  last?: number | undefined;
+  first?: number | undefined;
+  thenumberbeforethelast?: {
+    thenumberbefore: number;
+    thelast: number;
+  } | undefined;
+  afterthefirstthenext?: {
+    afterthefirst: number;
+    thenext: number;
+  } | undefined;
+  search: T & {
+    atnumberformat: 'LAST' | 'FIRST' | 'THE-NUMBER-BEFORE-THE-LAST' | 'AFTER-THE-FIRST-THE-NEXT';
+  };
+};
+
 export type SingleWordStringConcatenatedFieldType = {
   [key: string]: {
-    aword: true;
+    disableincludeandexclude?: boolean | undefined;
     name: string;
     attribute?: string | undefined;
     table?: string | undefined;
     join?: string | undefined;
-    search?: StringSearchType | undefined;
+    search?:
+      | (StringSearchType & {
+          include?: StringSearchType | undefined;
+          exclude?: StringSearchType | undefined;
+          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '@NUMBER' | '';
+          atnumbersearch?: AtNumber<NumberSearchType> | undefined;
+        })
+      | undefined;
     startmodifierwildcard?: StartModifierWildCardUnionType | StartModifierWildCardType | undefined;
     endmodifierwildcard?: EndModifierWildCardUnionType | EndModifierWildCardType | undefined;
   };
@@ -105,10 +131,11 @@ export type SingleWordConcatenatedType = {
 
 export interface MultipleWordsStringType extends IdentityType {
   concatenated?: MultipleWordsStringConcatenatedFieldType | undefined;
-  concatenatedname?: string | undefined;
+  disableincludeandexclude?: boolean | undefined;
   search: StringSearchType & {
     include?: StringSearchType | undefined;
     exclude?: StringSearchType | undefined;
+    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '';
     trueorfalse: boolean;
   };
   searchFrom?: "DOM" | "SERVER";
@@ -116,13 +143,18 @@ export interface MultipleWordsStringType extends IdentityType {
   
 export interface SingleWordStringType extends IdentityType {
   concatenated?: SingleWordStringConcatenatedFieldType | undefined;
-  concatenatedname?: string | undefined;
+  disableincludeandexclude?: boolean | undefined;
   search: StringSearchType & {
+    include?: StringSearchType | undefined;
+    exclude?: StringSearchType | undefined;
+    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '@NUMBER' | '';
+    atnumbersearch?: AtNumber<NumberSearchType> | undefined;
     trueorfalse: boolean;
   };
+  fixedlengthofstring?: number | undefined;
   searchFrom?: "DOM" | "SERVER";
 }
-  
+
 export interface NumberStringType extends SingleWordStringType {}
 
 export type KeyToNameMappingType = {
@@ -225,58 +257,57 @@ export interface DateTimeType extends IdentityType {
   dateFormat: DateFormat["dateFormat"];
   isoweek: boolean;
 }
-  
+
+export type NumberSearchType = {
+  tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO";
+  greaterthan?: string | undefined;
+  lessthan?: string | undefined;
+  equalto?:
+    | NumberSearchExcludeEqualToType
+    | undefined;
+  notequalto?:
+    | NumberSearchExcludeEqualToType
+    | undefined;
+  fromto?:
+    | {
+        from: string;
+        to: string;
+      }
+    | undefined;
+};
+
+export type NumberSearchExcludeFromToType = {
+  singlefrom: string;
+  from: string[];
+  singleto: string;
+  to: string[];
+  index: number;
+  disabled: boolean[];
+  show: boolean[];
+  loading: boolean;
+  addloading: boolean;
+};
+
+export type NumberSearchExcludeEqualToType = {
+  single: string;
+  value: string[];
+  index: number;
+  disabled: boolean[];
+  show: boolean[];
+  loading: boolean;
+  addloading: boolean;
+};
+
 export interface NumberType extends IdentityType {
-  search: {
+  search: NumberSearchType & {
     trueorfalse: boolean;
-    tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO";
-    greaterthan?: string | number | undefined;
-    lessthan?: string | number | undefined;
-    equalto?:
-      | {
-          single: string | number;
-          value: (number | string)[];
-          index: number;
-          disabled: boolean[];
-          show: boolean[];
-        }
-      | undefined;
-    notequalto?:
-      | {
-          single: string | number;
-          value: (number | string)[];
-          index: number;
-          disabled: boolean[];
-          show: boolean[];
-        }
-      | undefined;
-    fromto?:
-      | {
-          from: string | number;
-          to: string | number;
-        }
-      | undefined;
     exclude?:
       | {
           fromto?:
-            | {
-                singlefrom: string | number;
-                from: (number | string)[];
-                singleto: string | number;
-                to: (number | string)[];
-                index: number;
-                disabled: boolean[];
-                show: boolean[];
-              }
+            | NumberSearchExcludeFromToType
             | undefined;
           equalto?:
-            | {
-                single: string | number;
-                value: (number | string)[];
-                index: number;
-                disabled: boolean[];
-                show: boolean[];
-              }
+            | NumberSearchExcludeEqualToType
             | undefined;
         }
       | undefined;
@@ -291,8 +322,9 @@ export type CardInnerType = {
   limit: number;
   table?: string | undefined;
   join?: string | undefined;
+  disableincludeandexclude?: boolean | undefined;
 };
-  
+
 export type CardType<T> = 
 {
   multiplewordsstringtypes?:
@@ -306,11 +338,13 @@ export type CardType<T> =
   singlewordstringtypes?:
     | (T & {
         concatenated?: SingleWordConcatenatedType | undefined;
+        fixedlengthofstring?: number | undefined;
       })[]
     | undefined;
   numberstringtypes?:
     | (T & {
         concatenated?: SingleWordConcatenatedType | undefined;
+        fixedlengthofstring?: number | undefined;
       })[]
     | undefined;
   yeartypes?: T[] | undefined;

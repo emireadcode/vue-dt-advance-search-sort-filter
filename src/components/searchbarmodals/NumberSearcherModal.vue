@@ -1,88 +1,194 @@
 <script setup lang="ts">
-import { inject, triggerRef, ref, customRef, watch, computed } from "vue";
+import { 
+  type ShallowRef, 
+  shallowRef, 
+  onBeforeMount, 
+  type Ref, 
+  inject, 
+  triggerRef, 
+  ref, 
+  watch,
+  nextTick, 
+  computed 
+} from "vue";
+import type { 
+  NumberSearchExcludeFromToType, 
+  NumberSearchExcludeEqualToType, 
+  NumberType, 
+  NumberSearchType, 
+} from "../types/SupportedDatatypesTypeDeclaration";
+import Paste from "./Paste.vue";
+import ReusableNumberSearch from "./ReusableNumberSearch.vue";
 
-const props = defineProps<{
-    index: any;
-    enableFocusableDescendants: boolean;
+let
+  accessibility = inject("accessibility") as {
+    cardsmultiplesearchopenstatus: Ref<Boolean[]>;
+  }
+;
+
+type NumberSearcherUIType = {
+  tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO";
+  openexclude: boolean;
+  refequaltoinner: HTMLDivElement[] | [];
+  refnotequaltoinner: HTMLDivElement[] | [];
+  refexcludeequaltoinner: HTMLDivElement[] | [];
+  refexcludefromtoinner: HTMLDivElement[] | [];
+  refequalto: HTMLDivElement[] | [];
+  refnotequalto: HTMLDivElement[] | [];
+  refexcludeequalto: HTMLDivElement[] | [];
+  refexcludefromto: HTMLDivElement[] | [];
+  excludefromtoref: HTMLLIElement | null;
+  excludeequaltoref: HTMLLIElement | null;
+  equaltoref: HTMLLIElement | null;
+  notequaltoref: HTMLLIElement | null;
+  greaterthan: Ref<string>;
+  lessthan: Ref<string>;
+  equalto: Ref<string>;
+  notequalto: Ref<string>;
+  from: Ref<string>;
+  to: Ref<string>;
+  excludefromtofrom: Ref<string>;
+  excludefromtoto: Ref<string>;
+  excludeequalto: Ref<string>;
+  treenotequalto: NumberSearchExcludeEqualToType;
+  treeequalto: NumberSearchExcludeEqualToType;
+  treeexcludeequalto: NumberSearchExcludeEqualToType;
+  treeexcludefromto: NumberSearchExcludeFromToType;
+};
+
+let 
+  numbersearcherui = shallowRef<NumberSearcherUIType>({
+  tab: "GREATER-THAN",
+  openexclude: false,
+  refequaltoinner: [],
+  refnotequaltoinner: [],
+  refexcludeequaltoinner: [],
+  refexcludefromtoinner: [],
+  refequalto: [],
+  refnotequalto: [],
+  refexcludeequalto: [],
+  refexcludefromto: [],
+  excludefromtoref: null,
+  excludeequaltoref: null,
+  equaltoref: null,
+  notequaltoref: null,
+  greaterthan: ref(""),
+  lessthan: ref(""),
+  equalto: ref(""),
+  notequalto: ref(""),
+  from: ref(""),
+  to: ref(""),
+  excludefromtofrom: ref(""),
+  excludefromtoto: ref(""),
+  excludeequalto: ref(""),
+  treenotequalto: {
+    single: "",
+    value: [],
+    index: 0,
+    disabled: [],
+    show: [],
+    loading: false,
+    addloading: false,
+  },
+  treeequalto: {
+    single: "",
+    value: [],
+    index: 0,
+    disabled: [],
+    show: [],
+    loading: false,
+    addloading: false,
+  },
+  treeexcludeequalto: {
+    single: "",
+    value: [],
+    index: 0,
+    disabled: [],
+    show: [],
+    loading: false,
+    addloading: false,
+  },
+  treeexcludefromto: {
+    singlefrom: "",
+    singleto: "",
+    from: [],
+    to: [],
+    index: 0,
+    disabled: [],
+    show: [],
+    loading: false,
+    addloading: false,
+  },
+})
+;
+
+const 
+  props = defineProps<{
+    index: number;
   }>(),
-  cards = inject("cards") as any,
-  open = ref(false),
-  openExclude = ref(false),
-  refequaltoinner = ref([]),
-  refnotequaltoinner = ref([]),
-  refexcludeequaltoinner = ref([]),
-  refexcludefromtoinner = ref([]),
-  refequalto = ref([]),
-  refnotequalto = ref([]),
-  refexcludeequalto = ref([]),
-  refexcludefromto = ref([]),
-  excludefromtoref = ref(),
-  excludeequaltoref = ref(),
-  equaltoref = ref(),
-  notequaltoref = ref();
-let greaterthan = useDebouncedRef(cards.value[props.index].search.greaterthan),
-  lessthan = useDebouncedRef(cards.value[props.index].search.lessthan),
-  equalto = useDebouncedRef(cards.value[props.index].search.equalto.single),
-  notequalto = useDebouncedRef(cards.value[props.index].search.notequalto.single),
-  from = useDebouncedRef(cards.value[props.index].search.fromto.from),
-  to = useDebouncedRef(cards.value[props.index].search.fromto.to),
-  excludefromtofrom = useDebouncedRef(
-    cards.value[props.index].search.exclude.fromto.singlefrom
-  ),
-  excludefromtoto = useDebouncedRef(
-    cards.value[props.index].search.exclude.fromto.singleto
-  ),
-  excludeequalto = useDebouncedRef(
-    cards.value[props.index].search.exclude.equalto.single
-  ),
-  treenotequalto = useDebouncedRef(cards.value[props.index].search.notequalto),
-  treeequalto = useDebouncedRef(cards.value[props.index].search.equalto),
-  treeexcludeequalto = useDebouncedRef(cards.value[props.index].search.exclude.equalto),
-  treeexcludefromto = useDebouncedRef(cards.value[props.index].search.exclude.fromto);
+  cards = inject("cards") as ShallowRef<NumberType[]>
+;
 
-function updateTrueOrFalse(trueorfalse) {
-  cards.value[props.index].search.trueorfalse = trueorfalse;
-  triggerRef(cards);
-}
+onBeforeMount(() => {
+  (numbersearcherui.value as NumberSearcherUIType).openexclude = false;
+  (numbersearcherui.value as NumberSearcherUIType).greaterthan.value = cards.value[props.index].search.greaterthan as string;
+  (numbersearcherui.value as NumberSearcherUIType).lessthan.value = cards.value[props.index].search.lessthan as string;
+  (numbersearcherui.value as NumberSearcherUIType).equalto.value = cards.value[props.index].search.equalto?.single as string;
+  (numbersearcherui.value as NumberSearcherUIType).notequalto.value = cards.value[props.index].search.notequalto?.single as string;
+  (numbersearcherui.value as NumberSearcherUIType).from.value = cards.value[props.index].search.fromto?.from as string;
+  (numbersearcherui.value as NumberSearcherUIType).to.value = cards.value[props.index].search.fromto?.to as string;
+  (numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value = cards.value[props.index].search.exclude?.fromto?.singlefrom as string;
+  (numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value = cards.value[props.index].search.exclude?.fromto?.singleto as string;
+  (numbersearcherui.value as NumberSearcherUIType).excludeequalto.value = cards.value[props.index].search.exclude?.equalto?.single as string;
+  (numbersearcherui.value as NumberSearcherUIType).treenotequalto = cards.value[props.index].search.notequalto as NumberSearchExcludeEqualToType;
+  (numbersearcherui.value as NumberSearcherUIType).treeequalto = cards.value[props.index].search.equalto as NumberSearchExcludeEqualToType;
+  (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto = cards.value[props.index].search.exclude?.equalto as NumberSearchExcludeEqualToType;
+  (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto = cards.value[props.index].search.exclude?.fromto as NumberSearchExcludeFromToType
+  triggerRef(numbersearcherui);
+});
 
-function openNumberWindow() {
-  open.value = true;
-}
 function openExcludeWindow() {
   if (
-    greaterthan.value ||
-    lessthan.value ||
-    cards.value[props.index].search.notequalto.index > 0 ||
-    notequalto ||
-    (cards.value[props.index].search.fromto.from &&
-      cards.value[props.index].search.fromto.to)
+    (numbersearcherui.value as NumberSearcherUIType).greaterthan.value ||
+    (numbersearcherui.value as NumberSearcherUIType).lessthan.value ||
+    (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index > 0 ||
+    (numbersearcherui.value as NumberSearcherUIType).notequalto.value || (
+      (numbersearcherui.value as NumberSearcherUIType).from.value &&
+      (numbersearcherui.value as NumberSearcherUIType).to.value
+    )
   ) {
-    openExclude.value = true;
+    (numbersearcherui.value as NumberSearcherUIType).openexclude = true;
+    triggerRef(numbersearcherui);
   }
 }
 
 function setTabs(
   tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO"
 ) {
-  cards.value[props.index].search.tab = tab;
+  (numbersearcherui.value as NumberSearcherUIType).tab = tab;
+  triggerRef(numbersearcherui);
 }
 
-function scrollToElement(el) {
+function triggerNumberSearcherUI() {
+  triggerRef(numbersearcherui);
+}
+
+function scrollToElement(el: HTMLDivElement | HTMLLIElement) {
   if (el) {
     el.scrollIntoView({ behavior: "smooth" });
   }
 }
 
-function excludeFromToGuard(from, to) {
-  if (cards.value[props.index].search.tab === "GREATER-THAN") {
-    let grt = greaterthan.value;
+function excludeFromToGuard(from: string, to: string) {
+  if ((numbersearcherui.value as NumberSearcherUIType).tab === "GREATER-THAN") {
+    let grt = (numbersearcherui.value as NumberSearcherUIType).greaterthan.value;
     if (parseFloat(from) > parseFloat(grt) && parseFloat(from) < parseFloat(to)) {
       return true;
     } else {
       return false;
     }
-  } else if (cards.value[props.index].search.tab === "LESS-THAN") {
-    let lst = lessthan.value;
+  } else if ((numbersearcherui.value as NumberSearcherUIType).tab === "LESS-THAN") {
+    let lst = (numbersearcherui.value as NumberSearcherUIType).lessthan.value;
     if (parseFloat(to) <= parseFloat(lst) && parseFloat(from) < parseFloat(to)) {
       return true;
     } else {
@@ -103,34 +209,32 @@ function deleteSaved(
 ) {
   switch (treetype) {
     case "NOT-EQUAL-TO":
-      for (let i = 0; i < cards.value[props.index].search.notequalto.value.length; i++) {
+      for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value.length; i++) {
         if (i === index) {
-          let t = null;
-          clearTimeout(t);
-          t = setTimeout(() => {
-            cards.value[props.index].search.notequalto.show.splice(i, 1);
-            cards.value[props.index].search.notequalto.value.splice(i, 1);
-            cards.value[props.index].search.notequalto.disabled.splice(i, 1);
-            cards.value[props.index].search.notequalto.index -= 1;
-            triggerRef(cards);
-            clearTimeout(t);
+          let time: NodeJS.Timeout;
+          time = setTimeout(() => {
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.show.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.disabled.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index -= 1;
+            triggerRef(numbersearcherui);
+            clearTimeout(time);
           }, 10);
           break;
         }
       }
       break;
     case "EQUAL-TO":
-      for (let i = 0; i < cards.value[props.index].search.equalto.value.length; i++) {
+      for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treeequalto.value.length; i++) {
         if (i === index) {
-          let t = null;
-          clearTimeout(t);
-          t = setTimeout(() => {
-            cards.value[props.index].search.equalto.show.splice(i, 1);
-            cards.value[props.index].search.equalto.value.splice(i, 1);
-            cards.value[props.index].search.equalto.disabled.splice(i, 1);
-            cards.value[props.index].search.equalto.index -= 1;
-            triggerRef(cards);
-            clearTimeout(t);
+          let time: NodeJS.Timeout;
+          time = setTimeout(() => {
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.show.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.value.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.disabled.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.index -= 1;
+            triggerRef(numbersearcherui);
+            clearTimeout(time);
           }, 10);
           break;
         }
@@ -139,19 +243,18 @@ function deleteSaved(
     case "EXCLUDE-EQUAL-TO":
       for (
         let i = 0;
-        i < cards.value[props.index].search.exclude.equalto.value.length;
+        i < (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.length;
         i++
       ) {
         if (i === index) {
-          let t = null;
-          clearTimeout(t);
-          t = setTimeout(() => {
-            cards.value[props.index].search.exclude.equalto.show.splice(i, 1);
-            cards.value[props.index].search.exclude.equalto.value.splice(i, 1);
-            cards.value[props.index].search.exclude.equalto.disabled.splice(i, 1);
-            cards.value[props.index].search.exclude.equalto.index -= 1;
-            triggerRef(cards);
-            clearTimeout(t);
+          let time: NodeJS.Timeout;
+          time = setTimeout(() => {
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.index -= 1;
+            triggerRef(numbersearcherui);
+            clearTimeout(time);
           }, 10);
           break;
         }
@@ -160,20 +263,19 @@ function deleteSaved(
     default:
       for (
         let i = 0;
-        i < cards.value[props.index].search.exclude.fromto.from.length;
+        i < (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from.length;
         i++
       ) {
         if (i === index) {
-          let t = null;
-          clearTimeout(t);
-          t = setTimeout(() => {
-            cards.value[props.index].search.exclude.fromto.show.splice(i, 1);
-            cards.value[props.index].search.exclude.fromto.from.splice(i, 1);
-            cards.value[props.index].search.exclude.fromto.to.splice(i, 1);
-            cards.value[props.index].search.exclude.fromto.disabled.splice(i, 1);
-            cards.value[props.index].search.exclude.fromto.index -= 1;
-            triggerRef(cards);
-            clearTimeout(t);
+          let time: NodeJS.Timeout;
+          time = setTimeout(() => {
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.show.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.to.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.disabled.splice(i, 1);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index -= 1;
+            triggerRef(numbersearcherui);
+            clearTimeout(time);
           }, 10);
           break;
         }
@@ -184,10 +286,7 @@ function deleteSaved(
 
 function increaseIndexAndSavePrevious(
   rangeornot: string,
-  tree:
-    | { value: (string | number)[]; index: number }
-    | { from: (string | number)[]; to: (string | number)[]; index: number },
-  debouncedref: Ref<number | string> | Ref<number | string>[],
+  debouncedref: string | string[],
   buttontype: string
 ) {
   if (rangeornot === "RANGE") {
@@ -195,81 +294,82 @@ function increaseIndexAndSavePrevious(
       to = debouncedref[1];
     if (from && to) {
       if (excludeFromToGuard(from, to)) {
-        if (tree.from.length === 0) {
-          for (let i = 0; i < treeexcludeequalto.value.value.length; i++) {
+        if ((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from.length === 0) {
+          for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.length; i++) {
             if (
-              treeexcludeequalto.value.value[i] >= parseFloat(from) &&
-              treeexcludeequalto.value.value[i] <= parseFloat(to)
+              parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) >= parseFloat(from) &&
+              parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) <= parseFloat(to)
             ) {
-              scrollToElement(refexcludeequalto.value[i]);
+              scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludeequalto[i]);
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled[i] = false;
+              triggerRef(numbersearcherui);
 
-              treeexcludeequalto.value.disabled[i] = true;
-              treeexcludeequalto.value = treeexcludeequalto.value;
-
-              let t = null;
-              clearTimeout(t);
-              t = setTimeout(() => {
-                treeexcludeequalto.value.disabled[i] = false;
-                treeexcludeequalto.value = treeexcludeequalto.value;
-                clearTimeout(t);
-              }, 10);
-
-              let t1 = null;
-              clearTimeout(t1);
-              t1 = setTimeout(() => {
-                scrollToElement(refexcludeequalto.value[i]);
-
-                treeexcludeequalto.value.show[i] = false;
-                treeexcludeequalto.value = treeexcludeequalto.value;
-                clearTimeout(t1);
-              }, 50);
+              let time: NodeJS.Timeout;
+              time = setTimeout(() => {
+                (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled[i] = true;
+                numbersearcherui.value = numbersearcherui.value;
+                scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludeequalto[i]);
+                (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show[i] = false;
+                triggerRef(numbersearcherui);
+                clearTimeout(time);
+              }, 100);
             }
           }
-
-          for (let i = 0; i < treeexcludeequalto.value.value.length; i++) {
+          for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.length; i++) {
             if (
-              treeexcludeequalto.value.value[i] >= parseFloat(from) &&
-              treeexcludeequalto.value.value[i] <= parseFloat(to)
+              parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) >= parseFloat(from) &&
+              parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) <= parseFloat(to)
             ) {
-              let t3 = null;
-              t3 = setInterval(() => {
-                if (treeexcludeequalto.value.show[i] === false) {
-                  scrollToElement(refexcludeequalto.value[i]);
-
-                  treeexcludeequalto.value.show.splice(i, 1);
-                  treeexcludeequalto.value.value.splice(i, 1);
-                  treeexcludeequalto.value.disabled.splice(i, 1);
-                  treeexcludeequalto.value = treeexcludeequalto.value;
-                  clearInterval(t3);
+              let time: NodeJS.Timeout;
+              time = setInterval(() => {
+                if ((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show[i] === false) {
+                  scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludeequalto[i]);
+                  (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show.splice(i, 1);
+                  (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.splice(i, 1);
+                  (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled.splice(i, 1);
+                  triggerRef(numbersearcherui);
+                  clearInterval(time);
                 }
               }, 50);
             }
           }
+          (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from.push(from);
+          (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.to.push(to);
+          (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.disabled.push(false);
+          (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.show.push(true);
+          (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index++;
 
-          tree.from.push(from);
-          tree.to.push(to);
-          tree.disabled.push(false);
-          tree.show.push(true);
-          tree.index++;
-          treeexcludefromto.value = tree;
+          triggerRef(numbersearcherui);
 
-          let tt1 = null;
-          clearTimeout(tt1);
-          tt1 = setTimeout(() => {
-            scrollToElement(excludefromtoref.value);
-            clearTimeout(tt1);
+          let time1: NodeJS.Timeout;
+          time1 = setTimeout(() => {
+            scrollToElement((numbersearcherui.value as NumberSearcherUIType).excludefromtoref as HTMLLIElement);
+            clearTimeout(time1);
           }, 50);
         } else {
-          let fromwithinpreviousrange = false,
-            fromwithinpreviousrangeindex = 0;
-          for (let i = 0; i < tree.from.length; i++) {
+          let
+            fromwithinpreviousrange = false,
+            fromwithinpreviousrangeindex = 0
+          ;
+          for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from.length; i++) {
             if (
-              (parseFloat(from) >= parseFloat(tree.from[i]) &&
-                parseFloat(from) <= parseFloat(tree.to[i])) ||
-              (parseFloat(from) < parseFloat(tree.from[i]) &&
-                parseFloat(to) >= parseFloat(tree.from[i]) &&
-                (parseFloat(to) >= parseFloat(tree.to[i]) ||
-                  parseFloat(to) <= parseFloat(tree.to[i])))
+              (
+                parseFloat(from) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from[i])
+                &&
+                parseFloat(from) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.to[i])
+              )
+              ||
+              (
+                parseFloat(from) < parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from[i])
+                &&
+                parseFloat(to) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from[i])
+                &&
+                (
+                  parseFloat(to) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.to[i]) 
+                  ||
+                  parseFloat(to) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.to[i])
+                )
+              )
             ) {
               fromwithinpreviousrange = true;
               fromwithinpreviousrangeindex = i;
@@ -277,100 +377,88 @@ function increaseIndexAndSavePrevious(
             }
           }
           if (!fromwithinpreviousrange) {
-            for (let i = 0; i < treeexcludeequalto.value.value.length; i++) {
+            for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.length; i++) {
               if (
-                treeexcludeequalto.value.value[i] >= parseFloat(from) &&
-                treeexcludeequalto.value.value[i] <= parseFloat(to)
+                parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) >= parseFloat(from) 
+                &&
+                parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) <= parseFloat(to)
               ) {
-                scrollToElement(refexcludeequalto.value[i]);
+                scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludeequalto[i]);
+                (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled[i] = false;
+                triggerRef(numbersearcherui);
 
-                treeexcludeequalto.value.disabled[i] = true;
-                treeexcludeequalto.value = treeexcludeequalto.value;
-                let t = null;
-                clearTimeout(t);
-                t = setTimeout(() => {
-                  treeexcludeequalto.value.disabled[i] = false;
-                  treeexcludeequalto.value = treeexcludeequalto.value;
-                  clearTimeout(t);
-                }, 10);
-
-                let t1 = null;
-                clearTimeout(t1);
-                t1 = setTimeout(() => {
-                  scrollToElement(refexcludeequalto.value[i]);
-                  treeexcludeequalto.value.show[i] = false;
-                  treeexcludeequalto.value = treeexcludeequalto.value;
-                  clearTimeout(t1);
-                }, 50);
+                let time: NodeJS.Timeout;
+                time = setTimeout(() => {
+                  (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled[i] = true;
+                  numbersearcherui.value = numbersearcherui.value;
+                  scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludeequalto[i]);
+                  (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show[i] = false;
+                  triggerRef(numbersearcherui);
+                  clearTimeout(time);
+                }, 100);
               }
             }
-
-            for (let i = 0; i < treeexcludeequalto.value.value.length; i++) {
+            for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.length; i++) {
               if (
-                treeexcludeequalto.value.value[i] >= parseFloat(from) &&
-                treeexcludeequalto.value.value[i] <= parseFloat(to)
+                parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) >= parseFloat(from) &&
+                parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]) <= parseFloat(to)
               ) {
-                let t3 = null;
-                t3 = setInterval(() => {
-                  if (treeexcludeequalto.value.show[i] === false) {
-                    scrollToElement(refexcludeequalto.value[i]);
-                    treeexcludeequalto.value.show.splice(i, 1);
-                    treeexcludeequalto.value.value.splice(i, 1);
-                    treeexcludeequalto.value.disabled.splice(i, 1);
-                    treeexcludeequalto.value = treeexcludeequalto.value;
-                    clearInterval(t3);
+                let time: NodeJS.Timeout;
+                time = setInterval(() => {
+                  if ((numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show[i] === false) {
+                    scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludeequalto[i]);
+                    (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show.splice(i, 1);
+                    (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.splice(i, 1);
+                    (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled.splice(i, 1);
+                    triggerRef(numbersearcherui);
+                    clearInterval(time);
                   }
                 }, 50);
               }
             }
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from.push(from);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.to.push(to);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.disabled.push(false);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.show.push(true);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index++;
+            triggerRef(numbersearcherui);
 
-            tree.from.push(from);
-            tree.to.push(to);
-            tree.disabled.push(false);
-            tree.show.push(true);
-            tree.index++;
-            treeexcludefromto.value = tree;
-
-            let tt1 = null;
-            clearTimeout(tt1);
-            tt1 = setTimeout(() => {
-              scrollToElement(excludefromtoref.value);
-              clearTimeout(tt1);
-            }, 50);
+            nextTick(() => {
+              scrollToElement((numbersearcherui.value as NumberSearcherUIType).excludefromtoref as HTMLLIElement);
+            });
           } else {
-            scrollToElement(refexcludefromto.value[fromwithinpreviousrangeindex]);
-            refexcludefromtoinner.value[
-              fromwithinpreviousrangeindex
-            ].style.backgroundColor = "#66bb6a";
+            scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludefromto[fromwithinpreviousrangeindex]);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.disabled[fromwithinpreviousrangeindex] = false;
+            triggerRef(numbersearcherui);
 
-            tree.disabled[fromwithinpreviousrangeindex] = true;
-            treeexcludefromto.value = tree;
-            let t = null;
-            clearTimeout(t);
-            t = setTimeout(() => {
-              tree.disabled[fromwithinpreviousrangeindex] = false;
-              treeexcludefromto.value = tree;
-              clearTimeout(t);
-            }, 10);
+            let time1: NodeJS.Timeout;
+            time1 = setTimeout(() => {
+              (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[
+                fromwithinpreviousrangeindex
+              ].style.backgroundColor = "#66bb6a";
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.disabled[fromwithinpreviousrangeindex] = true;
+              numbersearcherui.value = numbersearcherui.value;
 
-            let ttt;
-            clearTimeout(ttt);
-            ttt = setTimeout(() => {
+              triggerRef(numbersearcherui);
+              clearTimeout(time1);
+            }, 100);
+
+            let time2: NodeJS.Timeout;
+            time2 = setTimeout(() => {
               if (
-                refexcludefromtoinner.value[fromwithinpreviousrangeindex] !== undefined &&
-                refexcludefromtoinner.value[fromwithinpreviousrangeindex] !== null
+                (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[fromwithinpreviousrangeindex] !== undefined &&
+                (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[fromwithinpreviousrangeindex] !== null
               ) {
                 if (
-                  refexcludefromtoinner.value[fromwithinpreviousrangeindex].style
+                  (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[fromwithinpreviousrangeindex].style
                     .backgroundColor !== "#fff"
                 )
-                  refexcludefromtoinner.value[
+                (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[
                     fromwithinpreviousrangeindex
                   ].style.backgroundColor = "#fff";
               }
-              clearTimeout(ttt);
+              clearTimeout(time2);
             }, 400);
-
             //excludefromtofrom.value = '';
             //excludefromtoto.value = '';
           }
@@ -378,538 +466,520 @@ function increaseIndexAndSavePrevious(
       }
     }
   } else {
-    if (debouncedref) {
+    if (typeof debouncedref === 'string') {
       let found = false,
         foundindex = 0;
-      for (let i = 0; i < tree.value.length; i++) {
-        if (tree.value[i] === debouncedref) {
+      for (
+        let i = 0; 
+        i < ((buttontype === 'EQUAL-TO') ?
+          (numbersearcherui.value as NumberSearcherUIType).treeequalto.value.length
+          : (
+            buttontype === 'NOT-EQUAL-TO'?
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value.length
+            :
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.length
+          ))
+        ; 
+        i++
+      ) {
+        if (
+          (
+            (buttontype === 'EQUAL-TO') ?
+              (numbersearcherui.value as NumberSearcherUIType).treeequalto.value[i]
+              : (
+                  (buttontype === 'NOT-EQUAL-TO') ?
+                    (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value[i]
+                    :
+                    (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value[i]
+                )
+          )
+          === debouncedref
+        ) {
           found = true;
           foundindex = i;
           break;
         }
       }
-
       switch (buttontype) {
         case "EQUAL-TO":
           if (!found) {
-            tree.value.push(debouncedref);
-            tree.disabled.push(false);
-            tree.show.push(true);
-            tree.index++;
-            treeequalto.value = tree;
-            let tt1 = null;
-            clearTimeout(tt1);
-            tt1 = setTimeout(() => {
-              scrollToElement(equaltoref.value);
-              clearTimeout(tt1);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.value.push(debouncedref as string);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.disabled.push(false);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.show.push(true);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.index++;
+            triggerRef(numbersearcherui);
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              scrollToElement((numbersearcherui.value as NumberSearcherUIType).equaltoref as HTMLLIElement);
+              clearTimeout(time);
             }, 50);
           } else {
-            scrollToElement(refequalto.value[foundindex]);
-            refequaltoinner.value[foundindex].style.backgroundColor = "#66bb6a";
+            scrollToElement((numbersearcherui.value as NumberSearcherUIType).refequalto[foundindex]);
+            (numbersearcherui.value as NumberSearcherUIType).treeequalto.disabled[foundindex] = false;
+            triggerRef(numbersearcherui);
 
-            tree.disabled[foundindex] = true;
-            treeequalto.value = tree;
-            let t = null;
-            clearTimeout(t);
-            t = setTimeout(() => {
-              tree.disabled[foundindex] = false;
-              treeequalto.value = tree;
-              clearTimeout(t);
-            }, 10);
-
-            let ttt;
-            clearTimeout(ttt);
-            ttt = setTimeout(() => {
+            let time1: NodeJS.Timeout;
+            time1 = setTimeout(() => {
+              (numbersearcherui.value as NumberSearcherUIType).refequaltoinner[foundindex].style.backgroundColor = "#66bb6a";
+              (numbersearcherui.value as NumberSearcherUIType).treeequalto.disabled[foundindex] = true;
+              numbersearcherui.value = numbersearcherui.value;
+              triggerRef(numbersearcherui);
+              clearTimeout(time1);
+            });
+            let time2: NodeJS.Timeout;
+            time2 = setTimeout(() => {
               if (
-                refequaltoinner.value[foundindex] !== undefined &&
-                refequaltoinner.value[foundindex] !== null
+                (numbersearcherui.value as NumberSearcherUIType).refequaltoinner[foundindex] !== undefined &&
+                (numbersearcherui.value as NumberSearcherUIType).refequaltoinner[foundindex] !== null
               ) {
-                if (refequaltoinner.value[foundindex].style.backgroundColor !== "#fff")
-                  refequaltoinner.value[foundindex].style.backgroundColor = "#fff";
+                if ((numbersearcherui.value as NumberSearcherUIType).refequaltoinner[foundindex].style.backgroundColor !== "#fff") {
+                  (numbersearcherui.value as NumberSearcherUIType).refequaltoinner[foundindex].style.backgroundColor = "#fff";
+                  triggerRef(numbersearcherui);
+                }
               }
-              clearTimeout(ttt);
+              clearTimeout(time2);
             }, 400);
           }
-          equalto.value = "";
+          (numbersearcherui.value as NumberSearcherUIType).equalto.value = "";
           break;
         case "NOT-EQUAL-TO":
           if (!found) {
-            tree.value.push(debouncedref);
-            tree.disabled.push(false);
-            tree.show.push(true);
-            tree.index++;
-            treenotequalto.value = tree;
-            let tt1 = null;
-            clearTimeout(tt1);
-            tt1 = setTimeout(() => {
-              scrollToElement(notequaltoref.value);
-              clearTimeout(tt1);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value.push(debouncedref);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.disabled.push(false);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.show.push(true);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index++;
+            triggerRef(numbersearcherui);
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              scrollToElement((numbersearcherui.value as NumberSearcherUIType).notequaltoref as HTMLLIElement);
+              clearTimeout(time);
             }, 50);
           } else {
-            scrollToElement(refnotequalto.value[foundindex]);
-            refnotequaltoinner.value[foundindex].style.backgroundColor = "#66bb6a";
+            scrollToElement((numbersearcherui.value as NumberSearcherUIType).refnotequalto[foundindex]);
+            (numbersearcherui.value as NumberSearcherUIType).treenotequalto.disabled[foundindex] = false;
+            triggerRef(numbersearcherui);
 
-            tree.disabled[foundindex] = true;
-            treenotequalto.value = tree;
-            let t = null;
-            clearTimeout(t);
-            t = setTimeout(() => {
-              tree.disabled[foundindex] = false;
-              treenotequalto.value = tree;
-              clearTimeout(t);
-            }, 10);
-
-            let ttt;
-            clearTimeout(ttt);
-            ttt = setTimeout(() => {
+            let time1: NodeJS.Timeout;
+            time1 = setTimeout(() => {
+            (numbersearcherui.value as NumberSearcherUIType).refnotequaltoinner[foundindex].style.backgroundColor = "#66bb6a";
+              (numbersearcherui.value as NumberSearcherUIType).treenotequalto.disabled[foundindex] = true;
+              numbersearcherui.value = numbersearcherui.value;
+              triggerRef(numbersearcherui);
+              clearTimeout(time1);
+            }, 100);
+            let time2: NodeJS.Timeout;
+            time2 = setTimeout(() => {
               if (
-                refnotequaltoinner.value[foundindex] !== undefined &&
-                refnotequaltoinner.value[foundindex] !== null
+                (numbersearcherui.value as NumberSearcherUIType).refnotequaltoinner[foundindex] !== undefined &&
+                (numbersearcherui.value as NumberSearcherUIType).refnotequaltoinner[foundindex] !== null
               ) {
-                if (refnotequaltoinner.value[foundindex].style.backgroundColor !== "#fff")
-                  refnotequaltoinner.value[foundindex].style.backgroundColor = "#fff";
+                if ((numbersearcherui.value as NumberSearcherUIType).refnotequaltoinner[foundindex].style.backgroundColor !== "#fff") {
+                  (numbersearcherui.value as NumberSearcherUIType).refnotequaltoinner[foundindex].style.backgroundColor = "#fff";
+                  triggerRef(numbersearcherui);
+                }
               }
-              clearTimeout(ttt);
+              clearTimeout(time2);
             }, 400);
           }
-          notequalto.value = "";
+          (numbersearcherui.value as NumberSearcherUIType).notequalto.value = "";
           break;
         default:
           let fromwithinpreviousrange = false,
             fromwithinpreviousrangeindex = 0;
-          for (let i = 0; i < treeexcludefromto.value.from.length; i++) {
+          for (let i = 0; i < (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from.length; i++) {
             if (
-              parseFloat(debouncedref) >= parseFloat(treeexcludefromto.value.from[i]) &&
-              parseFloat(debouncedref) <= parseFloat(treeexcludefromto.value.to[i])
+              parseFloat(debouncedref) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.from[i]) &&
+              parseFloat(debouncedref) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.to[i])
             ) {
               fromwithinpreviousrange = true;
               fromwithinpreviousrangeindex = i;
               break;
             }
           }
-
           if (fromwithinpreviousrange) {
-            scrollToElement(refexcludefromto.value[fromwithinpreviousrangeindex]);
-            refexcludefromtoinner.value[
-              fromwithinpreviousrangeindex
-            ].style.backgroundColor = "#66bb6a";
+            scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludefromto[fromwithinpreviousrangeindex]);
+            (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.disabled[fromwithinpreviousrangeindex] = false;
+            triggerRef(numbersearcherui);
 
-            treeexcludefromto.value.disabled[fromwithinpreviousrangeindex] = true;
-            treeexcludefromto.value = treeexcludefromto.value;
-            let t = null;
-            clearTimeout(t);
-            t = setTimeout(() => {
-              treeexcludefromto.value.disabled[fromwithinpreviousrangeindex] = false;
-              treeexcludefromto.value = treeexcludefromto.value;
-              clearTimeout(t);
-            }, 10);
+            let time1: NodeJS.Timeout;
+            time1 = setTimeout(() => {
+              (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[
+                fromwithinpreviousrangeindex
+              ].style.backgroundColor = "#66bb6a";
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.disabled[fromwithinpreviousrangeindex] = true;
+              numbersearcherui.value = numbersearcherui.value;
 
-            let ttt;
-            clearTimeout(ttt);
-            ttt = setTimeout(() => {
+              triggerRef(numbersearcherui);
+              clearTimeout(time1);
+            }, 100);
+
+            let time2: NodeJS.Timeout;
+            time2 = setTimeout(() => {
               if (
-                refexcludefromtoinner.value[fromwithinpreviousrangeindex] !== undefined &&
-                refexcludefromtoinner.value[fromwithinpreviousrangeindex] !== null
+                (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[fromwithinpreviousrangeindex] !== undefined &&
+                (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[fromwithinpreviousrangeindex] !== null
               ) {
                 if (
-                  refexcludefromtoinner.value[fromwithinpreviousrangeindex].style
+                  (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[fromwithinpreviousrangeindex].style
                     .backgroundColor !== "#fff"
-                )
-                  refexcludefromtoinner.value[
+                ) {
+                  (numbersearcherui.value as NumberSearcherUIType).refexcludefromtoinner[
                     fromwithinpreviousrangeindex
                   ].style.backgroundColor = "#fff";
+                  triggerRef(numbersearcherui);
+                }
               }
-              clearTimeout(ttt);
+              clearTimeout(time2);
             }, 400);
           } else {
             if (!found) {
-              tree.value.push(debouncedref);
-              tree.disabled.push(false);
-              tree.show.push(true);
-              tree.index++;
-              treeexcludeequalto.value = tree;
-
-              let tt1 = null;
-              clearTimeout(tt1);
-              tt1 = setTimeout(() => {
-                scrollToElement(excludeequaltoref.value);
-                clearTimeout(tt1);
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.value.push(debouncedref);
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled.push(false);
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.show.push(true);
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.index++;
+              triggerRef(numbersearcherui);
+              let time: NodeJS.Timeout;
+              time = setTimeout(() => {
+                scrollToElement((numbersearcherui.value as NumberSearcherUIType).excludeequaltoref as HTMLLIElement);
+                clearTimeout(time);
               }, 50);
             } else {
-              scrollToElement(refexcludeequalto.value[foundindex]);
-              refexcludeequaltoinner.value[foundindex].style.backgroundColor = "#66bb6a";
+              scrollToElement((numbersearcherui.value as NumberSearcherUIType).refexcludeequalto[foundindex]);
+              (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled[foundindex] = false;
+              triggerRef(numbersearcherui);
 
-              tree.disabled[foundindex] = true;
-              treeexcludeequalto.value = tree;
-              let t = null;
-              clearTimeout(t);
-              t = setTimeout(() => {
-                tree.disabled[foundindex] = false;
-                treeexcludeequalto.value = tree;
-                clearTimeout(t);
-              }, 10);
-
-              let ttt;
-              clearTimeout(ttt);
-              ttt = setTimeout(() => {
+              let time1: NodeJS.Timeout;
+              time1 = setTimeout(() => {
+                (numbersearcherui.value as NumberSearcherUIType).refexcludeequaltoinner[foundindex].style.backgroundColor = "#66bb6a";
+                (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.disabled[foundindex] = true;
+                numbersearcherui.value = numbersearcherui.value;
+                triggerRef(numbersearcherui);
+                clearTimeout(time1);
+              },100);
+              let time2: NodeJS.Timeout;
+              time2 = setTimeout(() => {
                 if (
-                  refexcludeequaltoinner.value[foundindex] !== undefined &&
-                  refexcludeequaltoinner.value[foundindex] !== null
+                  (numbersearcherui.value as NumberSearcherUIType).refexcludeequaltoinner[foundindex] !== undefined &&
+                  (numbersearcherui.value as NumberSearcherUIType).refexcludeequaltoinner[foundindex] !== null
                 ) {
                   if (
-                    refexcludeequaltoinner.value[foundindex].style.backgroundColor !==
+                    (numbersearcherui.value as NumberSearcherUIType).refexcludeequaltoinner[foundindex].style.backgroundColor !==
                     "#fff"
-                  )
-                    refexcludeequaltoinner.value[foundindex].style.backgroundColor =
+                  ) {
+                    (numbersearcherui.value as NumberSearcherUIType).refexcludeequaltoinner[foundindex].style.backgroundColor =
                       "#fff";
+                    triggerRef(numbersearcherui);
+                  }
                 }
-                clearTimeout(ttt);
+                clearTimeout(time2);
               }, 400);
             }
           }
-          excludeequalto.value = "";
+          (numbersearcherui.value as NumberSearcherUIType).excludeequalto.value = "";
           break;
       }
     }
   }
-  triggerRef(cards);
+  triggerRef(numbersearcherui);
 }
 
-function useDebouncedRef(value, delay = 400) {
-  let timeout;
-  return customRef((track, trigger) => {
-    return {
-      get() {
-        track();
-        return value;
-      },
-      set(newValue) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          value = newValue;
-          trigger();
-          clearTimeout(timeout);
-        }, delay);
-      },
-    };
-  });
-}
-
-watch(
-  () => from.value,
-  (x) => {
-    cards.value[props.index].search.fromto.from = x;
-  }
-);
-
-watch(
-  () => to.value,
-  (x) => {
-    cards.value[props.index].search.fromto.to = x;
-  }
-);
-
-watch(
-  () => greaterthan.value,
-  (x) => {
-    cards.value[props.index].search.greaterthan = x;
-  }
-);
-
-watch(
-  () => lessthan.value,
-  (x) => {
-    cards.value[props.index].search.lessthan = x;
-  }
-);
-
-watch(
-  () => equalto.value,
-  (x) => {
-    cards.value[props.index].search.equalto.single = x;
-  }
-);
-
-watch(
-  () => notequalto.value,
-  (x) => {
-    cards.value[props.index].search.notequalto.single = x;
-  }
-);
-
-watch(
-  () => cards.value[props.index].search.exclude.equalto.index,
-  (x) => {
-    excludeequalto.value = "";
-  }
-);
-
-watch(
-  () => cards.value[props.index].search.exclude.fromto.index,
-  (x) => {
-    excludefromtoto.value = "";
-    excludefromtofrom.value = "";
-  }
-);
-
-watch(
-  () => cards.value[props.index].search.equalto.index,
-  (x) => {
-    equalto.value = "";
-  }
-);
-
-watch(
-  () => cards.value[props.index].search.notequalto.index,
-  (x) => {
-    notequalto.value = "";
-  }
-);
-
-function resetOthers(pressedinput: string) {
+function resetOthers(pressedinput: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO") {
   if (pressedinput === "GREATER-THAN") {
-    lessthan.value = "";
-    from.value = "";
-    to.value = "";
-    equalto.value = "";
-    notequalto.value = "";
-    cards.value[props.index].search.equalto.value = [];
-    cards.value[props.index].search.notequalto.value = [];
-    cards.value[props.index].search.equalto.index = 0;
-    cards.value[props.index].search.notequalto.index = 0;
+    if((numbersearcherui.value as NumberSearcherUIType).greaterthan.value.length > 0) {
+      (numbersearcherui.value as NumberSearcherUIType).lessthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).from.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).to.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).equalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).notequalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.index = 0;
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index = 0;
+    }
   } else if (pressedinput === "LESS-THAN") {
-    greaterthan.value = "";
-    from.value = "";
-    to.value = "";
-    equalto.value = "";
-    notequalto.value = "";
-    cards.value[props.index].search.equalto.value = [];
-    cards.value[props.index].search.notequalto.value = [];
-    cards.value[props.index].search.equalto.index = 0;
-    cards.value[props.index].search.notequalto.index = 0;
+    if((numbersearcherui.value as NumberSearcherUIType).lessthan.value.length > 0) {
+      (numbersearcherui.value as NumberSearcherUIType).greaterthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).from.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).to.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).equalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).notequalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.index = 0;
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index = 0;
+    }
   } else if (pressedinput === "EQUAL-TO") {
-    greaterthan.value = "";
-    lessthan.value = "";
-    from.value = "";
-    to.value = "";
-    notequalto.value = "";
-    cards.value[props.index].search.notequalto.value = [];
-    cards.value[props.index].search.notequalto.index = 0;
+    if((numbersearcherui.value as NumberSearcherUIType).equalto.value.length > 0) {
+      (numbersearcherui.value as NumberSearcherUIType).greaterthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).lessthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).from.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).to.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).notequalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index = 0;
+    }
   } else if (pressedinput === "NOT-EQUAL-TO") {
-    greaterthan.value = "";
-    lessthan.value = "";
-    from.value = "";
-    to.value = "";
-    equalto.value = "";
-    cards.value[props.index].search.equalto.value = [];
-    cards.value[props.index].search.equalto.index = 0;
+    if((numbersearcherui.value as NumberSearcherUIType).notequalto.value.length > 0) {
+      (numbersearcherui.value as NumberSearcherUIType).greaterthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).lessthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).from.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).to.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).equalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.index = 0;
+    }
   } else {
-    greaterthan.value = "";
-    lessthan.value = "";
-    equalto.value = "";
-    notequalto.value = "";
-    cards.value[props.index].search.equalto.value = [];
-    cards.value[props.index].search.notequalto.value = [];
-    cards.value[props.index].search.equalto.index = 0;
-    cards.value[props.index].search.notequalto.index = 0;
+    if(
+      (numbersearcherui.value as NumberSearcherUIType).from.value.length > 0
+      ||
+      (numbersearcherui.value as NumberSearcherUIType).to.value.length > 0
+    ) {
+      (numbersearcherui.value as NumberSearcherUIType).greaterthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).lessthan.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).equalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).notequalto.value = "";
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.value = [];
+      (numbersearcherui.value as NumberSearcherUIType).treeequalto.index = 0;
+      (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index = 0;
+    }
   }
-  cards.value[props.index].search.exclude = {
-    fromto: {
-      singlefrom: "",
-      singleto: "",
-      from: [],
-      to: [],
-      index: 0,
-      disabled: [],
-      show: [],
-    },
-    equalto: {
-      single: "",
-      value: [],
-      index: 0,
-      disabled: [],
-      show: [],
-    },
-  };
+  (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto = {
+    singlefrom: "",
+    singleto: "",
+    from: [],
+    to: [],
+    index: 0,
+    disabled: [],
+    show: [],
+    loading: false,
+    addloading: false,
+  } as NumberSearchExcludeFromToType;
+  (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto = {
+    single: "",
+    value: [],
+    index: 0,
+    disabled: [],
+    show: [],
+    loading: false,
+    addloading: false,
+  } as NumberSearchExcludeEqualToType;
+  setTabs(pressedinput);
+  triggerRef(numbersearcherui);
 }
 
 const excludeAddNewFromTo = computed(() => {
-  if (cards.value[props.index].search.tab === "GREATER-THAN") {
+  if ((numbersearcherui.value as NumberSearcherUIType).tab === "GREATER-THAN") {
     return (
-      parseFloat(excludefromtoto.value) <=
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) <=
         parseFloat(cards.value[props.index].result.max) &&
-      parseFloat(excludefromtofrom.value) <
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) <
         parseFloat(cards.value[props.index].result.max) &&
-      parseFloat(excludefromtofrom.value) > parseFloat(greaterthan.value) &&
-      parseFloat(excludefromtofrom.value) < parseFloat(excludefromtoto.value)
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value)
     );
-  } else if (cards.value[props.index].search.tab === "LESS-THAN") {
+  } else if ((numbersearcherui.value as NumberSearcherUIType).tab === "LESS-THAN") {
     return (
-      parseFloat(excludefromtoto.value) >
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) >
         parseFloat(cards.value[props.index].result.min) &&
-      parseFloat(excludefromtofrom.value) >=
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) >=
         parseFloat(cards.value[props.index].result.min) &&
-      parseFloat(excludefromtoto.value) <= parseFloat(lessthan.value) &&
-      parseFloat(excludefromtofrom.value) < parseFloat(excludefromtoto.value)
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value)
     );
   } else {
     return (
-      parseFloat(excludefromtofrom.value) > parseFloat(from.value) &&
-      parseFloat(excludefromtoto.value) < parseFloat(to.value) &&
-      parseFloat(excludefromtofrom.value) < parseFloat(excludefromtoto.value)
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value)
     );
   }
 });
 
 const excludeAddNewEqualto = computed(() => {
-  if (cards.value[props.index].search.tab === "GREATER-THAN") {
+  if ((numbersearcherui.value as NumberSearcherUIType).tab === "GREATER-THAN") {
     return (
-      parseFloat(excludeequalto.value) >= parseFloat(greaterthan.value) &&
-      parseFloat(excludeequalto.value) <= parseFloat(cards.value[props.index].result.max)
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) <= parseFloat(cards.value[props.index].result.max)
     );
-  } else if (cards.value[props.index].search.tab === "LESS-THAN") {
+  } else if ((numbersearcherui.value as NumberSearcherUIType).tab === "LESS-THAN") {
     return (
-      parseFloat(excludeequalto.value) <= parseFloat(lessthan.value) &&
-      parseFloat(excludeequalto.value) >= parseFloat(cards.value[props.index].result.min)
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) >= parseFloat(cards.value[props.index].result.min)
     );
   } else {
     return (
-      parseFloat(excludeequalto.value) >= parseFloat(from.value) &&
-      parseFloat(excludeequalto.value) <= parseFloat(to.value)
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value)
     );
   }
 });
 
 const excludeDone = computed(() => {
-  if (cards.value[props.index].search.tab === "GREATER-THAN") {
+  if ((numbersearcherui.value as NumberSearcherUIType).tab === "GREATER-THAN") {
     return (
-      (parseFloat(excludefromtofrom.value) > parseFloat(greaterthan.value) &&
-        parseFloat(excludefromtofrom.value) < parseFloat(excludefromtoto.value) &&
-        parseFloat(excludefromtofrom.value) <
+      (parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) <
           parseFloat(cards.value[props.index].result.max) &&
-        parseFloat(excludefromtoto.value) <=
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) <=
           parseFloat(cards.value[props.index].result.max)) ||
-      (parseFloat(excludeequalto.value) >= parseFloat(greaterthan.value) &&
-        parseFloat(excludeequalto.value) <=
+      (parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) <=
           parseFloat(cards.value[props.index].result.max)) ||
-      parseFloat(cards.value[props.index].search.exclude.equalto.index) > 0 ||
-      parseFloat(cards.value[props.index].search.exclude.fromto.index) > 0
+      (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.index > 0 ||
+      (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index > 0
     );
-  } else if (cards.value[props.index].search.tab === "LESS-THAN") {
+  } else if ((numbersearcherui.value as NumberSearcherUIType).tab === "LESS-THAN") {
     return (
-      (parseFloat(excludefromtoto.value) <= parseFloat(lessthan.value) &&
-        parseFloat(excludefromtofrom.value) < parseFloat(excludefromtoto.value) &&
-        parseFloat(excludefromtofrom.value) >=
+      (parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) >=
           parseFloat(cards.value[props.index].result.min) &&
-        parseFloat(excludefromtoto.value) >
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) >
           parseFloat(cards.value[props.index].result.min)) ||
-      (parseFloat(excludeequalto.value) <= parseFloat(lessthan.value) &&
-        parseFloat(excludeequalto.value) >=
+      (parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) >=
           parseFloat(cards.value[props.index].result.min)) ||
-      parseFloat(cards.value[props.index].search.exclude.equalto.index) > 0 ||
-      parseFloat(cards.value[props.index].search.exclude.fromto.index) > 0
+      (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.index > 0 ||
+      (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index > 0
     );
   } else {
     return (
-      (parseFloat(excludefromtoto.value) <= parseFloat(to.value) &&
-        parseFloat(excludefromtofrom.value) < parseFloat(excludefromtoto.value) &&
-        parseFloat(excludefromtofrom.value) >= parseFloat(from.value) &&
-        parseFloat(excludefromtoto.value) > parseFloat(from.value)) ||
-      (parseFloat(excludeequalto.value) >= parseFloat(from.value) &&
-        parseFloat(excludeequalto.value) <= parseFloat(to.value)) ||
-      parseFloat(cards.value[props.index].search.exclude.equalto.index) > 0 ||
-      parseFloat(cards.value[props.index].search.exclude.fromto.index) > 0
+      (parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value)) ||
+      (parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) &&
+        parseFloat((numbersearcherui.value as NumberSearcherUIType).excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value)) ||
+      (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.index > 0 ||
+      (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index > 0
     );
   }
 });
 
 const excludeClear = computed(() => {
   return (
-    excludefromtofrom.value ||
-    excludefromtoto.value ||
-    excludeequalto.value ||
-    parseFloat(cards.value[props.index].search.exclude.equalto.index) > 0 ||
-    parseFloat(cards.value[props.index].search.exclude.fromto.index) > 0
+    (numbersearcherui.value as NumberSearcherUIType).excludefromtofrom ||
+    (numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value ||
+    (numbersearcherui.value as NumberSearcherUIType).excludeequalto ||
+    (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.index > 0 ||
+    (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index > 0
   );
 });
 
 const done = computed(() => {
   return (
-    (parseFloat(greaterthan.value) <= cards.value[props.index].result.max &&
-      parseFloat(greaterthan.value) >= cards.value[props.index].result.min) ||
-    (parseFloat(lessthan.value) <= cards.value[props.index].result.max &&
-      parseFloat(lessthan.value) >= cards.value[props.index].result.min) ||
-    cards.value[props.index].search.equalto.index > 0 ||
-    (parseFloat(equalto.value) <= cards.value[props.index].result.max &&
-      parseFloat(equalto.value) >= cards.value[props.index].result.min) ||
-    cards.value[props.index].search.notequalto.index > 0 ||
-    (parseFloat(notequalto.value) <= cards.value[props.index].result.max &&
-      parseFloat(notequalto.value) >= cards.value[props.index].result.min) ||
-    (parseFloat(from.value) < parseFloat(to.value) &&
-      parseFloat(from.value) <= cards.value[props.index].result.max &&
-      parseFloat(from.value) >= cards.value[props.index].result.min &&
-      parseFloat(to.value) <= cards.value[props.index].result.max &&
-      parseFloat(to.value) >= cards.value[props.index].result.min)
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (numbersearcherui.value as NumberSearcherUIType).treeequalto.index > 0 ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).equalto.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).equalto.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index > 0 ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).notequalto.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).notequalto.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) >= parseFloat(cards.value[props.index].result.min) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) >= parseFloat(cards.value[props.index].result.min)
+    )
   );
 });
 
 const exclude = computed(() => {
   return (
-    (parseFloat(greaterthan.value) <= cards.value[props.index].result.max &&
-      parseFloat(greaterthan.value) >= cards.value[props.index].result.min) ||
-    (parseFloat(lessthan.value) <= cards.value[props.index].result.max &&
-      parseFloat(lessthan.value) >= cards.value[props.index].result.min) ||
-    (parseFloat(from.value) < parseFloat(to.value) &&
-      parseFloat(from.value) <= cards.value[props.index].result.max &&
-      parseFloat(from.value) >= cards.value[props.index].result.min &&
-      parseFloat(to.value) <= cards.value[props.index].result.max &&
-      parseFloat(to.value) >= cards.value[props.index].result.min)
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) >= parseFloat(cards.value[props.index].result.min) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) >= parseFloat(cards.value[props.index].result.min)
+    )
   );
 });
 
 const clear = computed(() => {
   return (
-    (parseFloat(greaterthan.value) <= cards.value[props.index].result.max &&
-      parseFloat(greaterthan.value) >= cards.value[props.index].result.min) ||
-    (parseFloat(lessthan.value) <= cards.value[props.index].result.max &&
-      parseFloat(lessthan.value) >= cards.value[props.index].result.min) ||
-    cards.value[props.index].search.equalto.index > 0 ||
-    (parseFloat(equalto.value) <= cards.value[props.index].result.max &&
-      parseFloat(equalto.value) >= cards.value[props.index].result.min) ||
-    cards.value[props.index].search.notequalto.index > 0 ||
-    (parseFloat(notequalto.value) <= cards.value[props.index].result.max &&
-      parseFloat(notequalto.value) >= cards.value[props.index].result.min) ||
-    (parseFloat(from.value) < parseFloat(to.value) &&
-      parseFloat(from.value) <= cards.value[props.index].result.max &&
-      parseFloat(from.value) >= cards.value[props.index].result.min &&
-      parseFloat(to.value) <= cards.value[props.index].result.max &&
-      parseFloat(to.value) >= cards.value[props.index].result.min)
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).greaterthan.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).lessthan.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (numbersearcherui.value as NumberSearcherUIType).treeequalto.index > 0 ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).equalto.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).equalto.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index > 0 ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).notequalto.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).notequalto.value) >= parseFloat(cards.value[props.index].result.min)
+    ) ||
+    (parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).from.value) >= parseFloat(cards.value[props.index].result.min) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) <= parseFloat(cards.value[props.index].result.max) &&
+      parseFloat((numbersearcherui.value as NumberSearcherUIType).to.value) >= parseFloat(cards.value[props.index].result.min)
+    )
   );
 });
 
 const equaltoAddNew = computed(() => {
   return (
-    parseFloat(equalto.value) <= cards.value[props.index].result.max &&
-    parseFloat(equalto.value) >= cards.value[props.index].result.min
+    parseFloat((numbersearcherui.value as NumberSearcherUIType).equalto.value) <= parseFloat(cards.value[props.index].result.max) &&
+    parseFloat((numbersearcherui.value as NumberSearcherUIType).equalto.value) >= parseFloat(cards.value[props.index].result.min)
   );
 });
 
 const notequaltoAddNew = computed(() => {
   return (
-    parseFloat(notequalto.value) <= cards.value[props.index].result.max &&
-    parseFloat(notequalto.value) >= cards.value[props.index].result.min
+    parseFloat((numbersearcherui.value as NumberSearcherUIType).notequalto.value) <= parseFloat(cards.value[props.index].result.max) &&
+    parseFloat((numbersearcherui.value as NumberSearcherUIType).notequalto.value) >= parseFloat(cards.value[props.index].result.min)
   );
 });
 
-function updateSortType(val) {
-  cards.value[props.index].sorttype = val.sorttype;
-  triggerRef(cards);
-}
+watch(
+  () => (numbersearcherui.value as NumberSearcherUIType).treeexcludeequalto.index,
+  (x) => {
+    (numbersearcherui.value as NumberSearcherUIType).excludeequalto.value = "";
+    triggerRef(numbersearcherui);
+  }
+);
+watch(
+  () => (numbersearcherui.value as NumberSearcherUIType).treeexcludefromto.index,
+  (x) => {
+    (numbersearcherui.value as NumberSearcherUIType).excludefromtoto.value = "";
+    (numbersearcherui.value as NumberSearcherUIType).excludefromtofrom.value = "";
+    triggerRef(numbersearcherui);
+  }
+);
+watch(
+  () => (numbersearcherui.value as NumberSearcherUIType).treeequalto.index,
+  (x) => {
+    (numbersearcherui.value as NumberSearcherUIType).equalto.value = "";
+    triggerRef(numbersearcherui);
+  }
+);
+watch(
+  () => (numbersearcherui.value as NumberSearcherUIType).treenotequalto.index,
+  (x) => {
+    (numbersearcherui.value as NumberSearcherUIType).notequalto.value = "";
+    triggerRef(numbersearcherui);
+  }
+);
 
-function updateFilterableResultDisplayer(card) {
-  cards.value[props.index] = card;
-  triggerRef(cards);
-}
 </script>
 
 <template>  
@@ -921,1010 +991,630 @@ function updateFilterableResultDisplayer(card) {
       <div class="modal-mask h-100 w-100 modal-mask-background-1">
         <div class="modal-wrapper text-center">
           <div class="modal-container d-block">
-            <div class="d-block">
+            <div class="d-block" style="height:585px;">
               <div
-                style="background-color: #fff; padding: 3px 10px"
-                class="shadow-sm d-block"
+                style="background-color: #fff; padding: 10px 5px 0 5px;white-space: nowrap;"
+                class="shadow-sm d-block overflow-x-scroll"
               >
-                <a
-                  class="underline-none cursor-pointer align-middle"
-                  @click="open = false"
-                >
-                  <img
-                    src="/src/assets/icons/close.png"
-                    class="align-middle"
-                    style="width: 24px; height: 24px"
-                  />
-                </a>
-              </div>
-              <div
-                class="d-block text-center"
-                style="padding: 7px; font-size: 0.6rem"
-              >
-                {{ cards[index].info.name }}
-              </div>
-            </div>
-            <div class="d-block">
-              <div
-                class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                style="padding: 6px 0 10px 0"
-              >
-                <div class="flex-w-50">
-                  <span
-                    class="d-inline-block p-0 m-0 letter-spacing align-middle"
+                <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
+                  <li
+                    class="flex-shrink-0 flex-grow-0 align-self-stretch"
                   >
-                    {{ cards[index].result.max }}
-                  </span>
-                </div>
-                <div class="flex-w-50">
-                  <span
-                    class="d-inline-block p-0 m-0 letter-spacing align-middle"
-                  >
-                    {{ cards[index].result.min }}
-                  </span>
-                </div>
+                    <button 
+                      aria-disabled="true" 
+                      class="text-lowercase tab" 
+                      style="padding:5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
+                    >
+                      {{ cards[index].info.name }}
+                    </button>
+                  </li>
+                </ul>
               </div>
-            </div>
-            <div class="d-block m-0" style="padding: 0 10px">
-              <div class="d-block" style="padding: 15px 0">
+              <div class="d-block position-relative">
                 <div
                   class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+                  style="padding: 10px 0"
                 >
-                  <div class="flex-w-50" style="padding-right: 10px">
-                    <div class="d-block shadow-sm" style="padding: 5px">
-                      <div class="d-block" style="padding-bottom: 5px">
-                        <img
-                          src="/src/assets/icons/greater-than.png"
-                          class="align-middle"
-                          style="width: 24px; height: 24px"
-                        />
-                      </div>
-                      <div class="d-block">
-                        <input
-                          @keyup="resetOthers('GREATER-THAN')"
-                          @keydown.space.prevent
-                          v-model.trim="greaterthan"
-                          @click.once="setTabs('GREATER-THAN')"
-                          type="text"
-                          class="w-100 text-center"
-                          style="height: 30px"
-                        />
-                      </div>
-                    </div>
+                  <div class="flex-w-50">
+                    <span
+                      class="d-inline-block p-0 m-0 letter-spacing align-middle"
+                    >
+                      Max: 
+                      {{ cards[index].result.max }}
+                    </span>
                   </div>
-                  <div class="flex-w-50" style="padding-left: 10px">
-                    <div class="d-block shadow-sm" style="padding: 5px">
-                      <div class="d-block" style="padding-bottom: 5px">
-                        <img
-                          src="/src/assets/icons/less-than.png"
-                          class="align-middle"
-                          style="width: 24px; height: 24px"
-                        />
-                      </div>
-                      <div class="d-block">
-                        <input
-                          @keyup="resetOthers('LESS-THAN')"
-                          @keydown.space.prevent
-                          v-model.trim="lessthan"
-                          @click.once="setTabs('LESS-THAN')"
-                          type="text"
-                          class="w-100 text-center"
-                          style="height: 30px"
-                        />
-                      </div>
-                    </div>
+                  <div class="flex-w-50">
+                    <span
+                      class="d-inline-block p-0 m-0 letter-spacing align-middle"
+                    >
+                      Min: 
+                      {{ cards[index].result.min }}
+                    </span>
                   </div>
                 </div>
-              </div>
-              <div class="d-block" style="padding: 0 0 15px 0">
-                <div
-                  class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                >
-                  <div class="flex-w-50" style="padding-right: 10px">
-                    <div class="d-block shadow-sm" style="padding: 5px">
-                      <div class="d-block" style="padding-bottom: 5px">
-                        <img
-                          src="/src/assets/icons/equal-to.png"
-                          class="align-middle"
-                          style="width: 24px; height: 24px"
-                        />
-                      </div>
-                      <div class="d-block">
-                        <input
-                          @keyup="resetOthers('EQUAL-TO')"
-                          @keydown.space.prevent
-                          v-model.trim="equalto"
-                          @click.once="setTabs('EQUAL-TO')"
-                          type="text"
-                          class="w-100 text-center"
-                          style="height: 30px; z-index: 1110"
-                        />
-                      </div>
-                      <div
-                        class="d-block overflow-y-auto overflow-x-hidden"
-                        style="height: 180px; z-index: 1000"
-                      >
-                        <ul
-                          class="d-block list-style-none m-0"
-                          style="padding: 5px 0px"
-                        >
-                          <li
-                            class="w-100"
-                            v-for="(data, dindex) in cards[index].search.equalto
-                              .value"
-                            :key="'exc' + dindex"
-                          >
-                            <Transition>
-                              <div
-                                :ref="
-                                  (el) => {
-                                    refequalto[dindex] = el;
-                                  }
-                                "
-                                v-if="treeequalto.show[dindex]"
-                                class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                                style="padding: 1px 5px"
-                                :class="{ shake: treeequalto.disabled[dindex] }"
-                              >
-                                <div class="flex-shrink-0 flex-grow-0">
-                                  <a
-                                    @click="deleteSaved(dindex, 'EQUAL-TO')"
-                                    class="remove-selected m-0 d-inline-block underline-none"
-                                  >
-                                    <img
-                                      class="align-middle"
-                                      src="/src/assets/icons/close.png"
-                                      style="width: 25px; height: 25px"
-                                    />
-                                  </a>
-                                </div>
-                                <div
-                                  class="flex-fill"
-                                  style="padding-left: 5px"
-                                >
-                                  <div class="d-block" style="padding: 5px">
-                                    <div
-                                      :ref="
-                                        (el) => {
-                                          refequaltoinner[dindex] = el;
-                                        }
-                                      "
-                                      class="text-left d-block text-wrap text-break shadow-sm"
-                                      style="
-                                        border-radius: 20px;
-                                        padding: 8px;
-                                        z-index: 999;
-                                      "
-                                    >
-                                      <label
-                                        class="d-block align-middle letter-spacing"
-                                        style="font-size: 0.875rem"
-                                        >{{ data }}</label
-                                      >
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </Transition>
-                          </li>
-                          <li ref="equaltoref"></li>
-                        </ul>
-                      </div>
-                      <div class="d-block" style="padding-top: 5px">
-                        <button
-                          :disabled="equaltoAddNew ? false : true"
-                          @click="
-                            increaseIndexAndSavePrevious(
-                              'NON-RANGE',
-                              cards[index].search.equalto,
-                              equalto,
-                              'EQUAL-TO'
-                            )
-                          "
-                          class="btn w-100"
-                          :style="
-                            equaltoAddNew
-                              ? 'background-color: #F0E68C;'
-                              : 'background-color:#eee;'
-                          "
-                          style="padding: 4px 0 1px 0; font-size: 0.85rem"
-                        >
-                          Add New
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex-w-50" style="padding-left: 10px">
-                    <div class="d-block shadow-sm" style="padding: 5px">
-                      <div class="d-block" style="padding-bottom: 5px">
-                        <img
-                          src="/src/assets/icons/not-equal-to.png"
-                          class="align-middle"
-                          style="width: 24px; height: 24px"
-                        />
-                      </div>
-                      <div class="d-block">
-                        <input
-                          @keyup="resetOthers('NOT-EQUAL-TO')"
-                          @keydown.space.prevent
-                          v-model.trim="notequalto"
-                          @click.once="setTabs('NOT-EQUAL-TO')"
-                          type="text"
-                          class="w-100 text-center"
-                          style="height: 30px; z-index: 1110"
-                        />
-                      </div>
-                      <div
-                        class="d-block overflow-y-auto overflow-x-hidden"
-                        style="height: 180px; z-index: 1000"
-                      >
-                        <ul
-                          class="d-block list-style-none m-0"
-                          style="padding: 5px 0px"
-                        >
-                          <li
-                            class="w-100"
-                            v-for="(data, dindex) in cards[index].search
-                              .notequalto.value"
-                            :key="'exc' + dindex"
-                          >
-                            <Transition>
-                              <div
-                                :ref="
-                                  (el) => {
-                                    refnotequalto[dindex] = el;
-                                  }
-                                "
-                                v-if="treenotequalto.show[dindex]"
-                                class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                                style="padding: 1px 5px"
-                                :class="{
-                                  shake: treenotequalto.disabled[dindex],
-                                }"
-                              >
-                                <div class="flex-shrink-0 flex-grow-0">
-                                  <a
-                                    @click="deleteSaved(dindex, 'NOT-EQUAL-TO')"
-                                    class="remove-selected m-0 d-inline-block underline-none"
-                                  >
-                                    <img
-                                      class="align-middle"
-                                      src="/src/assets/icons/close.png"
-                                      style="width: 25px; height: 25px"
-                                    />
-                                  </a>
-                                </div>
-                                <div
-                                  class="flex-fill"
-                                  style="padding-left: 5px"
-                                >
-                                  <div class="d-block" style="padding: 5px">
-                                    <div
-                                      :ref="
-                                        (el) => {
-                                          refnotequaltoinner[dindex] = el;
-                                        }
-                                      "
-                                      class="text-left d-block text-wrap text-break shadow-sm"
-                                      style="
-                                        border-radius: 20px;
-                                        padding: 8px;
-                                        z-index: 999;
-                                      "
-                                    >
-                                      <label
-                                        class="d-block align-middle letter-spacing"
-                                        style="font-size: 0.875rem"
-                                        >{{ data }}</label
-                                      >
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </Transition>
-                          </li>
-                          <li ref="notequaltoref"></li>
-                        </ul>
-                      </div>
-                      <div class="d-block" style="padding-top: 5px">
-                        <button
-                          :disabled="notequaltoAddNew ? false : true"
-                          @click="
-                            increaseIndexAndSavePrevious(
-                              'NON-RANGE',
-                              cards[index].search.notequalto,
-                              notequalto,
-                              'NOT-EQUAL-TO'
-                            )
-                          "
-                          class="btn w-100"
-                          :style="
-                            notequaltoAddNew
-                              ? 'background-color: #F0E68C;'
-                              : 'background-color:#eee;'
-                          "
-                          style="padding: 4px 0 1px 0; font-size: 0.85rem"
-                        >
-                          Add New
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="d-block" style="padding: 0 0 15px 0">
-                <div
-                  style="padding: 5px"
-                  class="shadow-sm flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                >
-                  <div class="flex-grow-1 flex-shrink-1">
-                    <div class="d-block" style="padding-bottom: 5px">
-                      <label>From</label>
-                    </div>
+                <ReusableNumberSearch></ReusableNumberSearch>
+                <div v-if="(numbersearcherui as NumberSearcherUIType).openexclude" class="d-block position-absolute t-0 l-0" style="background-color:#fff;z-index:9000;">
+                  <div class="d-block m-0 p-0">
                     <div class="d-block">
-                      <input
-                        @keydown.space.prevent
-                        v-model.trim="from"
-                        @keyup="resetOthers('FROM-TO')"
-                        @click.once="setTabs('FROM-TO')"
-                        type="text"
-                        class="w-100 text-center"
-                        style="height: 30px"
-                      />
-                    </div>
-                  </div>
-                  <div class="flex-grow-1 flex-shrink-1">
-                    <div class="d-block" style="padding-bottom: 5px">
-                      <label>To</label>
-                    </div>
-                    <div class="d-block">
-                      <input
-                        @keydown.space.prevent
-                        v-model.trim="to"
-                        @keyup="resetOthers('FROM-TO')"
-                        @click.once="setTabs('FROM-TO')"
-                        type="text"
-                        class="w-100 text-center"
-                        style="height: 30px"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="d-block" style="padding: 15px 0">
-                <div
-                  class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                >
-                  <div class="flex-w-100-over-3">
-                    <button
-                      :style="
-                        done
-                          ? 'background-color: #F0E68C;'
-                          : 'background-color: #eee;'
-                      "
-                      :disabled="done ? false : true"
-                      class="btn w-100 shadow-sm"
-                      style="padding: 7px; border-radius: 12px"
-                    >
-                      Done
-                    </button>
-                  </div>
-                  <div class="flex-w-100-over-3">
-                    <button
-                      @click="openExcludeWindow()"
-                      class="btn w-100 shadow-sm"
-                      style="padding: 7px; border-radius: 12px"
-                      :style="
-                        exclude
-                          ? 'background-color: #2196F3;color:#fff;'
-                          : 'background-color:#eee;'
-                      "
-                      :disabled="exclude ? false : true"
-                    >
-                      Exclude
-                    </button>
-                  </div>
-                  <div class="flex-w-100-over-3">
-                    <button
-                      :disabled="clear ? false : true"
-                      :style="
-                        clear
-                          ? 'background-color:red;color:#fff;'
-                          : 'background-color:#eee;'
-                      "
-                      class="btn w-100 shadow-sm"
-                      style="padding: 7px; border-radius: 12px"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <Teleport to="body">
-                <div v-if="openExclude" class="d-block position-relative">
-                  <transition name="modal">
-                    <div
-                      class="position-fixed h-100 w-100 overflow-auto user-select-none"
-                      style="z-index: 1800"
-                    >
                       <div
-                        class="modal-mask h-100 w-100 modal-mask-background-2"
+                        class="shadow-sm d-block text-center"
+                        style="background-color: blue;padding: 0 10px;"
                       >
-                        <div class="modal-wrapper text-center">
+                        <a
+                          class="underline-none cursor-pointer align-middle"
+                          @click="() => { (numbersearcherui as NumberSearcherUIType).openexclude = false; triggerNumberSearcherUI(); }"
+                        >
+                          <img
+                            src="/src/assets/icons/close.png"
+                            class="align-middle"
+                            style="width: 35px; height: 35px"
+                          />
+                        </a>
+                      </div>
+                      <div
+                        class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+                        style="padding: 10px 0"
+                      >
+                        <div class="flex-w-50">
+                          <span
+                            class="d-inline-block p-0 m-0 letter-spacing align-middle"
+                          >
+                            Max:
+                              {{
+                                (numbersearcherui as NumberSearcherUIType).tab ===
+                                "GREATER-THAN"
+                                  ? cards[index].result.max
+                                  : (numbersearcherui as NumberSearcherUIType).tab ===
+                                    "LESS-THAN"
+                                  ? (numbersearcherui as NumberSearcherUIType).lessthan.value
+                                  : (numbersearcherui as NumberSearcherUIType).to.value
+                              }}
+                          </span>
+                        </div>
+                        <div class="flex-w-50">
+                          <span
+                            class="d-inline-block p-0 m-0 letter-spacing align-middle"
+                          >
+                            Min:
+                              {{
+                                (numbersearcherui as NumberSearcherUIType).tab === "LESS-THAN"
+                                  ? cards[index].result.min
+                                  : (numbersearcherui as NumberSearcherUIType).tab ===
+                                    "GREATER-THAN"
+                                  ? (numbersearcherui as NumberSearcherUIType).greaterthan.value
+                                  : (numbersearcherui as NumberSearcherUIType).from.value
+                              }}
+                          </span>
+                        </div>
+                      </div>
+                      <template
+                        v-if="
+                          (numbersearcherui as NumberSearcherUIType).tab === 'GREATER-THAN'
+                        "
+                      >
+                        <div
+                          class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
+                          style="padding: 5px 10px"
+                        >
                           <div
-                            class="modal-container d-block"
-                            style="border-bottom: 3px solid blue"
+                            class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
                           >
-                            <div class="d-block m-0 p-0">
-                              <div class="d-block">
+                            <img
+                              src="/src/assets/icons/greater-than.png"
+                              style="width: 25px; height: 25px"
+                              class="align-middle"
+                            />
+                          </div>
+                          <div
+                            class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
+                            style="padding: 5px 0 1px 5px"
+                          >
+                            {{ (numbersearcherui as NumberSearcherUIType).greaterthan.value }}
+                          </div>
+                        </div>
+                      </template>
+                      <template
+                        v-else-if="
+                          (numbersearcherui as NumberSearcherUIType).tab === 'LESS-THAN'
+                        "
+                      >
+                        <div
+                          class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
+                          style="padding: 5px 10px"
+                        >
+                          <div
+                            class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
+                          >
+                            <img
+                              src="/src/assets/icons/less-than.png"
+                              style="width: 25px; height: 25px"
+                              class="align-middle"
+                            />
+                          </div>
+                          <div
+                            class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
+                            style="padding: 5px 0 1px 5px"
+                          >
+                            {{ (numbersearcherui as NumberSearcherUIType).lessthan.value }}
+                          </div>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <div
+                          class="d-block shadow-sm text-center"
+                          style="padding: 5px 10px"
+                        >
+                          <img
+                            src="/src/assets/icons/range.png"
+                            style="width: 25px; height: 25px"
+                            class="align-middle"
+                          />
+                        </div>
+                      </template>
+                      <div
+                        class="d-block text-center"
+                        style="padding: 10px 0 5px 0"
+                      >
+                        <span
+                          class="d-inline-block letter-spacing font-bold font-0-dot-70-rem"
+                        >Exclude By</span>
+                      </div>
+                      <div class="d-block" style="padding: 5px">
+                        <div class="d-block">
+                          <div
+                            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+                          >
+                            <div
+                              class="flex-w-60"
+                              style="padding-right: 5px"
+                            >
+                              <div
+                                class="d-block text-center shadow-sm"
+                                style="padding: 5px 0"
+                              >
+                                <span
+                                  class="d-inline-block letter-spacing font-0-dot-80-rem"
+                                >RANGE</span>
+                              </div>
+                              <div
+                                class="d-block shadow-sm"
+                                style="padding: 10px 5px 5px"
+                              >
                                 <div
-                                  class="shadow-sm flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                                  style="
-                                    background-color: blue;
-                                    padding: 0 10px;
-                                  "
+                                  class="w-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
                                 >
-                                  <div class="flex-fill text-left">
-                                    <span
-                                      class="m-0 p-0 text-capitalize text-center letter-spacing font-bold font-0-dot-80-rem"
-                                      style="color: #fff"
-                                      >{{ cards[index].info.name }}</span
-                                    >
+                                  <div
+                                    class="flex-fill p-0 m-0 align-self-stretch"
+                                  >
+                                    <div class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center">
+                                      <div
+                                        class="flex-w-50 p-0 m-0 align-self-stretch"
+                                      >
+                                        <div
+                                          class="d-block"
+                                          style="padding-bottom: 5px"
+                                        >
+                                          <label>From</label>
+                                        </div>
+                                        <div class="d-block">
+                                          <input
+                                            @keydown.space.prevent
+                                            v-model.trim="
+                                              (numbersearcherui as NumberSearcherUIType).excludefromtofrom.value
+                                            "
+                                            type="text"
+                                            class="w-100 text-center"
+                                            style="height: 30px;z-index: 1110;"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div
+                                        class="flex-w-50 p-0 m-0 align-self-stretch"
+                                      >
+                                        <div
+                                          class="d-block"
+                                          style="padding-bottom: 5px"
+                                        >
+                                          <label>To</label>
+                                        </div>
+                                        <div class="d-block">
+                                          <input
+                                            @keydown.space.prevent
+                                            v-model.trim="(numbersearcherui as NumberSearcherUIType).excludefromtoto.value"
+                                            type="text"
+                                            class="w-100 text-center"
+                                            style="height: 30px;z-index: 1110;"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                   <div
-                                    class="flex-grow-0 flex-shrink-0 text-right"
+                                    class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
                                   >
-                                    <a
-                                      class="underline-none cursor-pointer align-middle"
-                                      @click="openExclude = false"
+                                    <div
+                                      class="d-block"
+                                      style="padding-bottom: 5px"
                                     >
-                                      <img
-                                        src="/src/assets/icons/close.png"
-                                        class="align-middle"
-                                        style="width: 24px; height: 24px"
-                                      />
-                                    </a>
+                                      <label>&nbsp;</label>
+                                    </div>
+                                    <div class="d-block" style="outline: 1px solid rgba(0, 0, 0, 0.2)">
+                                      <button
+                                        :style="
+                                        excludeAddNewFromTo
+                                          ? 'background-color: #F0E68C;'
+                                          : 'background-color: #eee;'
+                                        "
+                                        :disabled="
+                                          excludeAddNewFromTo
+                                            ? false
+                                            : true
+                                        "
+                                        @click="
+                                          () => {
+                                            increaseIndexAndSavePrevious(
+                                              'RANGE',
+                                              [
+                                                (numbersearcherui as NumberSearcherUIType).excludefromtofrom.value,
+                                                (numbersearcherui as NumberSearcherUIType).excludefromtoto.value,
+                                              ],
+                                              'EXCLUDE-FROM-TO'
+                                            );
+                                          }
+                                        "
+                                        class="btn w-100 shadow-sm font-0-dot-85-rem text-center"
+                                        style="height:29px; padding:0 2px;"
+                                      >
+                                        <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
+                                <Paste
+                                  title="range"
+                                  :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+                                  :max="((
+                                    (numbersearcherui as NumberSearcherUIType).tab ===
+                                      'GREATER-THAN'
+                                        ? cards[index].result.max
+                                        : (numbersearcherui as NumberSearcherUIType).tab ===
+                                          'LESS-THAN'
+                                        ? (numbersearcherui as NumberSearcherUIType).lessthan.value
+                                        : (numbersearcherui as NumberSearcherUIType).to.value
+                                  ) as string)"
+                                  :min="((
+                                    (numbersearcherui as NumberSearcherUIType).tab === 'LESS-THAN'
+                                      ? cards[index].result.min
+                                      : (numbersearcherui as NumberSearcherUIType).tab ===
+                                        'GREATER-THAN'
+                                      ? (numbersearcherui as NumberSearcherUIType).greaterthan.value
+                                      : (numbersearcherui as NumberSearcherUIType).from.value
+                                  ) as string)"
+                                  :text-area-height="'height:450px;'"
+                                >
+                                  <template v-slot:controlbuttons></template>
+                                  <template v-slot:outcomeidentifier>
+                                    <div
+                                      class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+                                    >
+                                      <div class="flex-fill text-center">
+                                        <div
+                                          class="d-inline-block align-middle"
+                                          style="background-color: #fff; width: 15px; height: 15px"
+                                        ></div>
+                                        Pasted Lines
+                                      </div>
+                                      <div class="flex-fill text-center">
+                                        <div
+                                          class="d-inline-block align-middle"
+                                          style="background-color: red; width: 15px; height: 15px"
+                                        ></div>
+                                        Invalid Numbers
+                                      </div>
+                                    </div>
+                                  </template>
+                                </Paste>
                                 <div
-                                  class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                                  style="padding: 10px 0"
+                                  class="d-block overflow-y-auto overflow-x-hidden"
+                                  style="height: 180px; z-index: 1000"
                                 >
-                                  <div class="flex-w-50">
-                                    <span
-                                      class="d-inline-block p-0 m-0 letter-spacing align-middle"
+                                  <ul
+                                    class="d-block list-style-none m-0"
+                                    style="padding: 5px 0px"
+                                  >
+                                    <li
+                                      class="w-100"
+                                      v-for="(data, dindex) in (numbersearcherui as NumberSearcherUIType).treeexcludefromto.from"
+                                      :key="
+                                        (numbersearcherui as NumberSearcherUIType).tab +
+                                        '-EXCLUDE-FROM-TO' +
+                                        dindex
+                                      "
                                     >
-                                      Max:
-                                      {{
-                                        cards[index].search.tab ===
-                                        "GREATER-THAN"
-                                          ? cards[index].result.max
-                                          : cards[index].search.tab ===
-                                            "LESS-THAN"
-                                          ? lessthan
-                                          : to
-                                      }}
-                                    </span>
-                                  </div>
-                                  <div class="flex-w-50">
-                                    <span
-                                      class="d-inline-block p-0 m-0 letter-spacing align-middle"
-                                    >
-                                      Min:
-                                      {{
-                                        cards[index].search.tab === "LESS-THAN"
-                                          ? cards[index].result.min
-                                          : cards[index].search.tab ===
-                                            "GREATER-THAN"
-                                          ? greaterthan
-                                          : from
-                                      }}
-                                    </span>
-                                  </div>
+                                      <Transition>
+                                        <div
+                                          :ref="
+                                            (el) => {
+                                              (numbersearcherui as NumberSearcherUIType).refexcludefromto[
+                                                dindex
+                                              ] = el as HTMLDivElement;
+                                            }
+                                          "
+                                          v-if="
+                                            (numbersearcherui as NumberSearcherUIType).treeexcludefromto.show[
+                                              dindex
+                                            ]
+                                          "
+                                          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
+                                          style="padding: 1px 5px"
+                                          :class="{
+                                            shake:
+                                              (numbersearcherui as NumberSearcherUIType).treeexcludefromto
+                                                .disabled[dindex],
+                                          }"
+                                        >
+                                          <div
+                                            class="flex-shrink-0 flex-grow-0"
+                                          >
+                                            <a
+                                              @click="
+                                                deleteSaved(
+                                                  dindex,
+                                                  'EXCLUDE-FROM-TO'
+                                                )
+                                              "
+                                              class="remove-selected m-0 d-inline-block underline-none"
+                                            >
+                                              <img
+                                                class="align-middle"
+                                                src="/src/assets/icons/close.png"
+                                                style="width: 25px;height: 25px;"
+                                              />
+                                            </a>
+                                          </div>
+                                          <div
+                                            class="flex-fill"
+                                            style="padding-left: 5px"
+                                          >
+                                            <div
+                                              class="d-block"
+                                              style="padding: 5px"
+                                            >
+                                              <div
+                                                :ref="
+                                                  (el) => {
+                                                    (numbersearcherui as NumberSearcherUIType).refexcludefromtoinner[
+                                                      dindex
+                                                    ] = el as HTMLDivElement;
+                                                  }
+                                                "
+                                                class="d-block text-wrap text-break shadow-sm"
+                                                style="border-radius: 20px;padding: 8px;z-index: 999;background-color:#fff;"
+                                              >
+                                                <label
+                                                  class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
+                                                >
+                                                  {{
+                                                    (numbersearcherui as NumberSearcherUIType).treeexcludefromto.from[
+                                                      dindex
+                                                    ]
+                                                  }}
+                                                  -
+                                                  {{
+                                                    (numbersearcherui as NumberSearcherUIType).treeexcludefromto.to[
+                                                      dindex
+                                                    ]
+                                                  }}
+                                                </label>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </Transition>
+                                    </li>
+                                    <li :ref="(el) => (numbersearcherui as NumberSearcherUIType).excludefromtoref = el as HTMLLIElement"></li>
+                                  </ul>
                                 </div>
-                                <template
-                                  v-if="
-                                    cards[index].search.tab === 'GREATER-THAN'
-                                  "
+                              </div>
+                            </div>
+                            <div
+                              class="flex-w-40"
+                              style="padding-left: 5px"
+                            >
+                              <div
+                                class="d-block text-center shadow-sm"
+                                style="padding: 5px 0"
+                              >
+                                <span
+                                  class="d-inline-block letter-spacing font-0-dot-80-rem"
+                                >EQUAL TO</span>
+                              </div>
+                              <div
+                                class="d-block shadow-sm"
+                                style="padding: 10px 5px 8px 5px"
+                              >
+                                <div
+                                  class="d-block"
+                                  style="padding-bottom: 5px"
                                 >
-                                  <div
-                                    class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center shadow-sm"
-                                    style="padding: 5px 10px"
-                                  >
-                                    <div
-                                      class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
-                                    >
-                                      <img
-                                        src="/src/assets/icons/greater-than.png"
-                                        style="width: 25px; height: 25px"
-                                        class="align-middle"
-                                      />
-                                    </div>
-                                    <div
-                                      class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                                      style="padding: 5px 0 1px 5px"
-                                    >
-                                      {{ greaterthan }}
-                                    </div>
-                                  </div>
-                                </template>
-                                <template
-                                  v-else-if="
-                                    cards[index].search.tab === 'LESS-THAN'
-                                  "
+                                  <img
+                                    src="/src/assets/icons/equal-to.png"
+                                    class="align-middle"
+                                    style="width: 24px; height: 24px"
+                                  />
+                                </div>
+                                <div
+                                  class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
                                 >
-                                  <div
-                                    class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center shadow-sm"
-                                    style="padding: 5px 10px"
-                                  >
-                                    <div
-                                      class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
-                                    >
-                                      <img
-                                        src="/src/assets/icons/less-than.png"
-                                        style="width: 25px; height: 25px"
-                                        class="align-middle"
-                                      />
-                                    </div>
-                                    <div
-                                      class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                                      style="padding: 5px 0 1px 5px"
-                                    >
-                                      {{ lessthan }}
-                                    </div>
-                                  </div>
-                                </template>
-                                <template v-else>
-                                  <div
-                                    class="d-block shadow-sm text-center"
-                                    style="padding: 5px 10px"
-                                  >
-                                    <img
-                                      src="/src/assets/icons/range.png"
-                                      style="width: 25px; height: 25px"
-                                      class="align-middle"
+                                  <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
+                                    <input
+                                      v-model.trim="(numbersearcherui as NumberSearcherUIType).excludeequalto.value"
+                                      type="text"
+                                      @keydown.space.prevent
+                                      class="w-100 text-center"
+                                      style="height: 30px;z-index: 1110;"
                                     />
                                   </div>
-                                </template>
-                                <div
-                                  class="d-block text-center"
-                                  style="padding: 10px 0 5px 0"
-                                >
-                                  <span
-                                    class="d-inline-block letter-spacing font-bold font-0-dot-70-rem"
-                                    >Exclude By</span
+                                  <div
+                                    class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
+                                    style="outline: 1px solid rgba(0, 0, 0, 0.2)"
                                   >
-                                </div>
-                                <div class="d-block" style="padding: 5px">
-                                  <div class="d-block">
-                                    <div
-                                      class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                                    >
-                                      <div
-                                        class="flex-w-60"
-                                        style="padding-right: 5px"
-                                      >
-                                        <div
-                                          class="d-block text-center shadow-sm"
-                                          style="padding: 5px 0"
-                                        >
-                                          <span
-                                            class="d-inline-block letter-spacing font-0-dot-80-rem"
-                                            >RANGE</span
-                                          >
-                                        </div>
-                                        <div
-                                          class="d-block shadow-sm"
-                                          style="padding: 10px 5px 5px"
-                                        >
-                                          <div
-                                            class="w-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                                          >
-                                            <div
-                                              class="flex-grow-1 flex-shrink-1"
-                                            >
-                                              <div
-                                                class="d-block"
-                                                style="padding-bottom: 5px"
-                                              >
-                                                <label>From</label>
-                                              </div>
-                                              <div class="d-block">
-                                                <input
-                                                  @keydown.space.prevent
-                                                  v-model.trim="
-                                                    excludefromtofrom
-                                                  "
-                                                  type="text"
-                                                  class="w-100 text-center"
-                                                  style="
-                                                    height: 30px;
-                                                    z-index: 1110;
-                                                  "
-                                                />
-                                              </div>
-                                            </div>
-                                            <div
-                                              class="flex-grow-1 flex-shrink-1"
-                                            >
-                                              <div
-                                                class="d-block"
-                                                style="padding-bottom: 5px"
-                                              >
-                                                <label>To</label>
-                                              </div>
-                                              <div class="d-block">
-                                                <input
-                                                  @keydown.space.prevent
-                                                  v-model.trim="excludefromtoto"
-                                                  type="text"
-                                                  class="w-100 text-center"
-                                                  style="
-                                                    height: 30px;
-                                                    z-index: 1110;
-                                                  "
-                                                />
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div
-                                            class="d-block overflow-y-auto overflow-x-hidden"
-                                            style="height: 180px; z-index: 1000"
-                                          >
-                                            <ul
-                                              class="d-block list-style-none m-0"
-                                              style="padding: 5px 0px"
-                                            >
-                                              <li
-                                                class="w-100"
-                                                v-for="(data, dindex) in cards[
-                                                  index
-                                                ].search.exclude.fromto.from"
-                                                :key="
-                                                  cards[index].search.tab +
-                                                  '-EXCLUDE-FROM-TO' +
-                                                  dindex
-                                                "
-                                              >
-                                                <Transition>
-                                                  <div
-                                                    :ref="
-                                                      (el) => {
-                                                        refexcludefromto[
-                                                          dindex
-                                                        ] = el;
-                                                      }
-                                                    "
-                                                    v-if="
-                                                      treeexcludefromto.show[
-                                                        dindex
-                                                      ]
-                                                    "
-                                                    class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
-                                                    style="padding: 1px 5px"
-                                                    :class="{
-                                                      shake:
-                                                        treeexcludefromto
-                                                          .disabled[dindex],
-                                                    }"
-                                                  >
-                                                    <div
-                                                      class="flex-shrink-0 flex-grow-0"
-                                                    >
-                                                      <a
-                                                        @click="
-                                                          deleteSaved(
-                                                            dindex,
-                                                            'EXCLUDE-FROM-TO'
-                                                          )
-                                                        "
-                                                        class="remove-selected m-0 d-inline-block underline-none"
-                                                      >
-                                                        <img
-                                                          class="align-middle"
-                                                          src="/src/assets/icons/close.png"
-                                                          style="
-                                                            width: 25px;
-                                                            height: 25px;
-                                                          "
-                                                        />
-                                                      </a>
-                                                    </div>
-                                                    <div
-                                                      class="flex-fill"
-                                                      style="padding-left: 5px"
-                                                    >
-                                                      <div
-                                                        class="d-block"
-                                                        style="padding: 5px"
-                                                      >
-                                                        <div
-                                                          :ref="
-                                                            (el) => {
-                                                              refexcludefromtoinner[
-                                                                dindex
-                                                              ] = el;
-                                                            }
-                                                          "
-                                                          class="d-block text-wrap text-break shadow-sm"
-                                                          style="
-                                                            border-radius: 20px;
-                                                            padding: 8px;
-                                                            z-index: 999;
-                                                          "
-                                                        >
-                                                          <label
-                                                            class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
-                                                          >
-                                                            {{
-                                                              cards[index]
-                                                                .search.exclude
-                                                                .fromto.from[
-                                                                dindex
-                                                              ]
-                                                            }}
-                                                            -
-                                                            {{
-                                                              cards[index]
-                                                                .search.exclude
-                                                                .fromto.to[
-                                                                dindex
-                                                              ]
-                                                            }}
-                                                          </label>
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </Transition>
-                                              </li>
-                                              <li ref="excludefromtoref"></li>
-                                            </ul>
-                                          </div>
-                                          <div
-                                            class="d-block"
-                                            style="padding-top: 10px"
-                                          >
-                                            <button
-                                              :style="
-                                                excludeAddNewFromTo
-                                                  ? 'background-color: #F0E68C;'
-                                                  : 'background-color: #eee;'
-                                              "
-                                              :disabled="
-                                                excludeAddNewFromTo
-                                                  ? false
-                                                  : true
-                                              "
-                                              @click="
-                                                () => {
-                                                  increaseIndexAndSavePrevious(
-                                                    'RANGE',
-                                                    cards[index].search.exclude
-                                                      .fromto,
-                                                    [
-                                                      excludefromtofrom,
-                                                      excludefromtoto,
-                                                    ],
-                                                    'EXCLUDE-FROM-TO'
-                                                  );
-                                                }
-                                              "
-                                              class="btn w-100 shadow-sm font-0-dot-85-rem"
-                                              style="padding: 5px 0 1px 0"
-                                            >
-                                              Add New
-                                            </button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div
-                                        class="flex-w-40"
-                                        style="padding-left: 5px"
-                                      >
-                                        <div
-                                          class="d-block text-center shadow-sm"
-                                          style="padding: 5px 0"
-                                        >
-                                          <span
-                                            class="d-inline-block letter-spacing font-0-dot-80-rem"
-                                            >EQUAL TO</span
-                                          >
-                                        </div>
-                                        <div
-                                          class="d-block shadow-sm"
-                                          style="padding: 10px 5px 5px"
-                                        >
-                                          <div
-                                            class="d-block"
-                                            style="padding-bottom: 5px"
-                                          >
-                                            <img
-                                              src="/src/assets/icons/equal-to.png"
-                                              class="align-middle"
-                                              style="width: 24px; height: 24px"
-                                            />
-                                          </div>
-                                          <div class="d-block">
-                                            <input
-                                              @keydown.space.prevent
-                                              v-model.trim="excludeequalto"
-                                              type="text"
-                                              class="w-100 text-center"
-                                              style="
-                                                height: 30px;
-                                                z-index: 1110;
-                                              "
-                                            />
-                                          </div>
-                                          <div
-                                            class="d-block overflow-y-auto overflow-x-hidden"
-                                            style="height: 180px; z-index: 1000"
-                                          >
-                                            <ul
-                                              class="d-block list-style-none m-0"
-                                              style="padding: 5px 0px"
-                                            >
-                                              <li
-                                                class="w-100"
-                                                v-for="(data, dindex) in cards[
-                                                  index
-                                                ].search.exclude.equalto.value"
-                                                :key="
-                                                  cards[index].search.tab +
-                                                  '-EXCLUDE-EQUAL-TO' +
-                                                  dindex
-                                                "
-                                              >
-                                                <Transition>
-                                                  <div
-                                                    :ref="
-                                                      (el) => {
-                                                        refexcludeequalto[
-                                                          dindex
-                                                        ] = el;
-                                                      }
-                                                    "
-                                                    v-if="
-                                                      treeexcludeequalto.show[
-                                                        dindex
-                                                      ]
-                                                    "
-                                                    class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
-                                                    style="padding: 1px 5px"
-                                                    :class="{
-                                                      shake:
-                                                        treeexcludeequalto
-                                                          .disabled[dindex],
-                                                    }"
-                                                  >
-                                                    <div
-                                                      class="flex-shrink-0 flex-grow-0"
-                                                    >
-                                                      <a
-                                                        @click="
-                                                          deleteSaved(
-                                                            dindex,
-                                                            'EXCLUDE-EQUAL-TO'
-                                                          )
-                                                        "
-                                                        class="m-0 d-inline-block underline-none"
-                                                      >
-                                                        <img
-                                                          class="align-middle"
-                                                          src="/src/assets/icons/close.png"
-                                                          style="
-                                                            width: 25px;
-                                                            height: 25px;
-                                                          "
-                                                        />
-                                                      </a>
-                                                    </div>
-                                                    <div
-                                                      class="flex-fill"
-                                                      style="padding-left: 5px"
-                                                    >
-                                                      <div
-                                                        class="d-block"
-                                                        style="padding: 5px"
-                                                      >
-                                                        <div
-                                                          :ref="
-                                                            (el) => {
-                                                              refexcludeequaltoinner[
-                                                                dindex
-                                                              ] = el;
-                                                            }
-                                                          "
-                                                          class="d-block text-wrap text-break shadow-sm"
-                                                          style="
-                                                            border-radius: 20px;
-                                                            padding: 8px;
-                                                            z-index: 999;
-                                                          "
-                                                        >
-                                                          <label
-                                                            class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
-                                                            >{{ data }}</label
-                                                          >
-                                                        </div>
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </Transition>
-                                              </li>
-                                              <li ref="excludeequaltoref"></li>
-                                            </ul>
-                                          </div>
-                                          <div
-                                            class="d-block"
-                                            style="padding-top: 10px"
-                                          >
-                                            <button
-                                              @click="
-                                                () => {
-                                                  increaseIndexAndSavePrevious(
-                                                    'NON-RANGE',
-                                                    cards[index].search.exclude
-                                                      .equalto,
-                                                    excludeequalto,
-                                                    'EXCLUDE-EQUAL-TO'
-                                                  );
-                                                }
-                                              "
-                                              class="btn w-100 shadow-sm font-0-dot-85-rem"
-                                              style="padding: 5px 0 1px 0"
-                                              :style="
-                                                excludeAddNewEqualto
-                                                  ? 'background-color: #F0E68C;'
-                                                  : 'background-color: #eee;'
-                                              "
-                                              :disabled="
-                                                excludeAddNewEqualto
-                                                  ? false
-                                                  : true
-                                              "
-                                            >
-                                              Add New
-                                            </button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div
-                                  style="padding: 15px 10px"
-                                  class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                                >
-                                  <div class="flex-w-50">
                                     <button
-                                      class="btn w-100 shadow-sm"
-                                      style="padding: 7px; border-radius: 12px"
+                                      @click="
+                                        () => {
+                                          increaseIndexAndSavePrevious(
+                                            'NON-RANGE',
+                                            (numbersearcherui as NumberSearcherUIType).excludeequalto.value,
+                                            'EXCLUDE-EQUAL-TO'
+                                          );
+                                        }
+                                      "
+                                      class="btn w-100 shadow-sm font-0-dot-85-rem"
+                                      style="height:28px; padding:0 2px;"
                                       :style="
-                                        excludeDone
+                                        excludeAddNewEqualto
                                           ? 'background-color: #F0E68C;'
                                           : 'background-color: #eee;'
                                       "
-                                      :disabled="excludeDone ? false : true"
-                                    >
-                                      Done
-                                    </button>
-                                  </div>
-                                  <div class="flex-w-50">
-                                    <button
-                                      class="btn w-100 shadow-sm"
-                                      style="padding: 7px; border-radius: 12px"
-                                      :style="
-                                        excludeClear
-                                          ? 'background-color: red;color:#fff;'
-                                          : 'background-color: #eee;'
+                                      :disabled="
+                                        excludeAddNewEqualto
+                                        ? false
+                                        : true
                                       "
-                                      :disabled="excludeClear ? false : true"
                                     >
-                                      Clear
+                                      <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
                                     </button>
                                   </div>
+                                </div>
+                                <Paste
+                                  title="numbers"
+                                  :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+                                  :max="((
+                                    (numbersearcherui as NumberSearcherUIType).tab ===
+                                      'GREATER-THAN'
+                                        ? cards[index].result.max
+                                        : (numbersearcherui as NumberSearcherUIType).tab ===
+                                          'LESS-THAN'
+                                        ? (numbersearcherui as NumberSearcherUIType).lessthan.value
+                                        : (numbersearcherui as NumberSearcherUIType).to.value
+                                  ) as string)"
+                                  :min="((
+                                    (numbersearcherui as NumberSearcherUIType).tab === 'LESS-THAN'
+                                      ? cards[index].result.min
+                                      : (numbersearcherui as NumberSearcherUIType).tab ===
+                                        'GREATER-THAN'
+                                      ? (numbersearcherui as NumberSearcherUIType).greaterthan.value
+                                      : (numbersearcherui as NumberSearcherUIType).from.value
+                                  ) as string)"
+                                  :text-area-height="'height:450px;'"
+                                >
+                                  <template v-slot:controlbuttons></template>
+                                  <template v-slot:outcomeidentifier>
+                                    <div
+                                      class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+                                    >
+                                      <div class="flex-fill text-center">
+                                        <div
+                                          class="d-inline-block align-middle"
+                                          style="background-color: #fff; width: 15px; height: 15px"
+                                        ></div>
+                                        Pasted Lines
+                                      </div>
+                                      <div class="flex-fill text-center">
+                                        <div
+                                          class="d-inline-block align-middle"
+                                          style="background-color: red; width: 15px; height: 15px"
+                                        ></div>
+                                        Invalid Numbers
+                                      </div>
+                                    </div>
+                                  </template>
+                                </Paste>
+                                <div
+                                  class="d-block overflow-y-auto overflow-x-hidden"
+                                  style="height: 180px; z-index: 1000"
+                                >
+                                  <ul
+                                    class="d-block list-style-none m-0"
+                                    style="padding: 5px 0px"
+                                  >
+                                    <li
+                                      class="w-100"
+                                      v-for="(data, dindex) in (numbersearcherui as NumberSearcherUIType).treeexcludeequalto.value"
+                                      :key="
+                                      (numbersearcherui as NumberSearcherUIType).tab +
+                                      '-EXCLUDE-EQUAL-TO' +
+                                      dindex
+                                      "
+                                    >
+                                      <Transition>
+                                        <div
+                                          :ref="
+                                            (el) => {
+                                              (numbersearcherui as NumberSearcherUIType).refexcludeequalto[
+                                                dindex
+                                              ] = el as HTMLDivElement;
+                                            }
+                                          "
+                                          v-if="
+                                            (numbersearcherui as NumberSearcherUIType).treeexcludeequalto.show[dindex]
+                                          "
+                                          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
+                                          style="padding: 1px 5px"
+                                          :class="{
+                                            shake:
+                                              (numbersearcherui as NumberSearcherUIType).treeexcludeequalto.disabled[dindex],
+                                          }"
+                                        >
+                                          <div
+                                            class="flex-shrink-0 flex-grow-0"
+                                          >
+                                            <a
+                                              @click="
+                                                deleteSaved(
+                                                  dindex,
+                                                  'EXCLUDE-EQUAL-TO'
+                                                )
+                                              "
+                                              class="m-0 d-inline-block underline-none"
+                                            >
+                                              <img
+                                                class="align-middle"
+                                                src="/src/assets/icons/close.png"
+                                                style="width: 25px;height: 25px;"
+                                              />
+                                            </a>
+                                          </div>
+                                          <div
+                                            class="flex-fill"
+                                            style="padding-left: 5px"
+                                          >
+                                            <div
+                                              class="d-block"
+                                              style="padding: 5px"
+                                            >
+                                              <div
+                                                :ref="
+                                                  (el) => {
+                                                    (numbersearcherui as NumberSearcherUIType).refexcludeequaltoinner[
+                                                      dindex
+                                                    ] = el as HTMLDivElement;
+                                                  }
+                                                "
+                                                class="d-block text-wrap text-break shadow-sm"
+                                                style="border-radius: 20px;padding: 8px;z-index: 999;background-color:#fff;"
+                                              >
+                                                <label
+                                                  class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
+                                                >{{ data }}</label>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </Transition>
+                                    </li>
+                                    <li :ref="(el) => (numbersearcherui as NumberSearcherUIType).excludeequaltoref = el as HTMLLIElement"></li>
+                                  </ul>
                                 </div>
                               </div>
                             </div>
@@ -1932,9 +1622,57 @@ function updateFilterableResultDisplayer(card) {
                         </div>
                       </div>
                     </div>
-                  </transition>
+                  </div>
                 </div>
-              </Teleport>
+              </div>
+            </div>
+            <div
+              class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+              style="padding: 10px 10px 12px 10px;"
+            >
+              <div class="flex-w-100-over-3" style="padding-right:7.5px;">
+                <button
+                  :style="
+                    done
+                      ? 'background-color: #F0E68C;'
+                      : 'background-color: #eee;'
+                  "
+                  :disabled="done ? false : true"
+                  class="btn w-100 shadow-sm"
+                  style="padding:6px;font-size:1rem;border-radius: 12px"
+                >
+                  Done
+                </button>
+              </div>
+              <div class="flex-w-100-over-3" style="padding-right:2.5px;">
+                <button
+                  @click="openExcludeWindow()"
+                  class="btn w-100 shadow-sm"
+                  style="padding:6px;font-size:1rem;border-radius: 12px"
+                  :style="
+                    exclude
+                      ? 'background-color: #2196F3;color:#fff;'
+                      : 'background-color:#eee;'
+                  "
+                  :disabled="exclude ? false : true"
+                >
+                  Exclude
+                </button>
+              </div>
+              <div class="flex-w-100-over-3" style="padding-left:5px;">
+                <button
+                  :disabled="clear ? false : true"
+                  :style="
+                    clear
+                      ? 'background-color:red;color:#fff;'
+                      : 'background-color:#eee;'
+                  "
+                  class="btn w-100 shadow-sm"
+                  style="padding:6px;font-size:1rem;border-radius: 12px"
+                >
+                  Clear
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1962,18 +1700,15 @@ function updateFilterableResultDisplayer(card) {
   90% {
     transform: translate3d(-1px, 0, 0);
   }
-
   20%,
   80% {
     transform: translate3d(2px, 0, 0);
   }
-
   30%,
   50%,
   70% {
     transform: translate3d(-4px, 0, 0);
   }
-
   40%,
   60% {
     transform: translate3d(4px, 0, 0);
@@ -2001,7 +1736,7 @@ function updateFilterableResultDisplayer(card) {
   border-radius: 2px;
   transition: all 0.3s ease;
   font-family: Helvetica, Arial, sans-serif;
-  width: 480px;
+  width: 550px;
 }
 .modal-enter,
 .modal-leave-active {

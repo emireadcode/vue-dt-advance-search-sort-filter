@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, type WatchStopHandle, type ShallowRef, type Ref, onMounted, nextTick, ref, shallowRef, inject, onBeforeMount, watch, triggerRef, onBeforeUnmount } from "vue";
-import type { YearSelectionType, YearRangeFirstSelectionType, YearSelectionFormat } from "../types/days_months_years_types";
+import type {  YearSelectionType, YearRangeFirstSelectionType, YearSelectionFormat } from "../types/days_months_years_types";
 import { 
   addYear, 
   getYearDimensions, 
@@ -9,9 +9,14 @@ import {
   deselectAll,
   fillYearArray,
 } from "../utility/days_months_years_utility_fns";
-import paste_year from "./PasteYear.vue";
+import type {YearType,} from "../types/SupportedDatatypesTypeDeclaration";
+import Paste from "./Paste.vue";
 
 let 
+
+cards = inject("cards") as ShallowRef<YearType[]>,
+
+index = inject("index") as number,
   years = shallowRef<YearSelectionType>(),
   format = ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO">(),
   page = ref(0),
@@ -455,6 +460,46 @@ onMounted(() => {
       "
       @update:yyears-and-page-value="($val) => updateYYearsValueFn($val)"
     ></paste_year>-->
+    <Paste
+      :title="cards[index].info.name"
+      :owner="cards[index].info.datatype as 'Year'"
+      :max="''+props.maxyear"
+      :min="''+props.minyear"
+      :text-area-height="'height:450px;'"
+    >
+      <template v-slot:controlbuttons></template>
+      <template v-slot:outcomeidentifier>
+        <div
+          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+        >
+          <div class="flex-fill text-center">
+            <div
+              class="d-inline-block align-middle"
+              style="background-color: #fff; width: 15px; height: 15px"
+            ></div>
+            Accepted Lines
+          </div>
+          <div class="flex-fill text-center">
+            <div
+              class="d-inline-block align-middle"
+              style="background-color:red;width:15px;height:15px"
+            ></div>
+            Invalid Year
+          </div>
+          <div class="flex-fill text-center">
+            <div
+              class="d-inline-block align-middle"
+              style="
+                background-color: yellow;
+                width: 15px;
+                height: 15px;
+              "
+            ></div>
+            Out of Range
+          </div>
+        </div>
+      </template>
+    </Paste>
     <div
       style="padding: 0 0 7px 0"
       class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"

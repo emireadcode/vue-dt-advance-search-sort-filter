@@ -8,8 +8,8 @@ import {
   type ShallowRef,
 } from "vue";
 import VisibleCalendarDatePicker from "./VisibleCalendarDatePicker.vue";
-import PasteDD_MM_YY from "./PasteDD_MM_YY.vue";
-import type { DateType } from "../types/SupportedDatatypesTypeDeclaration";
+import Paste from "./Paste.vue";
+import type { DateType, YearType, NumberStringType, NumberType, MultipleWordsStringType, SingleWordStringType } from "../types/SupportedDatatypesTypeDeclaration";
 
 const 
 
@@ -43,12 +43,53 @@ onBeforeMount(() => {
 
 <template>
   <div class="d-block" style="padding: 0 10px;">
-    <PasteDD_MM_YY
-      :selectionformat="selectionformat"
-      :isoweek="cards[index].isoweek"
-      :maxdate="(cards[index].result.max as string)"
-      :mindate="(cards[index].result.min as string)"
-    ></PasteDD_MM_YY>
+    <Paste
+      :title="cards[index].info.name"
+      :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+      :max="(cards[index].result.max as string)"
+      :min="(cards[index].result.min as string)"
+      :text-area-height="'height:450px;'"
+    >
+      <template v-slot:controlbuttons></template>
+      <template v-slot:outcomeidentifier>
+        <div
+          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+        >
+          <div class="flex-fill text-center">
+            <div
+              class="d-inline-block align-middle"
+              style="background-color: #fff; width: 15px; height: 15px"
+            ></div>
+            Pasted Lines
+          </div>
+          <div class="flex-fill text-center">
+            <div
+              class="d-inline-block align-middle"
+              style="background-color: red; width: 15px; height: 15px"
+            ></div>
+            Invalid Dates
+          </div>
+          <div class="flex-fill text-center">
+            <div
+              class="d-inline-block align-middle"
+              style="
+                background-color: yellow;
+                width: 15px;
+                height: 15px;
+              "
+            ></div>
+            Out of Range
+          </div>
+          <div class="flex-fill text-center">
+            <div
+              class="d-inline-block align-middle"
+              style="background-color: pink; width: 15px; height: 15px"
+            ></div>
+            Indeterminate 
+          </div>
+        </div>
+      </template>
+    </Paste>
     <div
       class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
       style="border: 1px solid gray"

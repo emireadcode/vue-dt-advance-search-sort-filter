@@ -170,43 +170,42 @@ onBeforeMount(() => {
                 </div>
               </div>
             </div>
-            <div class="d-block text-center" style="padding: 10px 10px 12px 10px;">
+            <div
+              style="padding: 10px 10px 12px 10px;"
+              class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center"
+            >
+              <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
+                <button
+                  @click="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
+                  class="btn shadow-sm w-100 font-family"
+                  style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
+                >
+                  Close
+                </button>
+              </div>
               <div
-                class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center"
+                class="flex-w-100-over-3 align-self-stretch"
+                style="padding-right: 2.5px;"
               >
-                <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
-                  <button
-                    @click="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
-                    class="btn shadow-sm w-100 font-family"
-                    style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
-                  >
-                    Close
-                  </button>
-                </div>
-                <div
-                  class="flex-w-100-over-3 align-self-stretch"
-                  style="padding-right: 2.5px;"
+                <button
+                  @click="excludedates = true"
+                  @keyup.enter="excludedates = true"
+                  class="btn shadow-sm w-100 font-family"
+                  style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
                 >
-                  <button
-                    @click="excludedates = true"
-                    @keyup.enter="excludedates = true"
-                    class="btn shadow-sm w-100 font-family"
-                    style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
-                  >
-                    Exclude dates
-                  </button>
-                </div>
-                <div
-                  class="flex-w-100-over-3 align-self-stretch"
-                  style="padding-left: 5px;"
+                  Exclude dates
+                </button>
+              </div>
+              <div
+                class="flex-w-100-over-3 align-self-stretch"
+                style="padding-left: 5px;"
+              >
+                <button
+                  class="btn shadow-sm w-100 font-family"
+                  style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
                 >
-                  <button
-                    class="btn shadow-sm w-100 font-family"
-                    style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
