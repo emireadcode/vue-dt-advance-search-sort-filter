@@ -288,6 +288,40 @@ export type NumberSearchExcludeFromToType = {
   addloading: boolean;
 };
 
+export type NumberSearcherUIType = {
+  openexclude: boolean;
+  main: {
+    tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO";
+    refequaltoinner: HTMLDivElement[] | [];
+    refnotequaltoinner: HTMLDivElement[] | [];
+    refequalto: HTMLDivElement[] | [];
+    refnotequalto: HTMLDivElement[] | [];
+    equaltoref: HTMLLIElement | null;
+    notequaltoref: HTMLLIElement | null;
+    greaterthan: Ref<string>;
+    lessthan: Ref<string>;
+    equalto: Ref<string>;
+    notequalto: Ref<string>;
+    from: Ref<string>;
+    to: Ref<string>;
+    treenotequalto: NumberSearchExcludeEqualToType;
+    treeequalto: NumberSearchExcludeEqualToType;
+  };
+  exclude: {
+    refexcludeequalto: HTMLDivElement[] | [];
+    refexcludefromto: HTMLDivElement[] | [];
+    excludefromtoref: HTMLLIElement | null;
+    excludeequaltoref: HTMLLIElement | null;
+    refexcludeequaltoinner: HTMLDivElement[] | [];
+    refexcludefromtoinner: HTMLDivElement[] | [];
+    excludefromtofrom: Ref<string>;
+    excludefromtoto: Ref<string>;
+    excludeequalto: Ref<string>;
+    treeexcludeequalto: NumberSearchExcludeEqualToType;
+    treeexcludefromto: NumberSearchExcludeFromToType;
+  };
+};
+
 export type NumberSearchExcludeEqualToType = {
   single: string;
   value: string[];
