@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { 
-  type ShallowRef, 
-  shallowRef, 
+  type ShallowRef,
+  shallowRef,
   onBeforeMount, 
-  type Ref, 
-  inject, 
-  triggerRef, 
-  ref, 
+  type Ref,
+  inject,
+  triggerRef,
+  ref,
   watch,
   computed,
   provide,
@@ -15,7 +15,6 @@ import type {
   NumberSearchExcludeFromToType, 
   NumberSearchExcludeEqualToType, 
   NumberType,
-  NumberSearcherUIType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
 import {
@@ -25,119 +24,35 @@ import {
 import ReusableNumberSearch from "./ReusableNumberSearch.vue";
 
 let 
+  index = inject("index") as number,
   accessibility = inject("accessibility") as {
     cardsmultiplesearchopenstatus: Ref<Boolean[]>;
   },
-  numbersearcherui = shallowRef<NumberSearcherUIType>({
-    openexclude: false,
-    main: {
-      tab: "GREATER-THAN",
-      refequaltoinner: [],
-      refnotequaltoinner: [],
-      refequalto: [],
-      refnotequalto: [],
-      equaltoref: null,
-      notequaltoref: null,
-      greaterthan: ref(""),
-      lessthan: ref(""),
-      equalto: ref(""),
-      notequalto: ref(""),
-      from: ref(""),
-      to: ref(""),
-      treenotequalto: {
-        single: "",
-        value: [],
-        index: 0,
-        disabled: [],
-        show: [],
-        loading: false,
-        addloading: false,
-      },
-      treeequalto: {
-        single: "",
-        value: [],
-        index: 0,
-        disabled: [],
-        show: [],
-        loading: false,
-        addloading: false,
-      },
-    },
-    exclude: {
-      excludefromtofrom: ref(""),
-      refexcludeequaltoinner: [],
-      refexcludefromtoinner: [],
-      refexcludeequalto: [],
-      refexcludefromto: [],
-      excludefromtoref: null,
-      excludeequaltoref: null,
-      excludefromtoto: ref(""),
-      excludeequalto: ref(""),
-      treeexcludeequalto: {
-        single: "",
-        value: [],
-        index: 0,
-        disabled: [],
-        show: [],
-        loading: false,
-        addloading: false,
-      },
-      treeexcludefromto: {
-        singlefrom: "",
-        singleto: "",
-        from: [],
-        to: [],
-        index: 0,
-        disabled: [],
-        show: [],
-        loading: false,
-        addloading: false,
-      },
-    }
-  })
-;
-
-const 
-  props = defineProps<{
-    index: number;
-  }>(),
+  openexclude = ref(false),
+  closepastemodalsignal = ref(0),
   cards = inject("cards") as ShallowRef<NumberType[]>,
-  index = props.index,
-  mainnumbersearcheruitype = shallowRef<NumberSearcherUIType["main"]>(numbersearcherui.value.main)
+  holder = ref<NumberType['search']>()
 ;
 
-numbersearcherui.value.main = mainnumbersearcheruitype.value;
-
-provide("mainnumbersearcheruitype", mainnumbersearcheruitype);
-provide("index", index as number);
-
-function triggerNumberSearcherUI() {
-  triggerRef(numbersearcherui);
-}
+provide("mainnumbersearcherui", holder);
 
 function resetExclude(action: boolean) {
   if(action) {
-    (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludefromto = {
-      singlefrom: "",
-      singleto: "",
-      from: [],
-      to: [],
-      index: 0,
-      disabled: [],
-      show: [],
-      loading: false,
-      addloading: false,
-    } as NumberSearchExcludeFromToType;
-    (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludeequalto = {
-      single: "",
-      value: [],
-      index: 0,
-      disabled: [],
-      show: [],
-      loading: false,
-      addloading: false,
-    } as NumberSearchExcludeEqualToType;
-    triggerNumberSearcherUI();
+    
+  }
+}
+
+function openExcludeWindow() {
+  if (
+    holder.value?.greaterthan ||
+    holder.value?.lessthan ||
+    (holder.value?.notequalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
+    holder.value?.notequalto?.single || (
+      holder.value?.fromto?.from &&
+      holder.value?.fromto?.to
+    )
+  ) {
+    openexclude.value = true;
   }
 }
 
@@ -145,11 +60,11 @@ function localDeleteSaved(
   index: number, 
   operator: "EXCLUDE-FROM-TO" | "EXCLUDE-EQUAL-TO"
 ) {
-  deleteSaved(
+  /*deleteSaved(
     index,
     operator,
     numbersearcherui
-  );
+  );*/
 }
 
 function localIncreaseIndexAndSavePrevious(
@@ -157,231 +72,185 @@ function localIncreaseIndexAndSavePrevious(
   inputvalue: string | string[],
   operator: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO'
 ) {
-  increaseIndexAndSavePrevious(
+  /*increaseIndexAndSavePrevious(
     rangeornonerange,
     inputvalue,
     operator,
     numbersearcherui
-  );
-}
-
-onBeforeMount(() => {
-  (numbersearcherui.value as NumberSearcherUIType).openexclude = false;
-  (numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value = cards.value[index].search.greaterthan as string;
-  (numbersearcherui.value as NumberSearcherUIType).main.lessthan.value = cards.value[index].search.lessthan as string;
-  (numbersearcherui.value as NumberSearcherUIType).main.equalto.value = cards.value[index].search.equalto?.single as string;
-  (numbersearcherui.value as NumberSearcherUIType).main.notequalto.value = cards.value[index].search.notequalto?.single as string;
-  (numbersearcherui.value as NumberSearcherUIType).main.from.value = cards.value[index].search.fromto?.from as string;
-  (numbersearcherui.value as NumberSearcherUIType).main.to.value = cards.value[index].search.fromto?.to as string;
-  (numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value = cards.value[index].search.exclude?.fromto?.singlefrom as string;
-  (numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value = cards.value[index].search.exclude?.fromto?.singleto as string;
-  (numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value = cards.value[index].search.exclude?.equalto?.single as string;
-  (numbersearcherui.value as NumberSearcherUIType).main.treenotequalto = cards.value[index].search.notequalto as NumberSearchExcludeEqualToType;
-  (numbersearcherui.value as NumberSearcherUIType).main.treeequalto = cards.value[index].search.equalto as NumberSearchExcludeEqualToType;
-  (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludeequalto = cards.value[index].search.exclude?.equalto as NumberSearchExcludeEqualToType;
-  (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludefromto = cards.value[index].search.exclude?.fromto as NumberSearchExcludeFromToType
-  triggerNumberSearcherUI();
-});
-
-function openExcludeWindow() {
-  if (
-    (numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value ||
-    (numbersearcherui.value as NumberSearcherUIType).main.lessthan.value ||
-    (numbersearcherui.value as NumberSearcherUIType).main.treenotequalto.index > 0 ||
-    (numbersearcherui.value as NumberSearcherUIType).main.notequalto.value || (
-      (numbersearcherui.value as NumberSearcherUIType).main.from.value &&
-      (numbersearcherui.value as NumberSearcherUIType).main.to.value
-    )
-  ) {
-    (numbersearcherui.value as NumberSearcherUIType).openexclude = true;
-    triggerNumberSearcherUI();
-  }
+  );*/
 }
 
 const excludeAddNewFromTo = computed(() => {
-  if ((numbersearcherui.value as NumberSearcherUIType).main.tab === "GREATER-THAN") {
+  if (holder.value?.tab === "GREATER-THAN") {
     return (
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) <=
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <=
         parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) <
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) <
         parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value)
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) > parseFloat(holder.value?.greaterthan as string) &&
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto)
     );
-  } else if ((numbersearcherui.value as NumberSearcherUIType).main.tab === "LESS-THAN") {
+  } else if (holder.value?.tab === "LESS-THAN") {
     return (
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) >
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) >
         parseFloat(cards.value[index].result.min) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) >=
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >=
         parseFloat(cards.value[index].result.min) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value)
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <= parseFloat(holder.value?.lessthan as string) &&
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto)
     );
   } else {
     return (
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value)
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) > parseFloat(holder.value?.fromto?.from as string) &&
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) < parseFloat(holder.value?.fromto?.to as string) &&
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto)
     );
   }
 });
 
 const excludeAddNewEqualto = computed(() => {
-  if ((numbersearcherui.value as NumberSearcherUIType).main.tab === "GREATER-THAN") {
+  if (holder.value?.tab === "GREATER-THAN") {
     return (
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) <= parseFloat(cards.value[index].result.max)
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.greaterthan as string) &&
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(cards.value[index].result.max)
     );
-  } else if ((numbersearcherui.value as NumberSearcherUIType).main.tab === "LESS-THAN") {
+  } else if (holder.value?.tab === "LESS-THAN") {
     return (
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) >= parseFloat(cards.value[index].result.min)
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.lessthan as string) &&
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(cards.value[index].result.min)
     );
   } else {
     return (
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value)
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.fromto?.from as string) &&
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.fromto?.to as string)
     );
   }
 });
 
 const excludeDone = computed(() => {
-  if ((numbersearcherui.value as NumberSearcherUIType).main.tab === "GREATER-THAN") {
+  if (holder.value?.tab === "GREATER-THAN") {
     return (
-      (parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) <
+      (parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) > parseFloat(holder.value?.greaterthan as string) &&
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) &&
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) <
           parseFloat(cards.value[index].result.max) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) <=
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <=
           parseFloat(cards.value[index].result.max)) ||
-      (parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) <=
+      (parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.greaterthan as string) &&
+        parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <=
           parseFloat(cards.value[index].result.max)) ||
-      (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludeequalto.index > 0 ||
-      (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludefromto.index > 0
+      (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
+      (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
     );
-  } else if ((numbersearcherui.value as NumberSearcherUIType).main.tab === "LESS-THAN") {
+  } else if (holder.value?.tab === "LESS-THAN") {
     return (
-      (parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) >=
+      (parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <= parseFloat(holder.value?.lessthan as string) &&
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) &&
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >=
           parseFloat(cards.value[index].result.min) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) >
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) >
           parseFloat(cards.value[index].result.min)) ||
-      (parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) >=
+      (parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.lessthan as string) &&
+        parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >=
           parseFloat(cards.value[index].result.min)) ||
-      (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludeequalto.index > 0 ||
-      (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludefromto.index > 0
+      (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
+      (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
     );
   } else {
     return (
-      (parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value) > parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value)) ||
-      (parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) >= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) &&
-        parseFloat((numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value) <= parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value)) ||
-      (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludeequalto.index > 0 ||
-      (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludefromto.index > 0
+      (parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <= parseFloat(holder.value?.fromto?.to as string) &&
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) &&
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >= parseFloat(holder.value?.fromto?.from as string) &&
+        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) > parseFloat(holder.value?.fromto?.from as string)) ||
+      (parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.fromto?.from as string) &&
+        parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.fromto?.to as string)) ||
+      (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
+      (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
     );
   }
 });
 
 const excludeClear = computed(() => {
   return (
-    (numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom ||
-    (numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value ||
-    (numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto ||
-    (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludeequalto.index > 0 ||
-    (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludefromto.index > 0
+    (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom ||
+    (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto ||
+    (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single ||
+    (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
+    (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
   );
 });
 
 const done = computed(() => {
   return (
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.greaterthan as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.greaterthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.lessthan as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.lessthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (numbersearcherui.value as NumberSearcherUIType).main.treeequalto.index > 0 ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.equalto.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.equalto.value) >= parseFloat(cards.value[index].result.min)
+    (holder.value?.equalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
+    (parseFloat(holder.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (numbersearcherui.value as NumberSearcherUIType).main.treenotequalto.index > 0 ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.notequalto.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.notequalto.value) >= parseFloat(cards.value[index].result.min)
+    (holder.value?.notequalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
+    (parseFloat(holder.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
     ) ||
     (
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) >= parseFloat(cards.value[index].result.min) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) >= parseFloat(cards.value[index].result.min)
+      parseFloat(holder.value?.fromto?.from as string) < parseFloat(holder.value?.fromto?.to as string) &&
+      parseFloat(holder.value?.fromto?.from as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.from as string) >= parseFloat(cards.value[index].result.min) &&
+      parseFloat(holder.value?.fromto?.to as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.to as string) >= parseFloat(cards.value[index].result.min)
     )
   );
 });
 
 const exclude = computed(() => {
   return (
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.greaterthan as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.greaterthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.lessthan as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.lessthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) >= parseFloat(cards.value[index].result.min) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.fromto?.from as string) < parseFloat(holder.value?.fromto?.to as string) &&
+      parseFloat(holder.value?.fromto?.from as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.from as string) >= parseFloat(cards.value[index].result.min) &&
+      parseFloat(holder.value?.fromto?.to as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.to as string) >= parseFloat(cards.value[index].result.min)
     )
   );
 });
 
 const clear = computed(() => {
   return (
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.greaterthan.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.greaterthan as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.greaterthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.lessthan.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.lessthan as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.lessthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (numbersearcherui.value as NumberSearcherUIType).main.treeequalto.index > 0 ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.equalto.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.equalto.value) >= parseFloat(cards.value[index].result.min)
+    (holder.value?.equalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
+    (parseFloat(holder.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (numbersearcherui.value as NumberSearcherUIType).main.treenotequalto.index > 0 ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.notequalto.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.notequalto.value) >= parseFloat(cards.value[index].result.min)
+    (holder.value?.notequalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
+    (parseFloat(holder.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) < parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.from.value) >= parseFloat(cards.value[index].result.min) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat((numbersearcherui.value as NumberSearcherUIType).main.to.value) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.fromto?.from as string) < parseFloat(holder.value?.fromto?.to as string) &&
+      parseFloat(holder.value?.fromto?.from as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.from as string) >= parseFloat(cards.value[index].result.min) &&
+      parseFloat(holder.value?.fromto?.to as string) <= parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.to as string) >= parseFloat(cards.value[index].result.min)
     )
   );
 });
 
-watch(
-  () => (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludeequalto.index,
-  (x) => {
-    (numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value = "";
-    triggerNumberSearcherUI();
-  }
-);
-
-watch(
-  () => (numbersearcherui.value as NumberSearcherUIType).exclude.treeexcludefromto.index,
-  (x) => {
-    (numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtoto.value = "";
-    (numbersearcherui.value as NumberSearcherUIType).exclude.excludefromtofrom.value = "";
-    triggerNumberSearcherUI();
-  }
-);
+onBeforeMount(() => {
+  holder.value = JSON.parse(JSON.stringify(cards.value[index].search)) as NumberType['search'];
+});
 
 </script>
 
@@ -436,7 +305,7 @@ watch(
                   </div>
                 </div>
                 <ReusableNumberSearch @reset:exclude="$val => resetExclude($val)" from="NUMBER-SEARCHER-MODAL"></ReusableNumberSearch>
-                <div v-if="(numbersearcherui as NumberSearcherUIType).openexclude" class="d-block position-absolute t-0 l-0" style="background-color:#fff;z-index:9000;">
+                <div v-if="openexclude" class="d-block position-absolute t-0 l-0" style="background-color:#fff;z-index:9000;">
                   <div class="d-block m-0 p-0">
                     <div class="d-block">
                       <div
@@ -445,7 +314,7 @@ watch(
                       >
                         <a
                           class="underline-none cursor-pointer align-middle"
-                          @click="() => { (numbersearcherui as NumberSearcherUIType).openexclude = false; triggerNumberSearcherUI(); }"
+                          @click="openexclude = false"
                         >
                           <img
                             src="/src/assets/icons/close.png"
@@ -464,13 +333,11 @@ watch(
                           >
                             Max:
                               {{
-                                (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                "GREATER-THAN"
+                                holder?.tab === "GREATER-THAN"
                                   ? cards[index].result.max
-                                  : (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                    "LESS-THAN"
-                                  ? (numbersearcherui as NumberSearcherUIType).main.lessthan.value
-                                  : (numbersearcherui as NumberSearcherUIType).main.to.value
+                                  : holder?.tab === "LESS-THAN"
+                                  ? holder?.lessthan
+                                  : holder?.fromto?.to
                               }}
                           </span>
                         </div>
@@ -480,19 +347,18 @@ watch(
                           >
                             Min:
                               {{
-                                (numbersearcherui as NumberSearcherUIType).main.tab === "LESS-THAN"
+                                holder?.tab === "LESS-THAN"
                                   ? cards[index].result.min
-                                  : (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                    "GREATER-THAN"
-                                  ? (numbersearcherui as NumberSearcherUIType).main.greaterthan.value
-                                  : (numbersearcherui as NumberSearcherUIType).main.from.value
+                                  : holder?.tab === "GREATER-THAN"
+                                  ? holder?.greaterthan
+                                  : holder?.fromto?.from
                               }}
                           </span>
                         </div>
                       </div>
                       <template
                         v-if="
-                          (numbersearcherui as NumberSearcherUIType).main.tab === 'GREATER-THAN'
+                          holder?.tab === 'GREATER-THAN'
                         "
                       >
                         <div
@@ -512,13 +378,13 @@ watch(
                             class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
                             style="padding: 5px 0 1px 5px"
                           >
-                            {{ (numbersearcherui as NumberSearcherUIType).main.greaterthan.value }}
+                            {{ holder?.greaterthan }}
                           </div>
                         </div>
                       </template>
                       <template
                         v-else-if="
-                          (numbersearcherui as NumberSearcherUIType).main.tab === 'LESS-THAN'
+                          holder?.tab === 'LESS-THAN'
                         "
                       >
                         <div
@@ -538,7 +404,7 @@ watch(
                             class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
                             style="padding: 5px 0 1px 5px"
                           >
-                            {{ (numbersearcherui as NumberSearcherUIType).main.lessthan.value }}
+                            {{ holder?.lessthan }}
                           </div>
                         </div>
                       </template>
@@ -602,9 +468,7 @@ watch(
                                         <div class="d-block">
                                           <input
                                             @keydown.space.prevent
-                                            v-model.trim="
-                                              (numbersearcherui as NumberSearcherUIType).exclude.excludefromtofrom.value
-                                            "
+                                            v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom"
                                             type="text"
                                             class="w-100 text-center"
                                             style="height: 30px;z-index: 1110;"
@@ -623,7 +487,7 @@ watch(
                                         <div class="d-block">
                                           <input
                                             @keydown.space.prevent
-                                            v-model.trim="(numbersearcherui as NumberSearcherUIType).exclude.excludefromtoto.value"
+                                            v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singleto"
                                             type="text"
                                             class="w-100 text-center"
                                             style="height: 30px;z-index: 1110;"
@@ -658,8 +522,8 @@ watch(
                                             localIncreaseIndexAndSavePrevious(
                                               'RANGE',
                                               [
-                                                (numbersearcherui as NumberSearcherUIType).exclude.excludefromtofrom.value,
-                                                (numbersearcherui as NumberSearcherUIType).exclude.excludefromtoto.value,
+                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
+                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
                                               ],
                                               'EXCLUDE-FROM-TO'
                                             );
@@ -674,28 +538,26 @@ watch(
                                   </div>
                                 </div>
                                 <Paste
+                                  :receiveclosepastemodalsignal="closepastemodalsignal"
                                   title="range"
-                                  :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+                                  :datatype="cards[index].info.datatype as 'Number'"
                                   :max="((
-                                    (numbersearcherui as NumberSearcherUIType).main.tab ===
+                                    holder?.tab ===
                                       'GREATER-THAN'
                                         ? cards[index].result.max
-                                        : (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                          'LESS-THAN'
-                                        ? (numbersearcherui as NumberSearcherUIType).main.lessthan.value
-                                        : (numbersearcherui as NumberSearcherUIType).main.to.value
+                                        : holder?.tab === 'LESS-THAN'
+                                        ? holder?.lessthan
+                                        : holder?.fromto?.to
                                   ) as string)"
                                   :min="((
-                                    (numbersearcherui as NumberSearcherUIType).main.tab === 'LESS-THAN'
+                                    holder?.tab === 'LESS-THAN'
                                       ? cards[index].result.min
-                                      : (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                        'GREATER-THAN'
-                                      ? (numbersearcherui as NumberSearcherUIType).main.greaterthan.value
-                                      : (numbersearcherui as NumberSearcherUIType).main.from.value
+                                      : holder?.tab === 'GREATER-THAN'
+                                      ? holder?.greaterthan
+                                      : holder?.fromto?.from
                                   ) as string)"
                                   :text-area-height="'height:450px;'"
                                 >
-                                  <template v-slot:controlbuttons></template>
                                   <template v-slot:outcomeidentifier>
                                     <div
                                       class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
@@ -717,107 +579,7 @@ watch(
                                     </div>
                                   </template>
                                 </Paste>
-                                <div
-                                  class="d-block overflow-y-auto overflow-x-hidden"
-                                  style="height: 180px; z-index: 1000"
-                                >
-                                  <ul
-                                    class="d-block list-style-none m-0"
-                                    style="padding: 5px 0px"
-                                  >
-                                    <li
-                                      class="w-100"
-                                      v-for="(data, dindex) in (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.from"
-                                      :key="
-                                        (numbersearcherui as NumberSearcherUIType).main.tab +
-                                        '-EXCLUDE-FROM-TO' +
-                                        dindex
-                                      "
-                                    >
-                                      <Transition>
-                                        <div
-                                          :ref="
-                                            (el) => {
-                                              (numbersearcherui as NumberSearcherUIType).exclude.refexcludefromto[
-                                                dindex
-                                              ] = el as HTMLDivElement;
-                                            }
-                                          "
-                                          v-if="
-                                            (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.show[
-                                              dindex
-                                            ]
-                                          "
-                                          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
-                                          style="padding: 1px 5px"
-                                          :class="{
-                                            shake:
-                                              (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto
-                                                .disabled[dindex],
-                                          }"
-                                        >
-                                          <div
-                                            class="flex-shrink-0 flex-grow-0"
-                                          >
-                                            <a
-                                              @click="
-                                                localDeleteSaved(
-                                                  dindex,
-                                                  'EXCLUDE-FROM-TO'
-                                                )
-                                              "
-                                              class="remove-selected m-0 d-inline-block underline-none"
-                                            >
-                                              <img
-                                                class="align-middle"
-                                                src="/src/assets/icons/close.png"
-                                                style="width: 25px;height: 25px;"
-                                              />
-                                            </a>
-                                          </div>
-                                          <div
-                                            class="flex-fill"
-                                            style="padding-left: 5px"
-                                          >
-                                            <div
-                                              class="d-block"
-                                              style="padding: 5px"
-                                            >
-                                              <div
-                                                :ref="
-                                                  (el) => {
-                                                    (numbersearcherui as NumberSearcherUIType).exclude.refexcludefromtoinner[
-                                                      dindex
-                                                    ] = el as HTMLDivElement;
-                                                  }
-                                                "
-                                                class="d-block text-wrap text-break shadow-sm"
-                                                style="border-radius: 20px;padding: 8px;z-index: 999;background-color:#fff;"
-                                              >
-                                                <label
-                                                  class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
-                                                >
-                                                  {{
-                                                    (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.from[
-                                                      dindex
-                                                    ]
-                                                  }}
-                                                  -
-                                                  {{
-                                                    (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.to[
-                                                      dindex
-                                                    ]
-                                                  }}
-                                                </label>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </Transition>
-                                    </li>
-                                    <li :ref="(el) => (numbersearcherui as NumberSearcherUIType).exclude.excludefromtoref = el as HTMLLIElement"></li>
-                                  </ul>
-                                </div>
+                                
                               </div>
                             </div>
                             <div
@@ -851,7 +613,7 @@ watch(
                                 >
                                   <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
                                     <input
-                                      v-model.trim="(numbersearcherui as NumberSearcherUIType).exclude.excludeequalto.value"
+                                      v-model.trim="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType).single"
                                       type="text"
                                       @keydown.space.prevent
                                       class="w-100 text-center"
@@ -867,7 +629,7 @@ watch(
                                         () => {
                                           localIncreaseIndexAndSavePrevious(
                                             'NONE-RANGE',
-                                            (numbersearcherui as NumberSearcherUIType).exclude.excludeequalto.value,
+                                            ((holder as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
                                             'EXCLUDE-EQUAL-TO'
                                           );
                                         }
@@ -890,28 +652,25 @@ watch(
                                   </div>
                                 </div>
                                 <Paste
+                                  :receiveclosepastemodalsignal="closepastemodalsignal"
                                   title="numbers"
-                                  :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+                                  :datatype="cards[index].info.datatype as 'Number'"
                                   :max="((
-                                    (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                      'GREATER-THAN'
+                                    holder?.tab === 'GREATER-THAN'
                                         ? cards[index].result.max
-                                        : (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                          'LESS-THAN'
-                                        ? (numbersearcherui as NumberSearcherUIType).main.lessthan.value
-                                        : (numbersearcherui as NumberSearcherUIType).main.to.value
+                                        : holder?.tab === 'LESS-THAN'
+                                        ? holder?.lessthan
+                                        : holder?.fromto?.to
                                   ) as string)"
                                   :min="((
-                                    (numbersearcherui as NumberSearcherUIType).main.tab === 'LESS-THAN'
+                                    holder?.tab === 'LESS-THAN'
                                       ? cards[index].result.min
-                                      : (numbersearcherui as NumberSearcherUIType).main.tab ===
-                                        'GREATER-THAN'
-                                      ? (numbersearcherui as NumberSearcherUIType).main.greaterthan.value
-                                      : (numbersearcherui as NumberSearcherUIType).main.from.value
+                                      : holder?.tab === 'GREATER-THAN'
+                                      ? holder?.greaterthan
+                                      : holder?.fromto?.from
                                   ) as string)"
                                   :text-area-height="'height:450px;'"
                                 >
-                                  <template v-slot:controlbuttons></template>
                                   <template v-slot:outcomeidentifier>
                                     <div
                                       class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
@@ -933,92 +692,7 @@ watch(
                                     </div>
                                   </template>
                                 </Paste>
-                                <div
-                                  class="d-block overflow-y-auto overflow-x-hidden"
-                                  style="height: 180px; z-index: 1000"
-                                >
-                                  <ul
-                                    class="d-block list-style-none m-0"
-                                    style="padding: 5px 0px"
-                                  >
-                                    <li
-                                      class="w-100"
-                                      v-for="(data, dindex) in (numbersearcherui as NumberSearcherUIType).exclude.treeexcludeequalto.value"
-                                      :key="
-                                      (numbersearcherui as NumberSearcherUIType).main.tab +
-                                      '-EXCLUDE-EQUAL-TO' +
-                                      dindex
-                                      "
-                                    >
-                                      <Transition>
-                                        <div
-                                          :ref="
-                                            (el) => {
-                                              (numbersearcherui as NumberSearcherUIType).exclude.refexcludeequalto[
-                                                dindex
-                                              ] = el as HTMLDivElement;
-                                            }
-                                          "
-                                          v-if="
-                                            (numbersearcherui as NumberSearcherUIType).exclude.treeexcludeequalto.show[dindex]
-                                          "
-                                          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
-                                          style="padding: 1px 5px"
-                                          :class="{
-                                            shake:
-                                              (numbersearcherui as NumberSearcherUIType).exclude.treeexcludeequalto.disabled[dindex],
-                                          }"
-                                        >
-                                          <div
-                                            class="flex-shrink-0 flex-grow-0"
-                                          >
-                                            <a
-                                              @click="
-                                                localDeleteSaved(
-                                                  dindex,
-                                                  'EXCLUDE-EQUAL-TO'
-                                                )
-                                              "
-                                              class="m-0 d-inline-block underline-none"
-                                            >
-                                              <img
-                                                class="align-middle"
-                                                src="/src/assets/icons/close.png"
-                                                style="width: 25px;height: 25px;"
-                                              />
-                                            </a>
-                                          </div>
-                                          <div
-                                            class="flex-fill"
-                                            style="padding-left: 5px"
-                                          >
-                                            <div
-                                              class="d-block"
-                                              style="padding: 5px"
-                                            >
-                                              <div
-                                                :ref="
-                                                  (el) => {
-                                                    (numbersearcherui as NumberSearcherUIType).exclude.refexcludeequaltoinner[
-                                                      dindex
-                                                    ] = el as HTMLDivElement;
-                                                  }
-                                                "
-                                                class="d-block text-wrap text-break shadow-sm"
-                                                style="border-radius: 20px;padding: 8px;z-index: 999;background-color:#fff;"
-                                              >
-                                                <label
-                                                  class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
-                                                >{{ data }}</label>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </Transition>
-                                    </li>
-                                    <li :ref="(el) => (numbersearcherui as NumberSearcherUIType).exclude.excludeequaltoref = el as HTMLLIElement"></li>
-                                  </ul>
-                                </div>
+                                
                               </div>
                             </div>
                           </div>
@@ -1085,29 +759,6 @@ watch(
 </template>
 
 <style scoped>
-.shake {
-  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-  transform: translate3d(0, 0, 0);
-}
-@keyframes shake {
-  10%,
-  90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-  20%,
-  80% {
-    transform: translate3d(2px, 0, 0);
-  }
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-  40%,
-  60% {
-    transform: translate3d(4px, 0, 0);
-  }
-}
 .modal-mask-background {
   background-color: rgba(0, 0, 0, 0.5);
 }

@@ -9,7 +9,7 @@ import {
 } from "vue";
 import VisibleCalendarDatePicker from "./VisibleCalendarDatePicker.vue";
 import Paste from "./Paste.vue";
-import type { DateType, YearType, NumberStringType, NumberType, MultipleWordsStringType, SingleWordStringType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { DateType, YearType } from "../types/SupportedDatatypesTypeDeclaration";
 
 const 
 
@@ -45,7 +45,7 @@ onBeforeMount(() => {
   <div class="d-block" style="padding: 0 10px;">
     <Paste
       :title="cards[index].info.name"
-      :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+      :datatype="cards[index].info.datatype as 'Date' | 'Year'"
       :max="(cards[index].result.max as string)"
       :min="(cards[index].result.min as string)"
       :text-area-height="'height:450px;'"

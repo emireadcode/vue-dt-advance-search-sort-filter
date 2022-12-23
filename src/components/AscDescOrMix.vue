@@ -6,17 +6,14 @@ import {
 } from "./helperfunctions/accessibility";
 
 const
-  props = defineProps<{
-    index: number;
-  }>(),
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
-  index = props.index
+  cards = inject("cards") as ShallowRef<PrimitiveType[]>
 ;
 
 let
   accessibility = inject("accessibility") as {
     cardschildrentabindex: Ref<Boolean[]>;
-  }
+  },
+  index = inject("index") as number
 ;
 
 onMounted(() => {

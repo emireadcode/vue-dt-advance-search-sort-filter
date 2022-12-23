@@ -38,16 +38,11 @@ let
 ;
 
 const
-
-  props = defineProps<{
-    index: number;
-  }>(),
+  index = inject("index") as number,
 
   cards = inject("cards") as ShallowRef<DateType[]>
 
 ;
-
-provide("index", props.index);
 
 function updateCards() {
   nextTick(() => {
@@ -127,7 +122,7 @@ onBeforeMount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @click="() => { excludedates = false; ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
+                      @click="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
                       :style="(cards[index] as DateType).search.format === 'DD/MM/YYYY'
@@ -140,7 +135,7 @@ onBeforeMount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @click="() => { excludedates = false; ((cards[props.index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
+                      @click="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
                       :style="

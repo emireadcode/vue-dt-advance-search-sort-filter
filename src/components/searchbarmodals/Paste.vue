@@ -12,13 +12,19 @@ import {
 import type { DuplicateCheckerObjectType } from "../types/days_months_years_types";
 import { removeDelimiters } from "../utility/dd_mm_yy_utility_fns";
 
-const props = defineProps<{
-  title: string;
-  min: string;
-  max: string;
-  owner: 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number';
-  textAreaHeight: string;
-}>();
+const 
+  emits = defineEmits<{
+    (e: "return:newlypasteditems", action: string[][]): void;
+  }>(),
+  props = defineProps<{
+    receiveclosepastemodalsignal: number;
+    title: string;
+    min?: string | undefined;
+    max?: string | undefined;
+    datatype: 'DateTime' | 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number';
+    textAreaHeight: string;
+  }>()
+;
 
 let 
   pastemultiplelines = ref(false),
@@ -30,7 +36,8 @@ let
   pasteditemvalidity = ref<string[][]>([]),
   duplicateCheckerObject = {} as DuplicateCheckerObjectType,
   actualpasteddata = "",
-  unwatchpastedmultiplelinesoftext: WatchStopHandle
+  unwatchpastedmultiplelinesoftext: WatchStopHandle,
+  unwatchclosepasted: WatchStopHandle
 ;
 
 function openPasteArea() {
@@ -86,14 +93,14 @@ function findRejectedAndAcceptedLines(
       continue;
     }
   }
-  if(props.owner === 'Date') {
+  if(props.datatype === 'Date') {
     return removeDuplicateAndValidateDateLine(
       textareaacceptedtextArray,
       min as string,
       max as string
     );
   }
-  else if(props.owner === 'Year' || props.owner === 'Number') {
+  else if(props.datatype === 'Year' || props.datatype === 'Number') {
     return removeDuplicateAndValidateNumericLine(
       textareaacceptedtextArray,
       min as string,
@@ -280,16 +287,27 @@ function testInvalidDateValidity(pasteddate: string, min: string, max: string) {
 
 onBeforeUnmount(() => {
   unwatchpastedmultiplelinesoftext();
+  unwatchclosepasted();
 });
 
 onBeforeMount(() => {
+  unwatchclosepasted = watch(
+    () => props.receiveclosepastemodalsignal,
+    (_signalcount) => {
+      pastemultiplelines.value = false;
+      pasteexpanded.value = false;
+      pastedmultiplelinesoftext.value = "";
+      pasteditemloading.value = false;
+      duplicateCheckerObject = {} as DuplicateCheckerObjectType;
+    }
+  );
   unwatchpastedmultiplelinesoftext = watch(
     () => pastedmultiplelinesoftext.value,
     (text) => {
       pasteditemloading.value = true;
       let pt: NodeJS.Timeout;
       pt = setTimeout(() => {
-        if(props.owner === 'Date' || props.owner === 'Year' || props.owner === 'Number') {
+        if(props.datatype === 'Date' || props.datatype === 'Year' || props.datatype === 'Number') {
           pasteditemvalidity.value = findRejectedAndAcceptedLines(
             actualpasteddata,
             text,
@@ -345,7 +363,7 @@ onBeforeMount(() => {
           <div 
             class="d-block p-0 m-0" 
             style="z-index: 800"
-            :style="owner === 'Date'? 'height: 428px;' : props.textAreaHeight"
+            :style="datatype === 'Date'? 'height: 428px;' : props.textAreaHeight"
           >
             <textarea
               :ref="(el) => (pastetextarearef = el as HTMLTextAreaElement)"
@@ -424,7 +442,14 @@ onBeforeMount(() => {
                         </div>
                       </div>
                       <div class="d-block" style="padding: 10px">
-                        <slot name="controlbuttons"></slot>
+                        <template v-if="datatype === 'Date'">
+                        
+                        </template>
+                        <template v-else>
+                          <button @keyup.enter="emits('return:newlypasteditems', pasteditemvalidity)" @click="emits('return:newlypasteditems', pasteditemvalidity)" class="btn w-100 text-center" style="padding:5px;">
+                            Add Pasted
+                          </button>
+                        </template>
                       </div>
                       <div class="d-block">
                         <ul class="d-block list-style-none m-0 p-0">
@@ -435,7 +460,7 @@ onBeforeMount(() => {
                             <div class="d-block" style="padding: 5px">
                               <div
                                 :style="
-                                  owner === 'Date'?
+                                  datatype === 'Date'?
                                   (
                                     item[1] === 'ERROR'
                                       ? 'background-color:red;color:#fff;'
@@ -447,7 +472,7 @@ onBeforeMount(() => {
                                   )
                                   :
                                   (
-                                    owner === 'Year'?
+                                    datatype === 'Year'?
                                     (
                                     item[1] === 'ERROR'
                                       ? 'background-color:red;color:#fff;'
@@ -484,7 +509,7 @@ onBeforeMount(() => {
         </div>
       </Teleport>
     </template>
-    <template v-if="owner === 'Date'">
+    <template v-if="datatype === 'Date'">
       <div class="d-block text-center" style="padding: 34.5px 0 34.5px 0">
         <button
           class="btn shadow-sm w-100 font-family"

@@ -39,7 +39,7 @@ onBeforeMount(() => {
   })
     .then((res) => res.json())
     .then((json) => {
-      cards.value = shallowRef(generateSearchSortAndFilterCards(props.config, json as DistinctRecordType)) as ShallowRef<PrimitiveType[] | undefined>;
+      cards.value = shallowRef(generateSearchSortAndFilterCards(props.config, json as DistinctRecordType)) as ShallowRef<PrimitiveType[]>;
     })
     .catch((err) => (distinctRecordsError = err));
 });

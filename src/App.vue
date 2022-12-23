@@ -39,6 +39,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           join: 'customer',
           limit: 100,
           disableincludeandexclude: false,
+          fixedlengthofstring: 11,
         },
         {
           position: 3,
@@ -223,7 +224,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           limit: 10,
           dateFormat: 'dd-mm-yyyy',
           timeFormat: '12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO',
-          //timeFormat: '12-HCWSAWLZ',
+          //timeFormat: '12-HCWSWLZ',
           isoweek: true,
         },
       ],

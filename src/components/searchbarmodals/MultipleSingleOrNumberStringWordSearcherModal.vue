@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { inject, type ShallowRef, type Ref } from "vue";
-import type { PrimitiveType, SingleWordStringType, MultipleWordsStringType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
 import TabPanelWithIncludeAndExclude from "./TabPanelWithIncludeAndExclude.vue";
 import TabPanelWithoutIncludeAndExclude from "./TabPanelWithoutIncludeAndExclude.vue";
 import SingleOrMultipleWordsStringAttributeInfoNameTabs from "./SingleOrMultipleWordsStringAttributeInfoNameTabs.vue";
 
 const
-  props = defineProps<{
-    index: number;
-  }>(),
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
-  index = props.index
+  cards = inject("cards") as ShallowRef<(NumberStringType | SingleWordStringType | MultipleWordsStringType)[]>,
+  index = inject("index") as number
 ;
 
 let
@@ -31,68 +28,47 @@ let
         <div class="modal-wrapper text-center">
           <div class="modal-container" style="width:550px;">
             <div class="d-block" style="height:585px !important;">
-              <template v-if="cards[index].info.datatype === 'MultipleWordsString'">
-                <SingleOrMultipleWordsStringAttributeInfoNameTabs wordtype="MULTIPLE" :index="index"></SingleOrMultipleWordsStringAttributeInfoNameTabs>
-                <div class="d-block m-0 overflow-hidden" style="padding: 0 10px;">
-                  <template v-if="!(cards[index] as MultipleWordsStringType).concatenated">
-                    <template v-if="(cards[index] as MultipleWordsStringType).search.tabclicked">
-                      <template v-if="(cards[index] as MultipleWordsStringType).disableincludeandexclude!==undefined && (cards[index] as MultipleWordsStringType).disableincludeandexclude===false">
-                        <TabPanelWithIncludeAndExclude wordtype="MULTIPLE" :index="index"></TabPanelWithIncludeAndExclude>
-                      </template>
-                      <template v-else>
-                        <TabPanelWithoutIncludeAndExclude wordtype="MULTIPLE" :index="index"></TabPanelWithoutIncludeAndExclude>
-                      </template>
+              <SingleOrMultipleWordsStringAttributeInfoNameTabs
+                :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
+              ></SingleOrMultipleWordsStringAttributeInfoNameTabs>
+              <div class="d-block m-0 overflow-hidden" style="padding: 0 10px;">
+                <template v-if="!cards[index].concatenated">
+                  <template v-if="cards[index].search.tabclicked">
+                    <template v-if="cards[index].disableincludeandexclude!==undefined && cards[index].disableincludeandexclude===false">
+                      <TabPanelWithIncludeAndExclude 
+                        :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
+                      ></TabPanelWithIncludeAndExclude>
+                    </template>
+                    <template v-else>
+                      <TabPanelWithoutIncludeAndExclude 
+                        :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
+                      ></TabPanelWithoutIncludeAndExclude>
                     </template>
                   </template>
-                  <template v-else>
-                    <div class="d-block">
-                      <template v-for="(concatenated, cindex) in (cards[index] as MultipleWordsStringType).concatenated">
-                        <template v-if="concatenated.disableincludeandexclude!==undefined && !concatenated.disableincludeandexclude">
-                          <template v-if="(concatenated.search as StringSearchType).tabclicked">
-                            <TabPanelWithIncludeAndExclude wordtype="MULTIPLE" :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithIncludeAndExclude>
-                          </template>
+                </template>
+                <template v-else>
+                  <div class="d-block">
+                    <template v-for="(concatenated, cindex) in cards[index].concatenated">
+                      <template v-if="concatenated.disableincludeandexclude!==undefined && !concatenated.disableincludeandexclude">
+                        <template v-if="(concatenated.search as StringSearchType).tabclicked">
+                          <TabPanelWithIncludeAndExclude 
+                            :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
+                            :concatfieldindex="(cindex as number)"
+                          ></TabPanelWithIncludeAndExclude>
                         </template>
-                        <template v-else>
-                          <template v-if="(concatenated.search as StringSearchType).tabclicked">
-                            <TabPanelWithoutIncludeAndExclude wordtype="MULTIPLE" :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithoutIncludeAndExclude>
-                          </template>
-                        </template>
-                      </template>
-                    </div>
-                  </template>
-                </div>
-              </template>
-              <template v-else>
-                <SingleOrMultipleWordsStringAttributeInfoNameTabs wordtype="SINGLE" :index="index"></SingleOrMultipleWordsStringAttributeInfoNameTabs>
-                <div class="d-block m-0 overflow-hidden" style="padding: 0 10px;">
-                  <template v-if="!(cards[index] as SingleWordStringType).concatenated">
-                    <template v-if="(cards[index] as SingleWordStringType).search.tabclicked">
-                      <template v-if="(cards[index] as SingleWordStringType).disableincludeandexclude!==undefined && (cards[index] as SingleWordStringType).disableincludeandexclude===false">
-                        <TabPanelWithIncludeAndExclude wordtype="SINGLE" :index="index"></TabPanelWithIncludeAndExclude>
                       </template>
                       <template v-else>
-                        <TabPanelWithoutIncludeAndExclude wordtype="SINGLE" :index="index"></TabPanelWithoutIncludeAndExclude>
+                        <template v-if="(concatenated.search as StringSearchType).tabclicked">
+                          <TabPanelWithoutIncludeAndExclude
+                            :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'"
+                            :concatfieldindex="(cindex as number)"
+                          ></TabPanelWithoutIncludeAndExclude>
+                        </template>
                       </template>
                     </template>
-                  </template>
-                  <template v-else>
-                    <div class="d-block">
-                      <template v-for="(concatenated, cindex) in (cards[index] as SingleWordStringType).concatenated">
-                        <template v-if="concatenated.disableincludeandexclude!==undefined && !concatenated.disableincludeandexclude">
-                          <template v-if="(concatenated.search as StringSearchType).tabclicked">
-                            <TabPanelWithIncludeAndExclude wordtype="SINGLE" :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithIncludeAndExclude>
-                          </template>
-                        </template>
-                        <template v-else>
-                          <template v-if="(concatenated.search as StringSearchType).tabclicked">
-                            <TabPanelWithoutIncludeAndExclude wordtype="SINGLE" :index="index" :concatfieldindex="(cindex as number)"></TabPanelWithoutIncludeAndExclude>
-                          </template>
-                        </template>
-                      </template>
-                    </div>
-                  </template>
-                </div>
-              </template>
+                  </div>
+                </template>
+              </div>
             </div>
             <div
               style="padding: 10px 10px 12px 10px;"

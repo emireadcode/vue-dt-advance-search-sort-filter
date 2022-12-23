@@ -4,54 +4,39 @@ import { inject, triggerRef, type ShallowRef, onMounted } from "vue";
 
 const 
   props = defineProps<{
-    index: number;
     wordtype: 'MULTIPLE' | 'SINGLE';
   }>(),
-  index = props.index,
+  index = inject("index") as number,
   cards = inject("cards") as ShallowRef<( MultipleWordsStringType | SingleWordStringType | NumberStringType)[]>
 ;
 
 function updateAttributeButtonTabClicked(bindex?: number | undefined) {
-  if(props.wordtype === "MULTIPLE") {
-    if((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).concatenated !== undefined) {
-      Object.values((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType).forEach((concatenated, i) => {
-        if(""+(bindex as number) === ""+i) {
-          (concatenated.search as StringSearchType).tabclicked = true;
-        }
-        else {
-          (concatenated.search as StringSearchType).tabclicked = false;
-        }
-      });
-    }
-  }
-  else {
-    if((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).concatenated !== undefined) {
-      Object.values((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).concatenated as SingleWordStringConcatenatedFieldType | MultipleWordsStringConcatenatedFieldType).forEach((concatenated, i) => {
-        if(""+(bindex as number) === ""+i) {
-          (concatenated.search as StringSearchType).tabclicked = true;
-        }
-        else {
-          (concatenated.search as StringSearchType).tabclicked = false;
-        }
-      });
-    }
+  if(cards.value[index].concatenated !== undefined) {
+    Object.values(cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType).forEach((concatenated, i) => {
+      if(""+(bindex as number) === ""+i) {
+        (concatenated.search as StringSearchType).tabclicked = true;
+      }
+      else {
+        (concatenated.search as StringSearchType).tabclicked = false;
+      }
+    });
   }
   triggerRef(cards);
 }
 
 function setTabDefaultSelection() {
-  if(!(cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).concatenated) {
-    (cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).search.tabclicked = true;
-    if((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).disableincludeandexclude !== undefined 
+  if(!cards.value[index].concatenated) {
+    cards.value[index].search.tabclicked = true;
+    if(cards.value[index].disableincludeandexclude !== undefined 
       && 
-      !(cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).disableincludeandexclude
+      !cards.value[index].disableincludeandexclude
     ) {
-      ((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).search.include as StringSearchType).tabclicked = true;
-      ((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).search.exclude as StringSearchType).tabclicked = false;
+      (cards.value[index].search.include as StringSearchType).tabclicked = true;
+      (cards.value[index].search.exclude as StringSearchType).tabclicked = false;
     }
   }
   else {
-    Object.values((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType).forEach((concatenated, i) => {
+    Object.values(cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType).forEach((concatenated, i) => {
       if(i === 0) {
         (concatenated.search as StringSearchType).tabclicked = true;
       }

@@ -55,15 +55,13 @@ export interface YearType extends IdentityType {
 
 export type StringSearchType = {
   single: string;
-  value: string[];
-  index: number;
-  temporary: string[];
+  pages: string[][];
   bottom: boolean;
-  done: boolean;
   loading: boolean;
   addloading: boolean;
   tabclicked: boolean;
-  tabref: HTMLButtonElement | undefined;
+  addeditemsref: HTMLDivElement[] | [];
+  endoflistitemref: HTMLLIElement | undefined;
 };
 
 export type MultipleWordsStringConcatenatedFieldType = {
@@ -77,7 +75,7 @@ export type MultipleWordsStringConcatenatedFieldType = {
       | (StringSearchType & {
           include?: StringSearchType | undefined;
           exclude?: StringSearchType | undefined;
-          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '';
+          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
         })
       | undefined;
   };
@@ -102,6 +100,7 @@ export type AtNumber<T> = {
 export type SingleWordStringConcatenatedFieldType = {
   [key: string]: {
     disableincludeandexclude?: boolean | undefined;
+    fixedlengthofstring?: number | undefined;
     name: string;
     attribute?: string | undefined;
     table?: string | undefined;
@@ -110,7 +109,7 @@ export type SingleWordStringConcatenatedFieldType = {
       | (StringSearchType & {
           include?: StringSearchType | undefined;
           exclude?: StringSearchType | undefined;
-          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '@NUMBER' | '';
+          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
           atnumbersearch?: AtNumber<NumberSearchType> | undefined;
         })
       | undefined;
@@ -135,7 +134,7 @@ export interface MultipleWordsStringType extends IdentityType {
   search: StringSearchType & {
     include?: StringSearchType | undefined;
     exclude?: StringSearchType | undefined;
-    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '';
+    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
     trueorfalse: boolean;
   };
   searchFrom?: "DOM" | "SERVER";
@@ -147,7 +146,7 @@ export interface SingleWordStringType extends IdentityType {
   search: StringSearchType & {
     include?: StringSearchType | undefined;
     exclude?: StringSearchType | undefined;
-    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EXACTLY-EQUAL-TO' | '@NUMBER' | '';
+    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
     atnumbersearch?: AtNumber<NumberSearchType> | undefined;
     trueorfalse: boolean;
   };
@@ -278,58 +277,30 @@ export type NumberSearchType = {
 
 export type NumberSearchExcludeFromToType = {
   singlefrom: string;
-  from: string[];
+  fromto: [string,string][];
   singleto: string;
-  to: string[];
-  index: number;
-  disabled: boolean[];
-  show: boolean[];
+  shake: boolean[];
   loading: boolean;
   addloading: boolean;
-};
-
-export type NumberSearcherUIType = {
-  openexclude: boolean;
-  main: {
-    tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO";
-    refequaltoinner: HTMLDivElement[] | [];
-    refnotequaltoinner: HTMLDivElement[] | [];
-    refequalto: HTMLDivElement[] | [];
-    refnotequalto: HTMLDivElement[] | [];
-    equaltoref: HTMLLIElement | null;
-    notequaltoref: HTMLLIElement | null;
-    greaterthan: Ref<string>;
-    lessthan: Ref<string>;
-    equalto: Ref<string>;
-    notequalto: Ref<string>;
-    from: Ref<string>;
-    to: Ref<string>;
-    treenotequalto: NumberSearchExcludeEqualToType;
-    treeequalto: NumberSearchExcludeEqualToType;
-  };
-  exclude: {
-    refexcludeequalto: HTMLDivElement[] | [];
-    refexcludefromto: HTMLDivElement[] | [];
-    excludefromtoref: HTMLLIElement | null;
-    excludeequaltoref: HTMLLIElement | null;
-    refexcludeequaltoinner: HTMLDivElement[] | [];
-    refexcludefromtoinner: HTMLDivElement[] | [];
-    excludefromtofrom: Ref<string>;
-    excludefromtoto: Ref<string>;
-    excludeequalto: Ref<string>;
-    treeexcludeequalto: NumberSearchExcludeEqualToType;
-    treeexcludefromto: NumberSearchExcludeFromToType;
-  };
+  show: boolean[];
+  bottom: boolean;
+  pages: [string, string][][];
+  addeditemsref: HTMLDivElement[] | [];
+  inneraddeditemsref: HTMLDivElement[] | [];
+  endoflistitemref: HTMLLIElement | undefined;
 };
 
 export type NumberSearchExcludeEqualToType = {
   single: string;
-  value: string[];
-  index: number;
-  disabled: boolean[];
-  show: boolean[];
   loading: boolean;
   addloading: boolean;
+  shake: boolean[];
+  show: boolean[];
+  bottom: boolean;
+  pages: string[][];
+  addeditemsref: HTMLDivElement[] | [];
+  inneraddeditemsref: HTMLDivElement[] | [];
+  endoflistitemref: HTMLLIElement | undefined;
 };
 
 export interface NumberType extends IdentityType {
@@ -356,13 +327,12 @@ export type CardInnerType = {
   limit: number;
   table?: string | undefined;
   join?: string | undefined;
-  disableincludeandexclude?: boolean | undefined;
 };
 
 export type CardType<T> = 
 {
   multiplewordsstringtypes?:
-    | (T & { concatenated?: MultipleWordsStringConcatenatedType | undefined })[]
+    | (T & { concatenated?: MultipleWordsStringConcatenatedType | undefined; disableincludeandexclude?: boolean | undefined; })[]
     | undefined;
   datetypes?: (T & DateFormat & { isoweek: boolean; })[] | undefined;
   numbertypes?: T[] | undefined;
@@ -373,12 +343,14 @@ export type CardType<T> =
     | (T & {
         concatenated?: SingleWordConcatenatedType | undefined;
         fixedlengthofstring?: number | undefined;
+        disableincludeandexclude?: boolean | undefined;
       })[]
     | undefined;
   numberstringtypes?:
     | (T & {
         concatenated?: SingleWordConcatenatedType | undefined;
         fixedlengthofstring?: number | undefined;
+        disableincludeandexclude?: boolean | undefined;
       })[]
     | undefined;
   yeartypes?: T[] | undefined;

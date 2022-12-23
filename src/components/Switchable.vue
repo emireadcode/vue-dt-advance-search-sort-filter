@@ -8,11 +8,10 @@ import {
 
 const
   props = defineProps<{
-    index: number;
     truelabel: string;
     falselabel: string;
   }>(),
-  index = props.index,
+  index = inject("index") as number,
   cards = inject("cards") as ShallowRef<PrimitiveType[]>
 ;
 

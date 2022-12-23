@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, type ShallowRef } from "vue";
+import { provide, inject, type ShallowRef } from "vue";
 import AscDescOrMix from './AscDescOrMix.vue';
 import FilterableResultDisplayer from './FilterableResultDisplayer.vue';
 import SearchBar from './SearchBar.vue';
@@ -12,7 +12,7 @@ const
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
   index = props.index
 ;
-
+provide("index", index);
 </script>
 
 <template>
@@ -28,8 +28,8 @@ const
     </span>
   </div>
   <div class="d-block" style="padding: 0 0.583333333rem !important">
-    <AscDescOrMix :index="index"></AscDescOrMix>
-    <SearchBar :index="index"></SearchBar>
-    <FilterableResultDisplayer :index="index"></FilterableResultDisplayer>
+    <AscDescOrMix></AscDescOrMix>
+    <SearchBar></SearchBar>
+    <FilterableResultDisplayer></FilterableResultDisplayer>
   </div>
 </template>

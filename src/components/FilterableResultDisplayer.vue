@@ -2,19 +2,13 @@
 import { inject, triggerRef, nextTick, type ShallowRef, type Ref } from "vue";
 import type { KeyToNameType, PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 
-const
-  props = defineProps<{
-    index: number;
-  }>()
-;
-
 let
   accessibility = inject("accessibility") as {
     cardschildrentabindex: Ref<Boolean[]>;
     cardsfilteritemtabindex: Ref<Boolean[]>;
   },
   cards = inject("cards") as ShallowRef<PrimitiveType[]>,
-  index = props.index
+  index = inject("index") as number
 ;
 
 

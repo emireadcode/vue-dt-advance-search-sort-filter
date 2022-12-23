@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { watch, inject, type ShallowRef, computed, triggerRef, } from "vue";
-import type { 
-  NumberSearcherUIType, 
+import { ref, watch, inject, type Ref, type ShallowRef, computed, triggerRef, } from "vue";
+import type {
   NumberType, 
   SingleWordStringType, 
   NumberStringType, 
+  NumberSearchType,
+  NumberSearchExcludeEqualToType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import {
   resetOthers,
   deleteSaved,
   increaseIndexAndSavePrevious
 } from "../helperfunctions/numbersearcheruitypefns";
+import Paste from "./Paste.vue";
 
-const 
-  mainnumbersearcherui = inject("mainnumbersearcheruitype") as ShallowRef<NumberSearcherUIType['main']>,
+const
+  closepastemodalsignal = ref(0),
+  mainnumbersearcherui = inject("mainnumbersearcherui") as Ref<NumberType['search']>,
   index = inject("index") as number,
   props = defineProps<{
     from: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL";
@@ -27,25 +30,25 @@ const
 function localResetOthers(
   operator: "EQUAL-TO" | "NOT-EQUAL-TO" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO"
 ) {
-  resetOthers(
+  /*resetOthers(
     operator,
     mainnumbersearcherui
   );
 
   if(props.from === "NUMBER-SEARCHER-MODAL") {
     emits("reset:exclude", true);
-  }
+  }*/
 }
 
 function localDeleteSaved(
   index: number, 
   operator: "EQUAL-TO" | "NOT-EQUAL-TO"
 ) {
-  deleteSaved(
+  /*deleteSaved(
     index,
     operator,
     mainnumbersearcherui
-  );
+  );*/
 }
 
 function localIncreaseIndexAndSavePrevious(
@@ -53,43 +56,28 @@ function localIncreaseIndexAndSavePrevious(
   inputvalue: string,
   operator: 'NOT-EQUAL-TO' | 'EQUAL-TO'
 ) {
-  increaseIndexAndSavePrevious(
+  /*increaseIndexAndSavePrevious(
     rangeornonerange,
     inputvalue,
     operator,
     mainnumbersearcherui
-  );
+  );*/
 }
 
 const equaltoAddNew = computed(() => {
   return (
-    parseFloat((mainnumbersearcherui.value as NumberSearcherUIType["main"]).equalto.value) <= parseFloat(cards.value[index].result.max) &&
-    parseFloat((mainnumbersearcherui.value as NumberSearcherUIType["main"]).equalto.value) >= parseFloat(cards.value[index].result.min)
+    parseFloat(mainnumbersearcherui.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+    parseFloat(mainnumbersearcherui.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
   );
 });
 
 const notequaltoAddNew = computed(() => {
   return (
-    parseFloat((mainnumbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value) <= parseFloat(cards.value[index].result.max) &&
-    parseFloat((mainnumbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value) >= parseFloat(cards.value[index].result.min)
+    parseFloat(mainnumbersearcherui.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+    parseFloat(mainnumbersearcherui.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
   );
 });
 
-watch(
-  () => (mainnumbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.index,
-  (x) => {
-    (mainnumbersearcherui.value as NumberSearcherUIType["main"]).equalto.value = "";
-    triggerRef(mainnumbersearcherui);
-  }
-);
-
-watch(
-  () => (mainnumbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.index,
-  (x) => {
-    (mainnumbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value = "";
-    triggerRef(mainnumbersearcherui);
-  }
-);
 
 </script>
 
@@ -112,7 +100,7 @@ watch(
               <input
                 @keyup="localResetOthers('GREATER-THAN')"
                 @keydown.space.prevent
-                v-model.trim="(mainnumbersearcherui as NumberSearcherUIType['main']).greaterthan.value"
+                v-model.trim="mainnumbersearcherui.greaterthan"
                 type="text"
                 class="w-100 text-center"
                 style="height: 30px"
@@ -133,7 +121,7 @@ watch(
               <input
                 @keyup="localResetOthers('LESS-THAN')"
                 @keydown.space.prevent
-                v-model.trim="(mainnumbersearcherui as NumberSearcherUIType['main']).lessthan.value"
+                v-model.trim="mainnumbersearcherui.lessthan"
                 type="text"
                 class="w-100 text-center"
                 style="height: 30px"
@@ -163,7 +151,7 @@ watch(
                 <input
                   @keyup="localResetOthers('EQUAL-TO')"
                   @keydown.space.prevent
-                  v-model.trim="(mainnumbersearcherui as NumberSearcherUIType['main']).equalto.value"
+                  v-model.trim="(mainnumbersearcherui?.equalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-center"
                   style="height: 30px; z-index: 1110"
@@ -178,7 +166,7 @@ watch(
                   @click="
                     localIncreaseIndexAndSavePrevious(
                       'NONE-RANGE',
-                      (mainnumbersearcherui as NumberSearcherUIType['main']).equalto.value,
+                      mainnumbersearcherui.equalto?.single as string,
                       'EQUAL-TO'
                     )
                   "
@@ -195,13 +183,13 @@ watch(
               </div>
             </div>
             <Paste
+              :receiveclosepastemodalsignal="closepastemodalsignal"
               title="numbers"
-              :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+              :datatype="cards[index].info.datatype as 'NumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
               :text-area-height="'height:450px;'"
             >
-              <template v-slot:controlbuttons></template>
               <template v-slot:outcomeidentifier>
                 <div
                   class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
@@ -223,71 +211,7 @@ watch(
                 </div>
               </template>
             </Paste>
-            <div
-              class="d-block overflow-y-auto overflow-x-hidden"
-              style="height: 180px; z-index: 1000"
-            >
-              <ul
-                class="d-block list-style-none m-0"
-                style="padding: 5px 0px"
-              >
-                <li
-                  class="w-100"
-                  v-for="(data, dindex) in (mainnumbersearcherui as NumberSearcherUIType['main']).treeequalto
-                  .value"
-                  :key="'exc' + dindex"
-                >
-                  <Transition>
-                    <div
-                      :ref="
-                        (el) => {
-                          (mainnumbersearcherui as NumberSearcherUIType['main']).refequalto[dindex] = el as HTMLDivElement;
-                        }
-                      "
-                      v-if="(mainnumbersearcherui as NumberSearcherUIType['main']).treeequalto.show[dindex]"
-                      class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                      style="padding: 1px 5px"
-                      :class="{ shake: (mainnumbersearcherui as NumberSearcherUIType['main']).treeequalto.disabled[dindex] }"
-                    >
-                      <div class="flex-shrink-0 flex-grow-0">
-                        <a
-                          @click="localDeleteSaved(dindex, 'EQUAL-TO')"
-                          class="remove-selected m-0 d-inline-block underline-none"
-                        >
-                          <img
-                            class="align-middle"
-                            src="/src/assets/icons/close.png"
-                            style="width: 25px; height: 25px"
-                          />
-                        </a>
-                      </div>
-                      <div
-                        class="flex-fill"
-                        style="padding-left: 5px"
-                      >
-                        <div class="d-block" style="padding: 5px">
-                          <div
-                            :ref="
-                              (el) => {
-                                (mainnumbersearcherui as NumberSearcherUIType['main']).refequaltoinner[dindex] = el as HTMLDivElement;
-                              }
-                            "
-                            class="text-left d-block text-wrap text-break shadow-sm"
-                            style="border-radius: 20px;padding: 8px;z-index: 999;background-color:#fff;"
-                          >
-                            <label
-                              class="d-block align-middle letter-spacing"
-                              style="font-size: 0.875rem"
-                            >{{ data }}</label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Transition>
-                </li>
-                <li :ref="(el) => (mainnumbersearcherui as NumberSearcherUIType['main']).equaltoref = el as HTMLLIElement"></li>
-              </ul>
-            </div>
+            
           </div>
         </div>
         <div class="flex-w-50" style="padding-left: 10px">
@@ -306,7 +230,7 @@ watch(
                 <input
                   @keyup="localResetOthers('NOT-EQUAL-TO')"
                   @keydown.space.prevent
-                  v-model.trim="(mainnumbersearcherui as NumberSearcherUIType['main']).notequalto.value"
+                  v-model.trim="(mainnumbersearcherui?.notequalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-center"
                   style="height: 30px; z-index: 1110"
@@ -321,7 +245,7 @@ watch(
                   @click="
                   localIncreaseIndexAndSavePrevious(
                     'NONE-RANGE',
-                    (mainnumbersearcherui as NumberSearcherUIType['main']).notequalto.value,
+                    mainnumbersearcherui.notequalto?.single as string,
                     'NOT-EQUAL-TO'
                   )
                   "
@@ -338,13 +262,13 @@ watch(
               </div>
             </div>
             <Paste
+              :receiveclosepastemodalsignal="closepastemodalsignal"
               title="numbers"
-              :owner="cards[index].info.datatype as 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number'"
+              :datatype="cards[index].info.datatype as 'Number'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
               :text-area-height="'height:450px;'"
             >
-              <template v-slot:controlbuttons></template>
               <template v-slot:outcomeidentifier>
                 <div
                   class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
@@ -366,80 +290,13 @@ watch(
                 </div>
               </template>
             </Paste>
-            <div
-              class="d-block overflow-y-auto overflow-x-hidden"
-              style="height: 180px; z-index: 1000"
-            >
-              <ul
-                class="d-block list-style-none m-0"
-                style="padding: 5px 0px"
-              >
-                <li
-                  class="w-100"
-                  v-for="(data, dindex) in (mainnumbersearcherui as NumberSearcherUIType['main']).treenotequalto.value"
-                  :key="'exc' + dindex"
-                >
-                  <Transition>
-                    <div
-                      :ref="
-                        (el) => {
-                          (mainnumbersearcherui as NumberSearcherUIType['main']).refnotequalto[dindex] = el as HTMLDivElement;
-                        }
-                      "
-                      v-if="(mainnumbersearcherui as NumberSearcherUIType['main']).treenotequalto.show[dindex]"
-                      class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                      style="padding: 1px 5px"
-                      :class="{
-                        shake: (mainnumbersearcherui as NumberSearcherUIType['main']).treenotequalto.disabled[dindex],
-                      }"
-                    >
-                      <div class="flex-shrink-0 flex-grow-0">
-                        <a
-                          @click="localDeleteSaved(dindex, 'NOT-EQUAL-TO')"
-                          class="remove-selected m-0 d-inline-block underline-none"
-                        >
-                          <img
-                            class="align-middle"
-                            src="/src/assets/icons/close.png"
-                            style="width: 25px; height: 25px"
-                          />
-                        </a>
-                      </div>
-                      <div
-                        class="flex-fill"
-                        style="padding-left: 5px"
-                      >
-                        <div class="d-block" style="padding: 5px">
-                          <div
-                            :ref="
-                              (el) => {
-                                (mainnumbersearcherui as NumberSearcherUIType['main']).refnotequaltoinner[dindex] = el as HTMLDivElement;
-                              }
-                            "
-                            class="text-left d-block text-wrap text-break shadow-sm"
-                            style="border-radius: 20px;padding: 8px;z-index: 999;background-color:#fff;"
-                          >
-                            <label
-                              class="d-block align-middle letter-spacing"
-                              style="font-size: 0.875rem"
-                            >
-                              {{ data }}
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Transition>
-                </li>
-                <li :ref="(el) => (mainnumbersearcherui as NumberSearcherUIType['main']).notequaltoref = el as HTMLLIElement"></li>
-              </ul>
-            </div>
+            
           </div>
         </div>
       </div>
     </div>
     <div 
-      style="padding: 5px 5px 20px 5px"
+      style="padding: 5px;"
       class="shadow-sm flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
     >
       <div class="flex-grow-1 flex-shrink-1">
@@ -449,7 +306,7 @@ watch(
         <div class="d-block">
           <input
             @keydown.space.prevent
-            v-model.trim="(mainnumbersearcherui as NumberSearcherUIType['main']).from.value"
+            v-model.trim="(mainnumbersearcherui.fromto as NumberSearchType['fromto']).from"
             @keyup="localResetOthers('FROM-TO')"
             type="text"
             class="w-100 text-center"
@@ -464,7 +321,7 @@ watch(
         <div class="d-block">
           <input
             @keydown.space.prevent
-            v-model.trim="(mainnumbersearcherui as NumberSearcherUIType['main']).to.value"
+            v-model.trim="(mainnumbersearcherui.fromto as NumberSearchType['fromto']).to"
             @keyup="localResetOthers('FROM-TO')"
             type="text"
             class="w-100 text-center"

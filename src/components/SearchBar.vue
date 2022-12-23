@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { ref, inject, type ShallowRef, type Ref } from "vue";
+import { inject, type ShallowRef, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 import Switchable from "./Switchable.vue";
 
@@ -16,18 +16,15 @@ import MultipleSingleOrNumberStringWordSearcherModal from "./searchbarmodals/Mul
 import NumberSearcherModal from "./searchbarmodals/NumberSearcherModal.vue";
 
 const
-  props = defineProps<{
-    index: number;
-  }>(),
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
-  index = props.index
+  cards = inject("cards") as ShallowRef<PrimitiveType[]>
 ;
 
 let
   accessibility = inject("accessibility") as {
     cardschildrentabindex: Ref<Boolean[]>;
     cardsmultiplesearchopenstatus: Ref<Boolean[]>;
-  }
+  },
+  index = inject("index") as number
 ;
 
 </script>
@@ -42,7 +39,6 @@ let
         <Switchable
           truelabel="R"
           falselabel="U"
-          :index="index"
         ></Switchable>
       </div>
       <div class="flex-fill m-0 align-self-stretch p-0">
@@ -91,13 +87,13 @@ let
     <Teleport to="body">
       <div v-if="accessibility.cardsmultiplesearchopenstatus.value[index]" class="d-block position-relative">
         <template v-if="cards[index].info.datatype === 'Date'">
-          <DateSearcherModal :index="index"></DateSearcherModal>
+          <DateSearcherModal></DateSearcherModal>
         </template>
         <template v-if="cards[index].info.datatype === 'MultipleWordsString' || cards[index].info.datatype === 'SingleWordString' || cards[index].info.datatype === 'NumberString'">
-          <MultipleSingleOrNumberStringWordSearcherModal :index="index"></MultipleSingleOrNumberStringWordSearcherModal>
+          <MultipleSingleOrNumberStringWordSearcherModal></MultipleSingleOrNumberStringWordSearcherModal>
         </template>
         <template v-if="cards[index].info.datatype === 'Number'">
-          <NumberSearcherModal :index="index"></NumberSearcherModal>
+          <NumberSearcherModal></NumberSearcherModal>
         </template>
       </div>
     </Teleport>

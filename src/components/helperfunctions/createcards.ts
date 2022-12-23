@@ -28,15 +28,15 @@ let distinctRecords: DistinctRecordType = undefined;
 function searchStringDefaultObject() {
   return {
     single: "",
-    value: [],
-    index: 0,
-    temporary: [],
+    pages: [],
     bottom: false,
-    done: false,
+    shake: [],
+    show: [],
     loading: false,
     addloading: false,
     tabclicked: false,
-    tabref: undefined,
+    addeditemsref: [],
+    endoflistitemref: undefined,
   } as StringSearchType;
 }
   
@@ -52,9 +52,9 @@ function formConcatenatedSearch(
         concatcopy[i] = {
           name: concatcopy[i].name,
           attribute: concatcopy[i].attribute,
-          disableincludeandexclude: concatcopy[i].disableincludeandexclude,
           table: concatcopy[i].table,
           join: concatcopy[i].join,
+          disableincludeandexclude: concatcopy[i].disableincludeandexclude,
           search: {
             ...searchStringDefaultObject(),
           },
@@ -63,9 +63,10 @@ function formConcatenatedSearch(
         concatcopy[i] = {
           name: concatcopy[i].name,
           attribute: concatcopy[i].attribute,
-          disableincludeandexclude: concatcopy[i].disableincludeandexclude,
           table: concatcopy[i].table,
           join: concatcopy[i].join,
+          fixedlengthofstring: (concatcopy[i].disableincludeandexclude !== undefined && concatcopy[i].fixedlengthofstring !== undefined && /^\d+$/.test(""+concatcopy[i].fixedlengthofstring))? concatcopy[i].fixedlengthofstring : undefined,
+          disableincludeandexclude: concatcopy[i].disableincludeandexclude,
           search: {
             ...searchStringDefaultObject(),
             include: {
@@ -74,6 +75,54 @@ function formConcatenatedSearch(
             exclude: {
               ...searchStringDefaultObject(),
             },
+            trueorfalse: false,
+            includeorexcludeformat: 'STARTS-WITH',
+            atnumbersearch: (concatcopy[i].disableincludeandexclude !== undefined && concatcopy[i].disableincludeandexclude === false && concatcopy[i].fixedlengthofstring !== undefined && /^\d+$/.test(""+concatcopy[i].fixedlengthofstring))? {
+              last: '',
+              first: '',
+              thenumberbeforethelast: {
+                thenumberbefore: '',
+                thelast: '',
+              },
+              afterthefirstthenext: {
+                afterthefirst: '',
+                thenext: '',
+              },
+              search: {
+                atnumberformat: 'LAST',
+                tab: "GREATER-THAN",
+                greaterthan: '',
+                lessthan: '',
+                equalto: {
+                  single: "",
+                  pages: [],
+                  bottom: false,
+                  shake: [],
+                  show: [],
+                  addeditemsref: [],
+                  endoflistitemref: undefined,
+                  addloading: false,
+                  loading: false,
+                  inneraddeditemsref: [],
+                },
+                notequalto: {
+                  single: "",
+                  pages: [],
+                  bottom: false,
+                  shake: [],
+                  show: [],
+                  addeditemsref: [],
+                  endoflistitemref: undefined,
+                  addloading: false,
+                  loading: false,
+                  inneraddeditemsref: [],
+                },
+                fromto: {
+                  from: "",
+                  to: "",
+                }
+              }
+            } : undefined
           },
         };
       }
@@ -290,17 +339,27 @@ function getNumberTypeObject(item: CardInnerType) {
       lessthan: "",
       equalto: {
         single: "",
-        value: [],
-        index: 0,
-        disabled: [],
+        pages: [],
+        shake: [],
+        bottom: false,
         show: [],
+        addeditemsref: [],
+        endoflistitemref: undefined,
+        addloading: false,
+        loading: false,
+        inneraddeditemsref: [],
       },
       notequalto: {
         single: "",
-        value: [],
-        index: 0,
-        disabled: [],
+        pages: [],
+        bottom: false,
+        shake: [],
         show: [],
+        addeditemsref: [],
+        endoflistitemref: undefined,
+        addloading: false,
+        loading: false,
+        inneraddeditemsref: [],
       },
       fromto: {
         from: "",
@@ -309,19 +368,29 @@ function getNumberTypeObject(item: CardInnerType) {
       exclude: {
         fromto: {
           singlefrom: "",
-          from: [],
+          fromto: [],
+          bottom: false,
           singleto: "",
-          to: [],
-          index: 0,
-          disabled: [],
+          shake: [],
+          pages: [],
+          addloading: false,
+          loading: false,
+          addeditemsref: [],
+          inneraddeditemsref: [],
+          endoflistitemref: undefined,
           show: [],
         },
         equalto: {
           single: "",
-          value: [],
-          index: 0,
-          disabled: [],
+          pages: [],
+          shake: [],
+          bottom: false,
           show: [],
+          addeditemsref: [],
+          endoflistitemref: undefined,
+          addloading: false,
+          loading: false,
+          inneraddeditemsref: [],
         },
       },
     },
@@ -329,7 +398,7 @@ function getNumberTypeObject(item: CardInnerType) {
   } as NumberType;
 }
   
-function getMultipleWordStringTypeObject(item: (CardInnerType & {concatenated?: MultipleWordsStringConcatenatedType | undefined;})) {
+function getMultipleWordStringTypeObject(item: (CardInnerType & { concatenated?: MultipleWordsStringConcatenatedType | undefined; disableincludeandexclude?: boolean | undefined; })) {
   const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
   return {
     ...getIdentityItem(item, attribute, "MultipleWordsString"),
@@ -347,6 +416,7 @@ function getMultipleWordStringTypeObject(item: (CardInnerType & {concatenated?: 
       exclude: {
         ...searchStringDefaultObject(),
       },
+      includeorexcludeformat: 'STARTS-WITH',
       trueorfalse: false,
     },
     searchFrom: "SERVER",
@@ -468,7 +538,11 @@ function getTimeTypeObject(item: CardInnerType & TimeFormat) {
   } as TimeType;
 }
   
-function getNumberStringTypeObject(item: CardInnerType & {concatenated?: SingleWordConcatenatedType | undefined;}) {
+function getNumberStringTypeObject(item: CardInnerType & {
+  concatenated?: SingleWordConcatenatedType | undefined;
+  fixedlengthofstring?: number | undefined;
+  disableincludeandexclude?: boolean | undefined;
+}) {
   const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
   return {
     ...getIdentityItem(item, attribute, "NumberString"),
@@ -477,6 +551,7 @@ function getNumberStringTypeObject(item: CardInnerType & {concatenated?: SingleW
       descclicked: "sort-9-1.png",
       mixclicked: "mix.png",
     },
+    fixedlengthofstring: item.disableincludeandexclude !== undefined && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? item.fixedlengthofstring : undefined,
     disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
       ...searchStringDefaultObject(),
@@ -487,6 +562,53 @@ function getNumberStringTypeObject(item: CardInnerType & {concatenated?: SingleW
         ...searchStringDefaultObject(),
       },
       trueorfalse: false,
+      includeorexcludeformat: 'STARTS-WITH',
+      atnumbersearch: item.disableincludeandexclude !== undefined && item.disableincludeandexclude === false && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? {
+        last: '',
+        first: '',
+        thenumberbeforethelast: {
+          thenumberbefore: '',
+          thelast: '',
+        },
+        afterthefirstthenext: {
+          afterthefirst: '',
+          thenext: '',
+        },
+        search: {
+          atnumberformat: 'LAST',
+          tab: "GREATER-THAN",
+          greaterthan: '',
+          lessthan: '',
+          equalto: {
+            single: "",
+            pages: [],
+            bottom: false,
+            shake: [],
+            show: [],
+            addeditemsref: [],
+            endoflistitemref: undefined,
+            addloading: false,
+            loading: false,
+            inneraddeditemsref: [],
+          },
+          notequalto: {
+            single: "",
+            pages: [],
+            bottom: false,
+            shake: [],
+            show: [],
+            addeditemsref: [],
+            endoflistitemref: undefined,
+            addloading: false,
+            loading: false,
+            inneraddeditemsref: [],
+          },
+          fromto: {
+            from: "",
+            to: "",
+          }
+        }
+      } : undefined
     },
     searchFrom: "SERVER",
     concatenated:
@@ -496,7 +618,11 @@ function getNumberStringTypeObject(item: CardInnerType & {concatenated?: SingleW
   } as NumberStringType;
 }
   
-function getSingleWordStringTypeObject(item: CardInnerType & {concatenated?: SingleWordConcatenatedType | undefined;}) {
+function getSingleWordStringTypeObject(item: CardInnerType & {
+  concatenated?: SingleWordConcatenatedType | undefined;
+  fixedlengthofstring?: number | undefined;
+  disableincludeandexclude?: boolean | undefined;
+}) {
   const attribute = item.name.replace(/\s/g, "").toLowerCase().trim();
   return {
     ...getIdentityItem(item, attribute, "SingleWordString"),
@@ -505,6 +631,7 @@ function getSingleWordStringTypeObject(item: CardInnerType & {concatenated?: Sin
       descclicked: "sort-z-a.png",
       mixclicked: "mix.png",
     },
+    fixedlengthofstring: item.disableincludeandexclude !== undefined && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? item.fixedlengthofstring : undefined,
     disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
       ...searchStringDefaultObject(),
@@ -515,6 +642,53 @@ function getSingleWordStringTypeObject(item: CardInnerType & {concatenated?: Sin
         ...searchStringDefaultObject(),
       },
       trueorfalse: false,
+      includeorexcludeformat: 'STARTS-WITH',
+      atnumbersearch: item.disableincludeandexclude !== undefined && item.disableincludeandexclude === false && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? {
+        last: '',
+        first: '',
+        thenumberbeforethelast: {
+          thenumberbefore: '',
+          thelast: '',
+        },
+        afterthefirstthenext: {
+          afterthefirst: '',
+          thenext: '',
+        },
+        search: {
+          atnumberformat: 'LAST',
+          tab: "GREATER-THAN",
+          greaterthan: '',
+          lessthan: '',
+          equalto: {
+            single: "",
+            pages: [],
+            bottom: false,
+            shake: [],
+            show: [],
+            addeditemsref: [],
+            endoflistitemref: undefined,
+            addloading: false,
+            loading: false,
+            inneraddeditemsref: [],
+          },
+          notequalto: {
+            single: "",
+            pages: [],
+            bottom: false,
+            shake: [],
+            show: [],
+            addeditemsref: [],
+            endoflistitemref: undefined,
+            addloading: false,
+            loading: false,
+            inneraddeditemsref: [],
+          },
+          fromto: {
+            from: "",
+            to: "",
+          }
+        }
+      } : undefined
     },
     searchFrom: "SERVER",
     concatenated:

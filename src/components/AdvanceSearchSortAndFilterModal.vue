@@ -11,9 +11,6 @@ import RefreshUndoRedoCloseButton from "./RefreshUndoRedoCloseButton.vue";
 import Card from "./Card.vue";
 
 const
-  emits = defineEmits<{
-    (e: "modal:close", action: boolean): void;
-  }>(),
   props = defineProps<{
     cards: ShallowRef<PrimitiveType[]>;
   }>(),

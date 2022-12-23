@@ -1,23 +1,26 @@
 <script setup lang="ts">
 import { inject, type ShallowRef, computed } from "vue";
-import type { PrimitiveType, SingleWordStringType, MultipleWordsStringType, SingleWordStringConcatenatedFieldType, MultipleWordsStringConcatenatedFieldType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, SingleWordStringConcatenatedFieldType, MultipleWordsStringConcatenatedFieldType } from "../types/SupportedDatatypesTypeDeclaration";
 
 const 
+
   props = defineProps<{
-    index: number;
-    concatfieldindex?: string | number | undefined;
     context: string;
   }>(),
-  index = props.index,
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>
+
+  cards = inject("cards") as ShallowRef<(NumberStringType | SingleWordStringType | MultipleWordsStringType)[]>,
+
+  index = inject("index") as number,
+
+  wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; }
 ;
 
 const info = computed(() => {
-  if(props.concatfieldindex === undefined) {
-    return (cards.value[index] as PrimitiveType).info.name
+  if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
+    return cards.value[index].info.name
   }
   else {
-    return (((cards.value[index] as MultipleWordsStringType | SingleWordStringType).concatenated as MultipleWordsStringConcatenatedFieldType)[props.concatfieldindex as number]).name;
+    return ((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).name;
   }
 });
 

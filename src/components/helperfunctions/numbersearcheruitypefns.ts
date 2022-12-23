@@ -333,6 +333,7 @@ export function increaseIndexAndSavePrevious(
           break;
         }
       }
+      let increment = true;
       switch (buttontype) {
         case "EQUAL-TO":
           if (!found) {
@@ -502,11 +503,71 @@ export function increaseIndexAndSavePrevious(
             }
           }
           (numbersearcherui.value as NumberSearcherUIType).exclude.excludeequalto.value = "";
+          
           break;
       }
     }
   }
   triggerRef(numbersearcherui);
+}
+
+function paginate(operator: "EQUAL-TO" | "NOT-EQUAL-TO", mainnumbersearcherui: ShallowRef<NumberSearcherUIType["main"]>) {
+  if(operator === "EQUAL-TO") {
+    let includesize = mainnumbersearcherui.value.treeequalto.temporary.length;
+    if (includesize > 0) {
+      mainnumbersearcherui.value.treeequalto.pages = [];
+      let innerpage = [],
+        j = 0,
+        k = 0,
+        suminclude = 0;
+      for (let i = 0; i < includesize; i++) {
+        suminclude++;
+        innerpage[k] = mainnumbersearcherui.value.treeequalto.temporary[i];
+        if (suminclude > 100) {
+          innerpage.splice(k, 1);
+          if (innerpage.length > 0) mainnumbersearcherui.value.treeequalto.pages[j] = innerpage;
+          innerpage = [];
+          j++;
+          k = -1;
+          i -= 1;
+          suminclude = 0;
+        } else {
+          if (i === includesize - 1 && innerpage.length > 0) {
+            mainnumbersearcherui.value.treeequalto.pages[j] = innerpage;
+          }
+        }
+        k++;
+      }
+    }
+  }
+  else {
+    let includesize = mainnumbersearcherui.value.treenotequalto.temporary.length;
+    if (includesize > 0) {
+      mainnumbersearcherui.value.treenotequalto.pages = [];
+      let innerpage = [],
+        j = 0,
+        k = 0,
+        suminclude = 0;
+      for (let i = 0; i < includesize; i++) {
+        suminclude++;
+        innerpage[k] = mainnumbersearcherui.value.treenotequalto.temporary[i];
+        if (suminclude > 100) {
+          innerpage.splice(k, 1);
+          if (innerpage.length > 0) mainnumbersearcherui.value.treenotequalto.pages[j] = innerpage;
+          innerpage = [];
+          j++;
+          k = -1;
+          i -= 1;
+          suminclude = 0;
+        } else {
+          if (i === includesize - 1 && innerpage.length > 0) {
+            mainnumbersearcherui.value.treenotequalto.pages[j] = innerpage;
+          }
+        }
+        k++;
+      }
+    }
+  }
 }
   
 export function resetOthers(
