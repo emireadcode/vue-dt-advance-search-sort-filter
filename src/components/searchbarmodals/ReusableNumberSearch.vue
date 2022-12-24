@@ -7,16 +7,16 @@ import type {
   NumberSearchType,
   NumberSearchExcludeEqualToType,
 } from "../types/SupportedDatatypesTypeDeclaration";
-import {
-  resetOthers,
-  deleteSaved,
-  increaseIndexAndSavePrevious
-} from "../helperfunctions/numbersearcheruitypefns";
+import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import Paste from "./Paste.vue";
+import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 const
-  closepastemodalsignal = ref(0),
-  mainnumbersearcherui = inject("mainnumbersearcherui") as Ref<NumberType['search']>,
+  closeequaltopastemodalsignal = ref(0),
+  equaltonewlypasteditems = ref(),
+  closenotequaltopastemodalsignal = ref(0),
+  notequaltonewlypasteditems = ref(),
+  holder = inject("mainnumbersearcherui") as Ref<NumberType['search']>,
   index = inject("index") as number,
   props = defineProps<{
     from: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL";
@@ -32,12 +32,25 @@ function localResetOthers(
 ) {
   /*resetOthers(
     operator,
-    mainnumbersearcherui
+    holder
   );
 
   if(props.from === "NUMBER-SEARCHER-MODAL") {
     emits("reset:exclude", true);
   }*/
+}
+
+function addLocalNewInputEntry(
+  nonerangeorrange: 'NONE-RANGE',
+  newinputentry: string,
+  inputtype: 'EQUAL-TO' | 'NOT-EQUAL-TO'
+) {
+  addNewInputEntry(
+    nonerangeorrange,
+    newinputentry,
+    inputtype,
+    holder as Ref<NumberType['search']>
+  );
 }
 
 function localDeleteSaved(
@@ -47,34 +60,21 @@ function localDeleteSaved(
   /*deleteSaved(
     index,
     operator,
-    mainnumbersearcherui
-  );*/
-}
-
-function localIncreaseIndexAndSavePrevious(
-  rangeornonerange: 'NONE-RANGE',
-  inputvalue: string,
-  operator: 'NOT-EQUAL-TO' | 'EQUAL-TO'
-) {
-  /*increaseIndexAndSavePrevious(
-    rangeornonerange,
-    inputvalue,
-    operator,
-    mainnumbersearcherui
+    holder
   );*/
 }
 
 const equaltoAddNew = computed(() => {
   return (
-    parseFloat(mainnumbersearcherui.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-    parseFloat(mainnumbersearcherui.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    parseFloat(holder.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+    parseFloat(holder.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
   );
 });
 
 const notequaltoAddNew = computed(() => {
   return (
-    parseFloat(mainnumbersearcherui.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-    parseFloat(mainnumbersearcherui.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    parseFloat(holder.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
+    parseFloat(holder.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
   );
 });
 
@@ -82,12 +82,12 @@ const notequaltoAddNew = computed(() => {
 </script>
 
 <template>
-  <div class="d-block" style="z-index: 8992;padding: 0 10px">
+  <div class="d-block" style="z-index: 8992;padding: 0 2px">
     <div class="d-block" style="padding: 0 0 15px 0">
       <div
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
       >
-        <div class="flex-w-50" style="padding-right: 10px">
+        <div class="flex-w-50" style="padding-right: 5px">
           <div class="d-block shadow-sm" style="padding: 5px">
             <div class="d-block" style="padding-bottom: 5px">
               <img
@@ -100,15 +100,15 @@ const notequaltoAddNew = computed(() => {
               <input
                 @keyup="localResetOthers('GREATER-THAN')"
                 @keydown.space.prevent
-                v-model.trim="mainnumbersearcherui.greaterthan"
+                v-model.trim="holder.greaterthan"
                 type="text"
-                class="w-100 text-center"
+                class="w-100 text-left"
                 style="height: 30px"
               />
             </div>
           </div>
         </div>
-        <div class="flex-w-50" style="padding-left: 10px">
+        <div class="flex-w-50" style="padding-left: 5px">
           <div class="d-block shadow-sm" style="padding: 5px">
             <div class="d-block" style="padding-bottom: 5px">
               <img
@@ -121,9 +121,9 @@ const notequaltoAddNew = computed(() => {
               <input
                 @keyup="localResetOthers('LESS-THAN')"
                 @keydown.space.prevent
-                v-model.trim="mainnumbersearcherui.lessthan"
+                v-model.trim="holder.lessthan"
                 type="text"
-                class="w-100 text-center"
+                class="w-100 text-left"
                 style="height: 30px"
               />
             </div>
@@ -135,7 +135,7 @@ const notequaltoAddNew = computed(() => {
       <div
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
       >
-        <div class="flex-w-50" style="padding-right: 10px">
+        <div class="flex-w-50" style="padding-right: 5px">
           <div class="d-block shadow-sm" style="padding: 5px">
             <div class="d-block" style="padding-bottom: 5px">
               <img
@@ -151,9 +151,9 @@ const notequaltoAddNew = computed(() => {
                 <input
                   @keyup="localResetOthers('EQUAL-TO')"
                   @keydown.space.prevent
-                  v-model.trim="(mainnumbersearcherui?.equalto as NumberSearchExcludeEqualToType).single"
+                  v-model.trim="(holder?.equalto as NumberSearchExcludeEqualToType).single"
                   type="text"
-                  class="w-100 text-center"
+                  class="w-100 text-left"
                   style="height: 30px; z-index: 1110"
                 />
               </div>
@@ -164,9 +164,9 @@ const notequaltoAddNew = computed(() => {
                 <button
                   :disabled="equaltoAddNew ? false : true"
                   @click="
-                    localIncreaseIndexAndSavePrevious(
+                    addLocalNewInputEntry(
                       'NONE-RANGE',
-                      mainnumbersearcherui.equalto?.single as string,
+                      (holder?.equalto as NumberSearchExcludeEqualToType).single,
                       'EQUAL-TO'
                     )
                   "
@@ -183,12 +183,14 @@ const notequaltoAddNew = computed(() => {
               </div>
             </div>
             <Paste
-              :receiveclosepastemodalsignal="closepastemodalsignal"
+              :from="props.from"
+              :receiveclosepastemodalsignal="closeequaltopastemodalsignal"
               title="numbers"
-              :datatype="cards[index].info.datatype as 'NumberString'"
+              :datatype="cards[index].info.datatype as 'Number' | 'NumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
               :text-area-height="'height:450px;'"
+              @return:newlypasteditems="$val => { equaltonewlypasteditems = $val; }"
             >
               <template v-slot:outcomeidentifier>
                 <div
@@ -211,10 +213,15 @@ const notequaltoAddNew = computed(() => {
                 </div>
               </template>
             </Paste>
-            
+            <PastedItemAndNewlyInputedEntryDisplayer
+              :tree="holder.equalto"
+              treetype="NumberSearchExcludeEqualToType"
+              :display-area-height="'height: 167.9px;'"
+              :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
+            ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
-        <div class="flex-w-50" style="padding-left: 10px">
+        <div class="flex-w-50" style="padding-left: 5px">
           <div class="d-block shadow-sm" style="padding: 5px">
             <div class="d-block" style="padding-bottom: 5px">
               <img
@@ -230,9 +237,9 @@ const notequaltoAddNew = computed(() => {
                 <input
                   @keyup="localResetOthers('NOT-EQUAL-TO')"
                   @keydown.space.prevent
-                  v-model.trim="(mainnumbersearcherui?.notequalto as NumberSearchExcludeEqualToType).single"
+                  v-model.trim="(holder?.notequalto as NumberSearchExcludeEqualToType).single"
                   type="text"
-                  class="w-100 text-center"
+                  class="w-100 text-left"
                   style="height: 30px; z-index: 1110"
                 />
               </div>
@@ -243,11 +250,11 @@ const notequaltoAddNew = computed(() => {
                 <button
                   :disabled="notequaltoAddNew ? false : true"
                   @click="
-                  localIncreaseIndexAndSavePrevious(
-                    'NONE-RANGE',
-                    mainnumbersearcherui.notequalto?.single as string,
-                    'NOT-EQUAL-TO'
-                  )
+                    addLocalNewInputEntry(
+                      'NONE-RANGE',
+                      (holder?.notequalto as NumberSearchExcludeEqualToType).single,
+                      'NOT-EQUAL-TO'
+                    )
                   "
                   class="btn w-100 cursor-pointer"
                   :style="
@@ -262,12 +269,14 @@ const notequaltoAddNew = computed(() => {
               </div>
             </div>
             <Paste
-              :receiveclosepastemodalsignal="closepastemodalsignal"
+              :from="props.from"
+              :receiveclosepastemodalsignal="closenotequaltopastemodalsignal"
               title="numbers"
-              :datatype="cards[index].info.datatype as 'Number'"
+              :datatype="cards[index].info.datatype as 'Number' | 'NumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
               :text-area-height="'height:450px;'"
+              @return:newlypasteditems="$val => { notequaltonewlypasteditems = $val; }"
             >
               <template v-slot:outcomeidentifier>
                 <div
@@ -290,7 +299,12 @@ const notequaltoAddNew = computed(() => {
                 </div>
               </template>
             </Paste>
-            
+            <PastedItemAndNewlyInputedEntryDisplayer
+              :tree="holder.notequalto"
+              treetype="NumberSearchExcludeEqualToType"
+              :display-area-height="'height: 167.9px;'"
+              :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
+            ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
       </div>
@@ -306,10 +320,10 @@ const notequaltoAddNew = computed(() => {
         <div class="d-block">
           <input
             @keydown.space.prevent
-            v-model.trim="(mainnumbersearcherui.fromto as NumberSearchType['fromto']).from"
+            v-model.trim="(holder.fromto as NumberSearchType['fromto']).from"
             @keyup="localResetOthers('FROM-TO')"
             type="text"
-            class="w-100 text-center"
+            class="w-100 text-left"
             style="height: 30px"
           />
         </div>
@@ -321,10 +335,10 @@ const notequaltoAddNew = computed(() => {
         <div class="d-block">
           <input
             @keydown.space.prevent
-            v-model.trim="(mainnumbersearcherui.fromto as NumberSearchType['fromto']).to"
+            v-model.trim="(holder.fromto as NumberSearchType['fromto']).to"
             @keyup="localResetOthers('FROM-TO')"
             type="text"
-            class="w-100 text-center"
+            class="w-100 text-left"
             style="height: 30px"
           />
         </div>
@@ -332,29 +346,3 @@ const notequaltoAddNew = computed(() => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.shake {
-  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-  transform: translate3d(0, 0, 0);
-}
-@keyframes shake {
-  10%,
-  90% {
-    transform: translate3d(-1px, 0, 0);
-  }
-  20%,
-  80% {
-    transform: translate3d(2px, 0, 0);
-  }
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-4px, 0, 0);
-  }
-  40%,
-  60% {
-    transform: translate3d(4px, 0, 0);
-  }
-}
-</style>

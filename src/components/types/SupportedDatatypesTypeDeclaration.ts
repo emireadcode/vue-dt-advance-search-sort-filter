@@ -259,20 +259,14 @@ export interface DateTimeType extends IdentityType {
 
 export type NumberSearchType = {
   tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO";
-  greaterthan?: string | undefined;
-  lessthan?: string | undefined;
-  equalto?:
-    | NumberSearchExcludeEqualToType
-    | undefined;
-  notequalto?:
-    | NumberSearchExcludeEqualToType
-    | undefined;
-  fromto?:
-    | {
-        from: string;
-        to: string;
-      }
-    | undefined;
+  greaterthan: string;
+  lessthan: string;
+  equalto: NumberSearchExcludeEqualToType;
+  notequalto: NumberSearchExcludeEqualToType;
+  fromto: {
+    from: string;
+    to: string;
+  };
 };
 
 export type NumberSearchExcludeFromToType = {

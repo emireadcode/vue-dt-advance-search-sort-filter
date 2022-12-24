@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { 
   type ShallowRef,
-  shallowRef,
   onBeforeMount, 
   type Ref,
   inject,
-  triggerRef,
   ref,
-  watch,
   computed,
   provide,
 } from "vue";
@@ -17,11 +14,9 @@ import type {
   NumberType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
-import {
-  increaseIndexAndSavePrevious,
-  deleteSaved
-} from "../helperfunctions/numbersearcheruitypefns";
+import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import ReusableNumberSearch from "./ReusableNumberSearch.vue";
+import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 let 
   index = inject("index") as number,
@@ -29,7 +24,10 @@ let
     cardsmultiplesearchopenstatus: Ref<Boolean[]>;
   },
   openexclude = ref(false),
-  closepastemodalsignal = ref(0),
+  closefromtopastemodalsignal = ref(0),
+  closeequaltopastemodalsignal = ref(0),
+  equaltonewlypasteditems = ref<string[][]>([]),
+  fromtonewlypasteditems = ref<string[][]>([]),
   cards = inject("cards") as ShallowRef<NumberType[]>,
   holder = ref<NumberType['search']>()
 ;
@@ -40,6 +38,19 @@ function resetExclude(action: boolean) {
   if(action) {
     
   }
+}
+
+function addLocalNewInputEntry(
+  nonerangeorrange: 'RANGE' | 'NONE-RANGE',
+  newinputentry: [string, string] | string,
+  inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO'
+) {
+  addNewInputEntry(
+    nonerangeorrange,
+    newinputentry,
+    inputtype,
+    holder as Ref<NumberType['search']>
+  );
 }
 
 function openExcludeWindow() {
@@ -265,7 +276,7 @@ onBeforeMount(() => {
           <div class="modal-container d-block">
             <div class="d-block" style="height:585px;">
               <div
-                style="background-color: #fff; padding: 10px 5px 0 5px;white-space: nowrap;"
+                style="background-color: #fff; padding: 5px 5px 0 5px;white-space: nowrap;"
                 class="shadow-sm d-block overflow-x-scroll"
               >
                 <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
@@ -275,7 +286,7 @@ onBeforeMount(() => {
                     <button 
                       aria-disabled="true" 
                       class="text-lowercase tab" 
-                      style="padding:5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
+                      style="padding:2.5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
                     >
                       {{ cards[index].info.name }}
                     </button>
@@ -285,7 +296,7 @@ onBeforeMount(() => {
               <div class="d-block position-relative">
                 <div
                   class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                  style="padding: 10px 0"
+                  style="padding: 8px 0"
                 >
                   <div class="flex-w-50">
                     <span
@@ -470,7 +481,7 @@ onBeforeMount(() => {
                                             @keydown.space.prevent
                                             v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom"
                                             type="text"
-                                            class="w-100 text-center"
+                                            class="w-100 text-left"
                                             style="height: 30px;z-index: 1110;"
                                           />
                                         </div>
@@ -489,7 +500,7 @@ onBeforeMount(() => {
                                             @keydown.space.prevent
                                             v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singleto"
                                             type="text"
-                                            class="w-100 text-center"
+                                            class="w-100 text-left"
                                             style="height: 30px;z-index: 1110;"
                                           />
                                         </div>
@@ -518,16 +529,14 @@ onBeforeMount(() => {
                                             : true
                                         "
                                         @click="
-                                          () => {
-                                            localIncreaseIndexAndSavePrevious(
-                                              'RANGE',
-                                              [
-                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
-                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
-                                              ],
-                                              'EXCLUDE-FROM-TO'
-                                            );
-                                          }
+                                          addLocalNewInputEntry(
+                                            'RANGE',
+                                            [
+                                              (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
+                                              (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
+                                            ],
+                                            'EXCLUDE-FROM-TO'
+                                          )
                                         "
                                         class="btn w-100 shadow-sm font-0-dot-85-rem text-center"
                                         style="height:30px; padding:0 2px;"
@@ -538,8 +547,9 @@ onBeforeMount(() => {
                                   </div>
                                 </div>
                                 <Paste
-                                  :receiveclosepastemodalsignal="closepastemodalsignal"
-                                  title="range"
+                                  @return:newlypasteditems="$val => { fromtonewlypasteditems = $val; }"
+                                  :receiveclosepastemodalsignal="closefromtopastemodalsignal"
+                                  title="none overlapping a-b range"
                                   :datatype="cards[index].info.datatype as 'Number'"
                                   :max="((
                                     holder?.tab ===
@@ -579,7 +589,12 @@ onBeforeMount(() => {
                                     </div>
                                   </template>
                                 </Paste>
-                                
+                                <PastedItemAndNewlyInputedEntryDisplayer
+                                  :tree="(holder?.exclude?.fromto as NumberSearchExcludeFromToType)"
+                                  treetype="NumberSearchExcludeFromToType"
+                                  :display-area-height="'height: 167.9px;'"
+                                  :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
+                                ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
                             </div>
                             <div
@@ -616,7 +631,7 @@ onBeforeMount(() => {
                                       v-model.trim="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType).single"
                                       type="text"
                                       @keydown.space.prevent
-                                      class="w-100 text-center"
+                                      class="w-100 text-left"
                                       style="height: 30px;z-index: 1110;"
                                     />
                                   </div>
@@ -626,13 +641,11 @@ onBeforeMount(() => {
                                   >
                                     <button
                                       @click="
-                                        () => {
-                                          localIncreaseIndexAndSavePrevious(
-                                            'NONE-RANGE',
-                                            ((holder as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
-                                            'EXCLUDE-EQUAL-TO'
-                                          );
-                                        }
+                                        addLocalNewInputEntry(
+                                          'NONE-RANGE',
+                                          (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
+                                          'EXCLUDE-EQUAL-TO'
+                                        )
                                       "
                                       class="btn w-100 shadow-sm font-0-dot-85-rem"
                                       style="height:30px; padding:0 2px;"
@@ -652,7 +665,8 @@ onBeforeMount(() => {
                                   </div>
                                 </div>
                                 <Paste
-                                  :receiveclosepastemodalsignal="closepastemodalsignal"
+                                  @return:newlypasteditems="$val => { equaltonewlypasteditems = $val; }"
+                                  :receiveclosepastemodalsignal="closeequaltopastemodalsignal"
                                   title="numbers"
                                   :datatype="cards[index].info.datatype as 'Number'"
                                   :max="((
@@ -692,7 +706,12 @@ onBeforeMount(() => {
                                     </div>
                                   </template>
                                 </Paste>
-                                
+                                <PastedItemAndNewlyInputedEntryDisplayer
+                                  :tree="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType)"
+                                  treetype="NumberSearchExcludeEqualToType"
+                                  :display-area-height="'height: 167.9px;'"
+                                  :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
+                                ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
                             </div>
                           </div>

@@ -1,33 +1,40 @@
 <script setup lang="ts">
-import { provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
+import { type Ref, provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
 import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType, SingleWordStringConcatenatedFieldType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import Paste from "./Paste.vue";
+import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
-const 
-  newinputentrysignal = ref(0),
-  newlypasteditemssignal = ref(0),
+const
   closepastemodalsignal = ref(0),
   newlypasteditems = ref<string[][]>([]),
-  holder = ref(),
+  holder = ref<StringSearchType>(),
   props = defineProps<{
     concatfieldindex?: string | number | undefined;
     wordtype: "MULTIPLE" | "SINGLE";
   }>(),
   cards = inject("cards") as ShallowRef<(MultipleWordsStringType | SingleWordStringType | NumberStringType)[]>,
   concatfieldindex = props.concatfieldindex,
-  newinputentry = ref(""),
   index = inject("index") as number
 ;
 
 provide("wordtypeandconcatfieldindex", {wordtype: props.wordtype, concatfieldindex: props.concatfieldindex});
 
+function addLocalNewInputEntry(nonerangeorrange: 'NONE-RANGE', newinputentry: string, inputtype: 'WORD') {
+  addNewInputEntry(
+    nonerangeorrange,
+    newinputentry,
+    inputtype,
+    holder as Ref<StringSearchType>
+  );
+}
+
 onBeforeMount(() => {
   (concatfieldindex === undefined)?
-    holder.value = JSON.parse(JSON.stringify(cards.value[index].search as StringSearchType))
+    holder.value = JSON.parse(JSON.stringify(cards.value[index].search as StringSearchType)) as StringSearchType
     :
-    holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search as StringSearchType))
+    holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search as StringSearchType)) as StringSearchType
   ;
 });
 
@@ -44,8 +51,8 @@ onBeforeMount(() => {
       <div class="flex-fill p-0 m-0 align-self-stretch">
         <template v-if="wordtype === 'MULTIPLE'">
           <input
-            @keypress.enter="()=>{newinputentry.trim().length>0? newinputentrysignal++ : newinputentrysignal;}"
-            v-model="newinputentry"
+            @keypress.enter=""
+            v-model="(holder as StringSearchType).single"
             maxlength="40"
             type="text"
             class="w-100"
@@ -55,8 +62,8 @@ onBeforeMount(() => {
         <template v-else>
           <input
             @keydown.space.prevent
-            @keypress.enter="()=>{newinputentry.trim().length>0? newinputentrysignal++ : newinputentrysignal;}"
-            v-model="newinputentry"
+            @keypress.enter=""
+            v-model="(holder as StringSearchType).single"
             maxlength="40"
             type="text"
             class="w-100"
@@ -71,7 +78,13 @@ onBeforeMount(() => {
         <a
           class="cursor-pointer d-block text-center"
           style="padding: 3px 0"
-          @click="()=>{newinputentry.trim().length>0? newinputentrysignal++ : newinputentrysignal;}"
+          @click="
+            addLocalNewInputEntry(
+              'NONE-RANGE',
+              (holder as StringSearchType).single,
+              'WORD'
+            )
+          "
         >
           <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
         </a>
@@ -82,7 +95,7 @@ onBeforeMount(() => {
       :title="cards[index].info.name"
       :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
       :text-area-height="'height:450px;'"
-      @return:newlypasteditems="$val => { newlypasteditems = $val; newlypasteditemssignal++; }"
+      @return:newlypasteditems="$val => { newlypasteditems = $val; }"
     >
       <template v-slot:outcomeidentifier>
         <div
@@ -106,15 +119,10 @@ onBeforeMount(() => {
       </template>
     </Paste>
     <PastedItemAndNewlyInputedEntryDisplayer
-      :tree="holder"
+      :tree="(holder as StringSearchType)"
       treetype="StringSearchType"
       :display-area-height="'height: 367.9px;'"
-      :limit="900"
       :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
-      :receivenewinputentrysignal="[newinputentrysignal, newinputentry]"
-      :receivenewlypasteditemssignal="[newlypasteditemssignal, newlypasteditems]"
-      @update:newinputentry="newinputentry=''"
-      @close:pastemodal="() => {closepastemodalsignal++; newlypasteditems=[];}"
     ></PastedItemAndNewlyInputedEntryDisplayer>
   </div>
 </template>

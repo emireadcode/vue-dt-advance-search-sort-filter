@@ -5,13 +5,11 @@ import type {
   StringSearchType,
 } from '../types/SupportedDatatypesTypeDeclaration';
 import {
-  type WatchStopHandle,
   ref,
+  type WatchStopHandle,
   watch,
   onBeforeUnmount,
   onBeforeMount,
-  onMounted,
-  nextTick,
 } from "vue";
 import Pagination from "./Pagination.vue";
 
@@ -22,26 +20,30 @@ const
     displayAreaHeight: string;
     scrollareaid: string;
     tree: StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType;
-    limit: number;
-    receivenewinputentrysignal: [number, string];
-    receivenewlypasteditemssignal: [number, string[][]];
-  }>(),
-  emits = defineEmits<{
-    (e: "update:newinputentry"): void;
-    (e: "close:pastemodal"): void;
   }>(),
   holder = ref()
 ;
 
-let
-  unwatchcurrent: WatchStopHandle,
-  unwatchpagination: WatchStopHandle,
-  unwatchsingle: WatchStopHandle,
-  unwatchpasted: WatchStopHandle
-;
+let unwatchcurrent: WatchStopHandle;
+
+function localDeleteSaved(dindex: number, action: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
+
+}
 
 onBeforeMount(() => {
   holder.value = props.tree;
+  unwatchcurrent = watch(
+    () => current.value,
+    (x) => {
+      if(x > holder.value.pages.length) {
+        current.value = holder.value.pages.length - 1;
+      }
+    }
+  );
+});
+
+onBeforeUnmount(() => {
+  unwatchcurrent();
 });
 
 </script>
@@ -106,7 +108,7 @@ onBeforeMount(() => {
               <li :ref="(el) => holder.endoflistitemref = el as HTMLLIElement"></li>
             </ul>
           </template>
-          <!--<template v-else-if="props.treetype === 'NumberSearchExcludeEqualToType'">
+          <template v-else-if="props.treetype === 'NumberSearchExcludeFromToType'">
             <div
               class="d-block overflow-y-auto overflow-x-hidden"
               style="height: 180px; z-index: 1000"
@@ -117,33 +119,30 @@ onBeforeMount(() => {
               >
                 <li
                   class="w-100"
-                  v-for="(data, dindex) in (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.from"
+                  v-for="(holderitem, holderitemindex) in (holder as NumberSearchExcludeFromToType).pages[current]"
                   :key="
-                    (numbersearcherui as NumberSearcherUIType).main.tab +
                     '-EXCLUDE-FROM-TO' +
-                    dindex
+                    holderitemindex
                   "
                 >
                   <Transition>
                     <div
                       :ref="
                         (el) => {
-                          (numbersearcherui as NumberSearcherUIType).exclude.refexcludefromto[
-                            dindex
+                          (holder as NumberSearchExcludeFromToType).addeditemsref[
+                            holderitemindex
                           ] = el as HTMLDivElement;
                         }
                       "
                       v-if="
-                        (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.show[
-                          dindex
+                        (holder as NumberSearchExcludeFromToType).show[
+                          holderitemindex
                         ]
                       "
                       class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
                       style="padding: 1px 5px"
                       :class="{
-                        shake:
-                          (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto
-                            .disabled[dindex],
+                        shake: (holder as NumberSearchExcludeFromToType).shake[holderitemindex],
                       }"
                     >
                       <div
@@ -152,7 +151,7 @@ onBeforeMount(() => {
                         <a
                           @click="
                             localDeleteSaved(
-                              dindex,
+                              holderitemindex,
                               'EXCLUDE-FROM-TO'
                             )
                           "
@@ -176,8 +175,8 @@ onBeforeMount(() => {
                           <div
                             :ref="
                               (el) => {
-                                (numbersearcherui as NumberSearcherUIType).exclude.refexcludefromtoinner[
-                                  dindex
+                                (holder as NumberSearchExcludeFromToType).inneraddeditemsref[
+                                  holderitemindex
                                 ] = el as HTMLDivElement;
                               }
                             "
@@ -188,15 +187,11 @@ onBeforeMount(() => {
                               class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
                             >
                               {{
-                                (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.from[
-                                  dindex
-                                ]
+                                holderitem[0]
                               }}
                               -
                               {{
-                                (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.to[
-                                  dindex
-                                ]
+                                holderitem[1]
                               }}
                             </label>
                           </div>
@@ -205,7 +200,16 @@ onBeforeMount(() => {
                     </div>
                   </Transition>
                 </li>
-                <li :ref="(el) => (numbersearcherui as NumberSearcherUIType).exclude.excludefromtoref = el as HTMLLIElement"></li>
+                <template v-if="holder.addloading">
+                  <li class="text-center">
+                    <img
+                      src="/src/assets/icons/loading.gif"
+                      style="width: 32px; height: 32px"
+                      class="align-middle"
+                    />
+                  </li>
+                </template>
+                <li :ref="(el) => (holder as NumberSearchExcludeFromToType).endoflistitemref = el as HTMLLIElement"></li>
               </ul>
             </div>
           </template>
@@ -220,33 +224,30 @@ onBeforeMount(() => {
               >
                 <li
                   class="w-100"
-                  v-for="(data, dindex) in (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.from"
+                  v-for="(holderitem, holderitemindex) in (holder as NumberSearchExcludeEqualToType).pages[current]"
                   :key="
-                    (numbersearcherui as NumberSearcherUIType).main.tab +
-                    '-EXCLUDE-FROM-TO' +
-                    dindex
+                    '-EXCLUDE-EQUAL-TO' +
+                    holderitemindex
                   "
                 >
                   <Transition>
                     <div
                       :ref="
                         (el) => {
-                          (numbersearcherui as NumberSearcherUIType).exclude.refexcludefromto[
-                            dindex
+                          (holder as NumberSearchExcludeEqualToType).addeditemsref[
+                            holderitemindex
                           ] = el as HTMLDivElement;
                         }
                       "
                       v-if="
-                        (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.show[
-                          dindex
+                        (holder as NumberSearchExcludeEqualToType).show[
+                          holderitemindex
                         ]
                       "
                       class="flex-box flex-direction-row w-100 flex-nowrap justify-content-start align-items-center"
                       style="padding: 1px 5px"
                       :class="{
-                        shake:
-                          (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto
-                            .disabled[dindex],
+                        shake: (holder as NumberSearchExcludeEqualToType).shake[holderitemindex]
                       }"
                     >
                       <div
@@ -255,8 +256,8 @@ onBeforeMount(() => {
                         <a
                           @click="
                             localDeleteSaved(
-                              dindex,
-                              'EXCLUDE-FROM-TO'
+                              holderitemindex,
+                              'EXCLUDE-EQUAL-TO'
                             )
                           "
                           class="remove-selected m-0 d-inline-block underline-none"
@@ -279,8 +280,8 @@ onBeforeMount(() => {
                           <div
                             :ref="
                               (el) => {
-                                (numbersearcherui as NumberSearcherUIType).exclude.refexcludefromtoinner[
-                                  dindex
+                                (holder as NumberSearchExcludeEqualToType).inneraddeditemsref[
+                                  holderitemindex
                                 ] = el as HTMLDivElement;
                               }
                             "
@@ -291,15 +292,7 @@ onBeforeMount(() => {
                               class="d-block align-middle letter-spacing text-left font-0-dot-875-rem"
                             >
                               {{
-                                (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.from[
-                                  dindex
-                                ]
-                              }}
-                              -
-                              {{
-                                (numbersearcherui as NumberSearcherUIType).exclude.treeexcludefromto.to[
-                                  dindex
-                                ]
+                                holderitem
                               }}
                             </label>
                           </div>
@@ -308,10 +301,19 @@ onBeforeMount(() => {
                     </div>
                   </Transition>
                 </li>
-                <li :ref="(el) => (numbersearcherui as NumberSearcherUIType).exclude.excludefromtoref = el as HTMLLIElement"></li>
+                <template v-if="holder.addloading">
+                  <li class="text-center">
+                    <img
+                      src="/src/assets/icons/loading.gif"
+                      style="width: 32px; height: 32px"
+                      class="align-middle"
+                    />
+                  </li>
+                </template>
+                <li :ref="(el) => (holder as NumberSearchExcludeEqualToType).endoflistitemref = el as HTMLLIElement"></li>
               </ul>
             </div>
-          </template>-->
+          </template>
         </template>
       </div>
       <div class="d-block">

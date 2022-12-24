@@ -78,6 +78,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 table: 'address',
                 join: 'customer',
                 disableincludeandexclude: false,
+                fixedlengthofstring: 11,
               },
             },
             delimiters: [''],
