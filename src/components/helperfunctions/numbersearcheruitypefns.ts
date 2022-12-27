@@ -3,13 +3,6 @@ import type {
 } from '../types/SupportedDatatypesTypeDeclaration';
 import { type ShallowRef, triggerRef, nextTick, } from "vue";
 
-function setTabs(
-  tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO",
-  mainnumbersearcherui: ShallowRef<NumberSearcherUIType["main"]>
-) {
-  (mainnumbersearcherui.value as NumberSearcherUIType["main"]).tab = tab;
-  triggerRef(mainnumbersearcherui);
-}
 
 function scrollToElement(el: HTMLDivElement | HTMLLIElement) {
   if (el) {
@@ -570,71 +563,3 @@ function paginate(operator: "EQUAL-TO" | "NOT-EQUAL-TO", mainnumbersearcherui: S
   }
 }
   
-export function resetOthers(
-  pressedinput: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO",
-  numbersearcherui: ShallowRef<NumberSearcherUIType["main"]>
-) {
-  if (pressedinput === "GREATER-THAN") {
-    if((numbersearcherui.value as NumberSearcherUIType["main"]).greaterthan.value.length > 0) {
-      (numbersearcherui.value as NumberSearcherUIType["main"]).lessthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).from.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).to.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).equalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.index = 0;
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.index = 0;
-    }
-  } else if (pressedinput === "LESS-THAN") {
-    if((numbersearcherui.value as NumberSearcherUIType["main"]).lessthan.value.length > 0) {
-      (numbersearcherui.value as NumberSearcherUIType["main"]).greaterthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).from.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).to.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).equalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.index = 0;
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.index = 0;
-    }
-  } else if (pressedinput === "EQUAL-TO") {
-    if((numbersearcherui.value as NumberSearcherUIType["main"]).equalto.value.length > 0) {
-      (numbersearcherui.value as NumberSearcherUIType["main"]).greaterthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).lessthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).from.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).to.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.index = 0;
-    }
-  } else if (pressedinput === "NOT-EQUAL-TO") {
-    if((numbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value.length > 0) {
-      (numbersearcherui.value as NumberSearcherUIType["main"]).greaterthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).lessthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).from.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).to.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).equalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.index = 0;
-    }
-  } else {
-    if(
-      (numbersearcherui.value as NumberSearcherUIType["main"]).from.value.length > 0
-      ||
-      (numbersearcherui.value as NumberSearcherUIType["main"]).to.value.length > 0
-    ) {
-      (numbersearcherui.value as NumberSearcherUIType["main"]).greaterthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).lessthan.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).equalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).notequalto.value = "";
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.value = [];
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treeequalto.index = 0;
-      (numbersearcherui.value as NumberSearcherUIType["main"]).treenotequalto.index = 0;
-    }
-  }
-  
-  setTabs(pressedinput, numbersearcherui);
-  triggerRef(numbersearcherui);
-}

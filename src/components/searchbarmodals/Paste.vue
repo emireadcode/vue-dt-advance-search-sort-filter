@@ -17,12 +17,14 @@ const
     (e: "return:newlypasteditems", action: string[][]): void;
   }>(),
   props = defineProps<{
-    receiveclosepastemodalsignal: number;
+    breakdescription?: boolean | undefined;
+    receiveclosepastemodalsignal?: number | undefined;
     title: string;
     min?: string | undefined;
     max?: string | undefined;
-    datatype: 'DateTime' | 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number';
+    datatype: 'NumberFromNumberString' | 'NumberRange' | 'DateTime' | 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number';
     textAreaHeight: string;
+    descriptionfontsize?: string | undefined;
   }>()
 ;
 
@@ -107,11 +109,126 @@ function findRejectedAndAcceptedLines(
       max as string
     );
   }
+  else if(props.datatype === 'NumberRange') {
+    return removeDuplicateAndValidateNumericRangeLine(
+      textareaacceptedtextArray,
+      min as string,
+      max as string
+    );
+  }
+  else if(props.datatype === 'NumberFromNumberString') {
+    return removeDuplicateAndValidateNumericLineWithoutLimit(
+      textareaacceptedtextArray
+    );
+  }
   else {
     return removeDuplicateAndValidateStringLine(
       textareaacceptedtextArray
     );
   }
+}
+
+function removeDuplicateAndValidateNumericRangeLine(acceptedArray: string[], min: string, max: string) {
+  let 
+    newArray: [string, string][] = [],
+    index = 0
+  ;
+  acceptedArray.forEach((item, i) => {
+    if (item.trim().length > 0) {
+      if (
+        (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === undefined ||
+        (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === null
+      ) {
+        (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
+        if(/^\d+\s*\-\s*\d+$/g.test(item)) {
+          let splititem = item.split("-");
+          if(parseFloat(splititem[0].trim()) < parseFloat(splititem[1].trim())) {
+            if(parseFloat(splititem[0].trim()) >= parseFloat(min) && parseFloat(splititem[1].trim()) <= parseFloat(max)) {
+              let isoverlappingrange = false;
+              for(let i=0; i<newArray.length; i++) {
+                if(newArray[i][1] !== 'ERROR') {
+                  let splititem1 = newArray[i][0].split("-");
+                  if(
+                    (
+                      parseFloat(splititem[0].trim()) >= parseFloat(splititem1[0].trim())
+                      &&
+                      parseFloat(splititem[1].trim()) <= parseFloat(splititem1[1].trim())
+                    )
+                    ||
+                    (
+                      parseFloat(splititem[0].trim()) <= parseFloat(splititem1[0].trim())
+                      &&
+                      (
+                        parseFloat(splititem[1].trim()) >= parseFloat(splititem1[1].trim())
+                        ||
+                        (
+                          parseFloat(splititem[1].trim()) <= parseFloat(splititem1[1].trim())
+                          &&
+                          parseFloat(splititem[1].trim()) >= parseFloat(splititem1[0].trim())
+                        )
+                      )
+                    )
+                    ||
+                    parseFloat(splititem[1].trim()) === parseFloat(splititem1[0].trim())
+                    ||
+                    parseFloat(splititem[0].trim()) === parseFloat(splititem1[1].trim())
+                  ) {
+                    isoverlappingrange = true;
+                    break;
+                  }
+                }
+              }
+              if(!isoverlappingrange) {
+                newArray[index] = [item, "GOOD"];
+                hassomethingtopaste.value = true;
+              }
+              else {
+                newArray[index] = [item, "ERROR"];
+              }
+            }
+            else {
+              newArray[index] = [item, "ERROR"];
+            }
+          }
+          else {
+            newArray[index] = [item, "ERROR"];
+          }
+        }
+        else {
+          newArray[index] = [item, "ERROR"];
+        }
+        index++;
+      }
+    }
+  });
+  return newArray;
+}
+
+function removeDuplicateAndValidateNumericLineWithoutLimit(acceptedArray: string[]) {
+  let 
+    newArray: [string, string][] = [],
+    index = 0
+  ;
+  acceptedArray.forEach((item, i) => {
+    if (item.trim() !== "") {
+      if (
+        (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === undefined ||
+        (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === null
+      ) {
+        if(/^\d+$/g.test(item)) {
+          (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
+          newArray[index] = [item, "GOOD"];
+          hassomethingtopaste.value = true;
+        }
+          else {
+          (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
+          newArray[index] = [item, "ERROR"];
+        }
+        index++;
+      }
+    }
+  });
+  return newArray;
 }
 
 function removeDuplicateAndValidateDateLine(acceptedArray: string[], min: string, max: string) {
@@ -176,7 +293,7 @@ function removeDuplicateAndValidateDateLine(acceptedArray: string[], min: string
   return newArray;
 }
 
-function removeDuplicateAndValidateNumericLine(acceptedArray: string[], max: string, min: string) {
+function removeDuplicateAndValidateNumericLine(acceptedArray: string[], max?: string | undefined, min?: string | undefined) {
   let 
     newArray: [string, string][] = [],
     index = 0
@@ -203,9 +320,6 @@ function removeDuplicateAndValidateNumericLine(acceptedArray: string[], max: str
             newArray[index] = [item, "ERROR"];
           }
         }
-        else {
-
-        }
         index++;
       }
     }
@@ -226,11 +340,11 @@ function removeDuplicateAndValidateStringLine(acceptedArray: string[]) {
       ) {
         if (!/^\s*\d+\s*$/g.test(item) && item.length <= 40) {
           duplicateCheckerObject["" + item] = "";
-          newArray[index] = [item, "STRING"];
+          newArray[index] = [item, "GOOD"];
         } else {
           if (/^\s*\d+\s*$/g.test(item)) {
             duplicateCheckerObject["" + item] = "";
-            newArray[index] = [item, "NUMERIC"];
+            newArray[index] = [item, "GOOD"];
           } else {
             if (item.length > 40) {
               duplicateCheckerObject["" + item] = "";
@@ -307,19 +421,19 @@ onBeforeMount(() => {
       pasteditemloading.value = true;
       let pt: NodeJS.Timeout;
       pt = setTimeout(() => {
-        if(props.datatype === 'Date' || props.datatype === 'Year' || props.datatype === 'Number') {
+        if(props.datatype === 'NumberRange' || props.datatype === 'Date' || props.datatype === 'Year' || props.datatype === 'Number') {
           pasteditemvalidity.value = findRejectedAndAcceptedLines(
             actualpasteddata,
             text,
             props.max,
             props.min
-          );
+          ) as string[][];
         }
         else {
           pasteditemvalidity.value = findRejectedAndAcceptedLines(
             actualpasteddata,
             text
-          );
+          ) as string[][];
         }
         pasteditemloading.value = false;
         pasteexpanded.value = true;
@@ -332,209 +446,233 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="d-block position-relative">
-    <template v-if="pastemultiplelines">
-      <div
-        class="w-100 position-absolute t-0 l-0 shadow-sm"
-        style="background-color: #fff; border: 1px solid #fff"
-      >
+  <div class="d-block" style="padding:5px 0;">
+    <div class="d-block position-relative p-0 m-0">
+      <template v-if="pastemultiplelines">
         <div
-          class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-          style="height: 30px"
+          class="w-100 position-absolute t-0 l-0 shadow-sm overflow-hidden"
+          style="background-color: #fff; border: 1px solid #fff"
         >
-          <div class="flex-fill" style="font-size: 0.8rem">
-            Press Ctrl + V on a PC or Command + V on an Apple Mac.
-          </div>
-          <div class="flex-grow-0 flex-shrink-0 text-center">
-            <a
-              @click="pastemultiplelines = false"
-              class="d-inline-block cursor-pointer"
-              title="Close"
-            >
-              <img
-                src="/src/assets/icons/close.png"
-                style="width: 20px; height: 20px"
-                class="align-middle"
-              />
-            </a>
-          </div>
-        </div>
-        <div class="d-block position-relative p-0 m-0">
-          <div 
-            class="d-block p-0 m-0" 
-            style="z-index: 800"
-            :style="datatype === 'Date'? 'height: 428px;' : props.textAreaHeight"
+          <div
+            class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+            :style="props.breakdescription !== undefined && props.breakdescription? 'height: 50px;' : 'height: 30px;'"
           >
-            <textarea
-              :ref="(el) => (pastetextarearef = el as HTMLTextAreaElement)"
-              style="border: 1px solid gray; padding: 5px; resize: none"
-              class="w-100 h-100 text-left d-inline-block overflow-auto"
-              maxlength="0"
-              v-model="pastedmultiplelinesoftext"
-              @paste="(e) => pasteMultilineWordsCopiedFromSomewhere(e)"
-            ></textarea>
+            <div class="flex-fill" :style="props.descriptionfontsize? props.descriptionfontsize: 'font-size:0.8rem;'">
+              <template v-if="props.breakdescription !== undefined && props.breakdescription">
+                <div class="d-block" style="padding:2px;">
+                  Press Ctrl + V on a PC
+                </div>
+                <div class="d-block" style="padding:2px;">
+                  Command + V on an Apple Mac.
+                </div>
+              </template>
+              <template v-else>
+                Press Ctrl + V on a PC or Command + V on an Apple Mac.
+              </template>
+            </div>
+            <div class="flex-grow-0 flex-shrink-0 text-center">
+              <a
+                @keypress.enter="pastemultiplelines = false"
+                @click="pastemultiplelines = false"
+                class="d-inline-block cursor-pointer"
+                title="Close"
+              >
+                <img
+                  src="/src/assets/icons/close.png"
+                  style="width: 20px; height: 20px"
+                  class="align-middle"
+                />
+              </a>
+            </div>
           </div>
-          <template v-if="pasteditemloading">
-            <div
-              style="padding: 26px 0px; z-index: 900"
-              class="t-0 l-0 w-100 position-absolute m-0 h-100 modal-mask-background-1"
+          <div class="d-block position-relative p-0 m-0">
+            <div 
+              class="d-block p-0 m-0" 
+              style="z-index: 800"
+              :style="props.textAreaHeight"
             >
-              <img
-                src="/src/assets/icons/loading.gif"
-                style="width: 80px; height: 80px"
-                class="align-middle"
-              />
+              <textarea
+                :ref="(el) => (pastetextarearef = el as HTMLTextAreaElement)"
+                style="border: 1px solid gray; padding: 5px; resize: none"
+                class="w-100 h-100 text-left d-inline-block overflow-auto"
+                maxlength="0"
+                v-model="pastedmultiplelinesoftext"
+                @paste="(e) => pasteMultilineWordsCopiedFromSomewhere(e)"
+              ></textarea>
+            </div>
+            <template v-if="pasteditemloading">
+              <div
+                style="padding: 26px 0px; z-index: 900"
+                class="t-0 l-0 w-100 position-absolute m-0 h-100 modal-mask-background-1"
+              >
+                <img
+                  src="/src/assets/icons/loading.gif"
+                  style="width: 80px; height: 80px"
+                  class="align-middle"
+                />
+              </div>
+            </template>
+          </div>
+          <template v-if="props.datatype === 'MultipleWordsString' || props.datatype === 'SingleWordString' || props.datatype === 'NumberString'">
+            <div
+              class="d-block"
+              style="background-color: #fff; padding: 5px 0; font-size: 0.8rem"
+            >
+              Max letters per line = 40, Total Max letters for all lines = 5000
             </div>
           </template>
         </div>
-        <div
-          class="d-block"
-          style="background-color: #fff; padding: 5px 0; font-size: 0.8rem"
-        >
-          Max letters per line = 40, Total Max letters for all lines = 5000
-        </div>
-      </div>
-      <Teleport to="body">
-        <div v-if="pasteexpanded" class="d-block position-relative">
-          <transition name="modal">
-            <div
-              class="position-fixed h-100 w-100 overflow-auto user-select-none"
-              style="z-index: 1800"
-            >
-              <div class="modal-mask h-100 w-100 modal-mask-background-2">
-                <div class="modal-wrapper text-center">
-                  <div
-                    class="modal-container d-block shadow"
-                    style="height: auto; width: 560px"
-                  >
-                    <div class="d-block m-0 p-0">
-                      <div
-                        class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                        style="height: 30px; padding: 0 3px"
-                      >
-                        <div class="text-left flex-fill" style="font-size: 0.8rem">
-                          <div
-                            class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                          >
-                            <slot name="outcomeidentifier"></slot>
+        <Teleport to="body">
+          <div v-if="pasteexpanded" class="d-block position-relative">
+            <transition name="modal">
+              <div
+                class="position-fixed h-100 w-100 overflow-auto user-select-none"
+                style="z-index: 1800"
+              >
+                <div class="modal-mask h-100 w-100 modal-mask-background-2">
+                  <div class="modal-wrapper text-center">
+                    <div
+                      class="modal-container d-block shadow"
+                      style="height: auto; width: 560px"
+                    >
+                      <div class="d-block m-0 p-0">
+                        <div
+                          class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+                          style="height: 30px; padding: 0 3px"
+                        >
+                          <div class="text-left flex-fill" style="font-size: 0.8rem">
+                            <div
+                              class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+                            >
+                              <slot name="outcomeidentifier"></slot>
+                            </div>
+                          </div>
+                          <div class="flex-grow-0 flex-shrink-0 text-center">
+                            <a
+                              @keypress.enter="
+                                () => {
+                                  pastemultiplelines = false;
+                                  pastedmultiplelinesoftext = '';
+                                  pasteditemloading = false;
+                                  pasteexpanded = false;
+                                  duplicateCheckerObject = {} as DuplicateCheckerObjectType;
+                                }
+                              "
+                              @click="
+                                () => {
+                                  pastemultiplelines = false;
+                                  pastedmultiplelinesoftext = '';
+                                  pasteditemloading = false;
+                                  pasteexpanded = false;
+                                  duplicateCheckerObject = {} as DuplicateCheckerObjectType;
+                                }
+                              "
+                              class="d-inline-block cursor-pointer"
+                              title="Close"
+                            >
+                              <img
+                                src="/src/assets/icons/close.png"
+                                style="width: 20px; height: 20px"
+                                class="align-middle"
+                              />
+                            </a>
                           </div>
                         </div>
-                        <div class="flex-grow-0 flex-shrink-0 text-center">
-                          <a
-                            @click="
-                              () => {
-                                pastemultiplelines = false;
-                                pastedmultiplelinesoftext = '';
-                                pasteditemloading = false;
-                                pasteexpanded = false;
-                                duplicateCheckerObject = {} as DuplicateCheckerObjectType;
-                              }
-                            "
-                            class="d-inline-block cursor-pointer"
-                            title="Close"
-                          >
-                            <img
-                              src="/src/assets/icons/close.png"
-                              style="width: 20px; height: 20px"
-                              class="align-middle"
-                            />
-                          </a>
+                        <div class="d-block" style="padding: 10px">
+                          <template v-if="datatype === 'Date'">
+                          
+                          </template>
+                          <template v-else>
+                            <button @keypress.enter="emits('return:newlypasteditems', pasteditemvalidity)" @click="emits('return:newlypasteditems', pasteditemvalidity)" class="btn w-100 text-center" style="padding:5px;">
+                              Add Pasted
+                            </button>
+                          </template>
                         </div>
-                      </div>
-                      <div class="d-block" style="padding: 10px">
-                        <template v-if="datatype === 'Date'">
-                        
-                        </template>
-                        <template v-else>
-                          <button @keyup.enter="emits('return:newlypasteditems', pasteditemvalidity)" @click="emits('return:newlypasteditems', pasteditemvalidity)" class="btn w-100 text-center" style="padding:5px;">
-                            Add Pasted
-                          </button>
-                        </template>
-                      </div>
-                      <div class="d-block">
-                        <ul class="d-block list-style-none m-0 p-0">
-                          <li
-                            v-for="(item, i) in pasteditemvalidity"
-                            :key="'expand-include-' + i"
-                          >
-                            <div class="d-block" style="padding: 5px">
-                              <div
-                                :style="
-                                  datatype === 'Date'?
-                                  (
-                                    item[1] === 'ERROR'
-                                      ? 'background-color:red;color:#fff;'
-                                      : item[1] === 'OUT-OF-DATE-RANGE'
-                                      ? 'background-color:yellow;color:black;'
-                                      : item[1] === 'INDETERMINATE'
-                                      ? 'background-color:pink;color:black;'
-                                      : 'background-color:#fff;'
-                                  )
-                                  :
-                                  (
-                                    datatype === 'Year'?
-                                    (
-                                    item[1] === 'ERROR'
-                                      ? 'background-color:red;color:#fff;'
-                                      : item[1] === 'OUT-OF-YEAR-RANGE'
-                                      ? 'background-color:yellow;color:black;'
-                                      : 'background-color:#fff;'
-                                    ):
+                        <div class="d-block">
+                          <ul class="d-block list-style-none m-0 p-0">
+                            <li
+                              v-for="(item, i) in pasteditemvalidity"
+                              :key="'expand-include-' + i"
+                            >
+                              <div class="d-block" style="padding: 5px">
+                                <div
+                                  :style="
+                                    datatype === 'Date'?
                                     (
                                       item[1] === 'ERROR'
                                         ? 'background-color:red;color:#fff;'
+                                        : item[1] === 'OUT-OF-DATE-RANGE'
+                                        ? 'background-color:yellow;color:black;'
+                                        : item[1] === 'INDETERMINATE'
+                                        ? 'background-color:pink;color:black;'
                                         : 'background-color:#fff;'
                                     )
-                                  )
-                                "
-                                class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                                style="border-radius: 20px; padding: 8px"
-                              >
-                                <div
-                                  class="ellipsis overflow-hidden text-left flex-fill letter-spacing font-0-dot-875-rem"
+                                    :
+                                    (
+                                      datatype === 'Year'?
+                                      (
+                                      item[1] === 'ERROR'
+                                        ? 'background-color:red;color:#fff;'
+                                        : item[1] === 'OUT-OF-YEAR-RANGE'
+                                        ? 'background-color:yellow;color:black;'
+                                        : 'background-color:#fff;'
+                                      ):
+                                      (
+                                        item[1] === 'ERROR'
+                                          ? 'background-color:red;color:#fff;'
+                                          : 'background-color:#fff;'
+                                      )
+                                    )
+                                  "
+                                  class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
+                                  style="border-radius: 20px; padding: 8px"
                                 >
-                                  {{ item[0] }}
+                                  <div
+                                    class="ellipsis overflow-hidden text-left flex-fill letter-spacing font-0-dot-875-rem"
+                                  >
+                                    {{ item[0] }}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </li>
-                        </ul>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </transition>
-        </div>
-      </Teleport>
-    </template>
-    <template v-if="datatype === 'Date'">
-      <div class="d-block text-center" style="padding: 34.5px 0 34.5px 0">
-        <button
-          class="btn shadow-sm w-100 font-family"
-          style="border-radius: 50px; padding: 12px; font-size: 1.2rem; background-color: #f0e68c;"
-          @click="openPasteArea()"
-        >
-          Paste multiple lines of
-          <span class="text-lowercase">{{ title }}</span>
-        </button>
-      </div>
-    </template>
-    <template v-else>
-      <div class="d-block">
-        <div class="d-block text-center" style="padding: 5px 0">
+            </transition>
+          </div>
+        </Teleport>
+      </template>
+      <template v-if="datatype === 'Date'">
+        <div class="d-block text-center" style="padding: 11.3px 0">
           <button
-            class="btn shadow-sm w-100"
-            style="padding: 2px; font-size: 0.85rem"
+            class="btn shadow-sm w-100 font-family"
+            style="border-radius: 50px; padding: 12px; font-size: 1.2rem; background-color: #f0e68c;"
+            @keypress.enter="openPasteArea()"
             @click="openPasteArea()"
           >
             Paste multiple lines of
             <span class="text-lowercase">{{ title }}</span>
           </button>
         </div>
-      </div>
-    </template>
+      </template>
+      <template v-else>
+        <div class="d-block text-center">
+          <button
+            class="btn shadow-sm w-100"
+            style="padding: 2px; font-size: 0.85rem"
+            @keypress.enter="openPasteArea()"
+            @click="openPasteArea()"
+          >
+            Paste multiple lines of
+            <span class="text-lowercase">{{ title }}</span>
+          </button>
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 

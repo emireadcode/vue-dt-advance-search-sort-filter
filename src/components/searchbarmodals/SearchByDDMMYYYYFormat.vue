@@ -48,9 +48,8 @@ onBeforeMount(() => {
       :datatype="cards[index].info.datatype as 'Date' | 'Year'"
       :max="(cards[index].result.max as string)"
       :min="(cards[index].result.min as string)"
-      :text-area-height="'height:450px;'"
+      :text-area-height="'height:422px;'"
     >
-      <template v-slot:controlbuttons></template>
       <template v-slot:outcomeidentifier>
         <div
           class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
@@ -72,11 +71,7 @@ onBeforeMount(() => {
           <div class="flex-fill text-center">
             <div
               class="d-inline-block align-middle"
-              style="
-                background-color: yellow;
-                width: 15px;
-                height: 15px;
-              "
+              style="background-color: yellow;width: 15px;height: 15px;"
             ></div>
             Out of Range
           </div>
@@ -96,6 +91,7 @@ onBeforeMount(() => {
     >
       <div class="flex-w-50 align-self-stretch">
         <a
+          @keypress.enter="() => { selectionformat = 'RANGE'; emits('update:excludedates', false); }"
           @click="() => { selectionformat = 'RANGE'; emits('update:excludedates', false); }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
           :style="selectionformat === 'RANGE'
@@ -109,6 +105,7 @@ onBeforeMount(() => {
       </div>
       <div class="flex-w-50 align-self-stretch">
         <a
+          @keypress.enter="() => { selectionformat = 'MULTIPLE-OR-SINGLE'; emits('update:excludedates', true); }"
           @click="() => { selectionformat = 'MULTIPLE-OR-SINGLE'; emits('update:excludedates', true); }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
           :style="selectionformat === 'MULTIPLE-OR-SINGLE'

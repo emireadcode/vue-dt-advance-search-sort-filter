@@ -8,6 +8,7 @@ import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputed
 
 const
   closepastemodalsignal = ref(0),
+  current = ref(0),
   newlypasteditems = ref<string[][]>([]),
   holder = ref<StringSearchType>(),
   props = defineProps<{
@@ -21,13 +22,35 @@ const
 
 provide("wordtypeandconcatfieldindex", {wordtype: props.wordtype, concatfieldindex: props.concatfieldindex});
 
-function addLocalNewInputEntry(nonerangeorrange: 'NONE-RANGE', newinputentry: string, inputtype: 'WORD') {
-  addNewInputEntry(
-    nonerangeorrange,
+async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
+  await addNewInputEntry(
     newinputentry,
     inputtype,
+    current,
     holder as Ref<StringSearchType>
   );
+}
+
+async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
+  let time: NodeJS.Timeout[] = [], timeIndex = 0;
+  for(let i=0; i<pasteditems.length; i++) {
+    let item = pasteditems[i];
+    if (item[1] !== "ERROR") {
+      if (item[0].trim().length > 0) {
+        time[timeIndex] = setTimeout(async () => {
+          await addNewInputEntry(
+            item[0],
+            inputtype,
+            current,
+            holder as Ref<StringSearchType>
+          );
+          clearTimeout(time[timeIndex]);
+        }, 10);
+        timeIndex++;
+      }
+    }
+  }
+  closepastemodalsignal.value++;
 }
 
 onBeforeMount(() => {
@@ -46,12 +69,17 @@ onBeforeMount(() => {
       context="DESCRIBE-MODAL"
     ></DescribeLabel>
     <div
-      class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center"
+      class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
     >
       <div class="flex-fill p-0 m-0 align-self-stretch">
         <template v-if="wordtype === 'MULTIPLE'">
           <input
-            @keypress.enter=""
+            @keypress.enter="
+              addLocalNewInputEntry(
+                (holder as StringSearchType).single,
+                'WORD'
+              )
+            "
             v-model="(holder as StringSearchType).single"
             maxlength="40"
             type="text"
@@ -62,7 +90,12 @@ onBeforeMount(() => {
         <template v-else>
           <input
             @keydown.space.prevent
-            @keypress.enter=""
+            @keypress.enter="
+              addLocalNewInputEntry(
+                (holder as StringSearchType).single,
+                'WORD'
+              )
+            "
             v-model="(holder as StringSearchType).single"
             maxlength="40"
             type="text"
@@ -78,9 +111,14 @@ onBeforeMount(() => {
         <a
           class="cursor-pointer d-block text-center"
           style="padding: 3px 0"
+          @keypress.enter="
+            addLocalNewInputEntry(
+              (holder as StringSearchType).single,
+              'WORD'
+            )
+          "
           @click="
             addLocalNewInputEntry(
-              'NONE-RANGE',
               (holder as StringSearchType).single,
               'WORD'
             )
@@ -94,8 +132,8 @@ onBeforeMount(() => {
       :receiveclosepastemodalsignal="closepastemodalsignal"
       :title="cards[index].info.name"
       :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
-      :text-area-height="'height:450px;'"
-      @return:newlypasteditems="$val => { newlypasteditems = $val; }"
+      :text-area-height="'height:377px;'"
+      @return:newlypasteditems="$val => { addPastedItems($val, 'WORD'); }"
     >
       <template v-slot:outcomeidentifier>
         <div
@@ -119,9 +157,11 @@ onBeforeMount(() => {
       </template>
     </Paste>
     <PastedItemAndNewlyInputedEntryDisplayer
+      :current="current"
+      @update:current="$val => current = $val"
       :tree="(holder as StringSearchType)"
       treetype="StringSearchType"
-      :display-area-height="'height: 367.9px;'"
+      :display-area-height="'height: 358.9px;'"
       :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
     ></PastedItemAndNewlyInputedEntryDisplayer>
   </div>

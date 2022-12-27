@@ -96,6 +96,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
               "
             >
               <a
+                @keypress.enter="previousOrNextClicked('PREVIOUS')"
                 @click="previousOrNextClicked('PREVIOUS')"
                 class="btn underline-none shadow-sm d-block"
                 style="padding: 2.7px 0"
@@ -123,6 +124,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                   class="btn underline-none shadow-sm d-block"
                   style="font-size: 0.8rem; padding: 5.2px 0px"
                   :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
+                  @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
                   @click="() => { current = pageindex; emits('update:current', current); }"
                 >
                   {{ pageindex }}
@@ -141,6 +143,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                       class="btn underline-none shadow-sm d-block"
                       style="font-size: 0.8rem; padding: 5.2px 0px"
                       :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
+                      @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
                       @click="() => { current = pageindex; emits('update:current', current); }"
                     >
                       {{ pageindex }}
@@ -185,6 +188,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                         :style="
                           current === pageindex ? 'background-color: #F0E68C;' : ''
                         "
+                        @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
                         @click="() => { current = pageindex; emits('update:current', current); }"
                       >
                         {{ pageindex }}
@@ -206,6 +210,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                       class="btn underline-none shadow-sm d-block"
                       style="font-size: 0.8rem; padding: 5.2px 0px"
                       :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
+                      @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
                       @click="() => { current = pageindex; emits('update:current', current); }"
                     >
                       {{ pageindex }}
@@ -250,6 +255,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                         :style="
                           current === pageindex ? 'background-color: #F0E68C;' : ''
                         "
+                        @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
                         @click="() => { current = pageindex; emits('update:current', current); }"
                       >
                         {{ pageindex }}
@@ -269,6 +275,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
               "
             >
               <a
+                @keypress.enter="previousOrNextClicked('NEXT')"
                 @click="previousOrNextClicked('NEXT')"
                 class="btn underline-none shadow-sm d-block"
                 style="padding: 2.7px 0"
@@ -291,6 +298,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
           class="btn underline-none shadow-sm d-block"
           style="font-size: 0.8rem; padding: 5.2px 0"
           :style="current === 0 && length > 1 ? 'background-color: #F0E68C;' : ''"
+          @keypress.enter="() => { current = 0; emits('update:current', current); }"
           @click="() => { current = 0; emits('update:current', current); }"
         >
           <img

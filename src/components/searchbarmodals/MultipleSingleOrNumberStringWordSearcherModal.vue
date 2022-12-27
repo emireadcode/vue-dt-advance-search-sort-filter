@@ -76,7 +76,7 @@ let
             >
               <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
                 <button
-                  @keyup.enter="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
+                  @keypress.enter="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
                   @click="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
@@ -89,7 +89,7 @@ let
                 style="padding-right: 2.5px;"
               >
                 <button
-                  @keyup.enter="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
+                  @keypress.enter="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
                   @click="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"

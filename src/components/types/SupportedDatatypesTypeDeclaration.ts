@@ -46,9 +46,11 @@ export interface IdentityType {
   
 export interface YearType extends IdentityType {
   search: {
-    tab: string;
-    multiple_or_single?: number[] | undefined;
-    range?: number[] | undefined;
+    tab: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO";
+    greaterthan: string;
+    lessthan: string;
+    multiple_or_single?: number[];
+    range: number[];
     trueorfalse: boolean;
   };
 }
@@ -218,7 +220,7 @@ export type DateInnerType = {
           } | {};
         };
         years: {
-          format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO";
+          format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN";
           years: {
             [key: string | number]: {
               selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";

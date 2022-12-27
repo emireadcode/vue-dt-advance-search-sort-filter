@@ -39,18 +39,18 @@ onBeforeMount(() => {
 
 <template>
   <div class="d-block position-relative" style="padding: 0 10px;">
-    <div class="d-block" style="padding: 12px 0px 5px 0px;">
+    <div class="d-block" style="padding: 5px 0px 2.5px 0;">
       <DayPicker
         :dayselectionandformat="((cards[index] as DateType).search.days_months_years?.days as DaySelectionFormat)"
         :isoweek="(cards[index] as DateType).isoweek"
       ></DayPicker>
     </div>
-    <div class="d-block" style="padding: 7px 0px 5px 0px;">
+    <div class="d-block" style="padding: 2.5px 0px;">
       <MonthPicker
         :monthselectionandformat="((cards[index] as DateType).search.days_months_years?.months as MonthSelectionFormat)"
       ></MonthPicker>
     </div>
-    <div class="d-block" style="padding: 7px 0px 2px 0px;">
+    <div class="d-block" style="padding: 2.5px 0px 5px 0;">
       <YearPicker
         :maxyear="(parseInt(cmaxyear) as number)"
         :minyear="(parseInt(cminyear) as number)"

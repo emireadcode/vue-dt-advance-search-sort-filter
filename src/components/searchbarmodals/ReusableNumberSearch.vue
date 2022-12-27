@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import { ref, watch, inject, type Ref, type ShallowRef, computed, triggerRef, } from "vue";
+import { type WatchStopHandle, ref, watch, inject, type Ref, type ShallowRef, computed, onMounted, onBeforeUnmount, } from "vue";
 import type {
   NumberType, 
   SingleWordStringType, 
   NumberStringType, 
   NumberSearchType,
   NumberSearchExcludeEqualToType,
+  AtNumber,
 } from "../types/SupportedDatatypesTypeDeclaration";
-import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
+import { addNewInputEntry, setTabAndResetOthers } from "../helperfunctions/addnewlypastedandnewinputentry";
 import Paste from "./Paste.vue";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 const
   closeequaltopastemodalsignal = ref(0),
-  equaltonewlypasteditems = ref(),
   closenotequaltopastemodalsignal = ref(0),
-  notequaltonewlypasteditems = ref(),
-  holder = inject("mainnumbersearcherui") as Ref<NumberType['search']>,
+  equaltocurrent = ref(0),
+  notequaltocurrent = ref(0),
+  holder = inject("mainnumbersearcherui") as Ref<NumberType['search'] | AtNumber<NumberSearchType>>,
   index = inject("index") as number,
   props = defineProps<{
     from: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL";
@@ -27,57 +28,122 @@ const
   cards = inject("cards") as ShallowRef<NumberType[] | SingleWordStringType[] | NumberStringType[]>
 ;
 
-function localResetOthers(
-  operator: "EQUAL-TO" | "NOT-EQUAL-TO" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO"
-) {
-  /*resetOthers(
-    operator,
-    holder
-  );
+console.log((holder.value as AtNumber<NumberSearchType>).search.equalto.single);
 
-  if(props.from === "NUMBER-SEARCHER-MODAL") {
-    emits("reset:exclude", true);
-  }*/
-}
+let
+  unwatchgreaterthan: WatchStopHandle,
+  unwatchlessthan: WatchStopHandle,
+  unwatchequalto: WatchStopHandle,
+  unwatchnotequalto: WatchStopHandle,
+  unwatchfromto: WatchStopHandle
+;
 
-function addLocalNewInputEntry(
-  nonerangeorrange: 'NONE-RANGE',
+async function addLocalNewInputEntry(
   newinputentry: string,
   inputtype: 'EQUAL-TO' | 'NOT-EQUAL-TO'
 ) {
-  addNewInputEntry(
-    nonerangeorrange,
+  await addNewInputEntry(
     newinputentry,
     inputtype,
-    holder as Ref<NumberType['search']>
+    (inputtype==='EQUAL-TO')? equaltocurrent : notequaltocurrent,
+    holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>['search']>
   );
 }
 
-function localDeleteSaved(
-  index: number, 
-  operator: "EQUAL-TO" | "NOT-EQUAL-TO"
-) {
-  /*deleteSaved(
-    index,
-    operator,
-    holder
-  );*/
+async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO' | 'EQUAL-TO') {
+  let time: NodeJS.Timeout[] = [], timeIndex = 0;
+  for(let i=0; i<pasteditems.length; i++) {
+    let item = pasteditems[i];
+    if (item[1] !== "ERROR") {
+      time[timeIndex] = setTimeout(async () => {
+        await addNewInputEntry(
+          item[0],
+          inputtype,
+          (inputtype==='EQUAL-TO')? equaltocurrent : notequaltocurrent,
+          holder as Ref<NumberType['search']>
+        );
+        clearTimeout(time[timeIndex]);
+      }, 10);
+      timeIndex++;
+    }
+  }
+  (inputtype==='NOT-EQUAL-TO')?
+    closenotequaltopastemodalsignal.value++
+    :closeequaltopastemodalsignal.value++
 }
 
 const equaltoAddNew = computed(() => {
   return (
-    parseFloat(holder.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-    parseFloat(holder.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    parseFloat(
+      (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto.single as string
+    ) <= parseFloat(cards.value[index].result.max) &&
+    parseFloat(
+      (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto.single as string
+    ) >= parseFloat(cards.value[index].result.min)
   );
 });
 
 const notequaltoAddNew = computed(() => {
   return (
-    parseFloat(holder.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-    parseFloat(holder.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    parseFloat((holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto.single as string) <= parseFloat(cards.value[index].result.max) &&
+    parseFloat((holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto.single as string) >= parseFloat(cards.value[index].result.min)
   );
 });
 
+onMounted(() => {
+  console.log(holder.value);
+  unwatchgreaterthan = watch(
+    () => (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).greaterthan,
+    (x) => {
+      if(x.trim().length > 0) {
+        setTabAndResetOthers('GREATER-THAN', holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>['search']>);
+      }
+    }
+  );
+  unwatchlessthan = watch(
+    () => (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).lessthan,
+    (x) => {
+      if(x.trim().length > 0) {
+        setTabAndResetOthers('LESS-THAN', holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>['search']>);
+      }
+    }
+  );
+  unwatchequalto = watch(
+    () => (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto.single,
+    (x) => {
+      if(x.trim().length > 0) {
+        setTabAndResetOthers('EQUAL-TO', holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>['search']>);
+      }
+    }
+  );
+  unwatchnotequalto = watch(
+    () => (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto.single,
+    (x) => {
+      if(x.trim().length > 0) {
+        setTabAndResetOthers('NOT-EQUAL-TO', holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>['search']>);
+      }
+    }
+  );
+  unwatchfromto = watch(
+    [
+      () => (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).fromto.from,
+      () => (holder.value as NumberType['search'] | AtNumber<NumberSearchType>['search']).fromto.to
+    ],
+    ([x, y]) => {
+      if(x.trim().length > 0 || y.trim().length > 0) {
+        setTabAndResetOthers('FROM-TO', holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>['search']>);
+      }
+    }
+  );
+});
+
+onBeforeUnmount(() => {
+  unwatchgreaterthan();
+  unwatchlessthan();
+  unwatchequalto();
+  unwatchnotequalto();
+  unwatchfromto();
+});
 
 </script>
 
@@ -98,9 +164,8 @@ const notequaltoAddNew = computed(() => {
             </div>
             <div class="d-block">
               <input
-                @keyup="localResetOthers('GREATER-THAN')"
                 @keydown.space.prevent
-                v-model.trim="holder.greaterthan"
+                v-model.trim="(holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).greaterthan"
                 type="text"
                 class="w-100 text-left"
                 style="height: 30px"
@@ -119,9 +184,8 @@ const notequaltoAddNew = computed(() => {
             </div>
             <div class="d-block">
               <input
-                @keyup="localResetOthers('LESS-THAN')"
                 @keydown.space.prevent
-                v-model.trim="holder.lessthan"
+                v-model.trim="(holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).lessthan"
                 type="text"
                 class="w-100 text-left"
                 style="height: 30px"
@@ -149,9 +213,17 @@ const notequaltoAddNew = computed(() => {
             >
               <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
                 <input
-                  @keyup="localResetOthers('EQUAL-TO')"
                   @keydown.space.prevent
-                  v-model.trim="(holder?.equalto as NumberSearchExcludeEqualToType).single"
+                  @keypress.enter="
+                    equaltoAddNew?
+                      addLocalNewInputEntry(
+                        ((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto as NumberSearchExcludeEqualToType).single,
+                        'EQUAL-TO'
+                      )
+                      :
+                      ''
+                  "
+                  v-model.trim="((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-left"
                   style="height: 30px; z-index: 1110"
@@ -163,14 +235,28 @@ const notequaltoAddNew = computed(() => {
               >
                 <button
                   :disabled="equaltoAddNew ? false : true"
-                  @click="
-                    addLocalNewInputEntry(
-                      'NONE-RANGE',
-                      (holder?.equalto as NumberSearchExcludeEqualToType).single,
-                      'EQUAL-TO'
-                    )
+                  @keypress.enter="
+                    equaltoAddNew?
+                      addLocalNewInputEntry(
+                        ((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto as NumberSearchExcludeEqualToType).single,
+                        'EQUAL-TO'
+                      )
+                      :
+                      ''
                   "
-                  class="btn w-100"
+                  @click="
+                    equaltoAddNew?
+                      addLocalNewInputEntry(
+                        ((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto as NumberSearchExcludeEqualToType).single,
+                        'EQUAL-TO'
+                      )
+                      :
+                      ''
+                  "
+                  class="btn w-100 text-center"
+                  :class="[
+                    equaltoAddNew? 'cursor-pointer' : ''
+                  ]"
                   :style="
                     equaltoAddNew
                     ? 'background-color: #F0E68C;'
@@ -183,14 +269,15 @@ const notequaltoAddNew = computed(() => {
               </div>
             </div>
             <Paste
+              :breakdescription="(true as boolean)"
               :from="props.from"
               :receiveclosepastemodalsignal="closeequaltopastemodalsignal"
               title="numbers"
-              :datatype="cards[index].info.datatype as 'Number' | 'NumberString'"
+              :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              :text-area-height="'height:450px;'"
-              @return:newlypasteditems="$val => { equaltonewlypasteditems = $val; }"
+              :text-area-height="'height:180px;'"
+              @return:newlypasteditems="$val => { addPastedItems($val, 'EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
                 <div
@@ -214,9 +301,11 @@ const notequaltoAddNew = computed(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              :tree="holder.equalto"
+              :current="equaltocurrent"
+              @update:current="$val => equaltocurrent = $val"
+              :tree="(holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).equalto"
               treetype="NumberSearchExcludeEqualToType"
-              :display-area-height="'height: 167.9px;'"
+              :display-area-height="'height: 157.9px;'"
               :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
@@ -235,9 +324,17 @@ const notequaltoAddNew = computed(() => {
             >
               <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
                 <input
-                  @keyup="localResetOthers('NOT-EQUAL-TO')"
                   @keydown.space.prevent
-                  v-model.trim="(holder?.notequalto as NumberSearchExcludeEqualToType).single"
+                  @keypress.enter="
+                    notequaltoAddNew?
+                      addLocalNewInputEntry(
+                        ((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto as NumberSearchExcludeEqualToType).single,
+                        'NOT-EQUAL-TO'
+                      )
+                      :
+                      ''
+                  "
+                  v-model.trim="((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-left"
                   style="height: 30px; z-index: 1110"
@@ -249,14 +346,28 @@ const notequaltoAddNew = computed(() => {
               >
                 <button
                   :disabled="notequaltoAddNew ? false : true"
-                  @click="
-                    addLocalNewInputEntry(
-                      'NONE-RANGE',
-                      (holder?.notequalto as NumberSearchExcludeEqualToType).single,
-                      'NOT-EQUAL-TO'
-                    )
+                  @keypress.enter="
+                    notequaltoAddNew?
+                      addLocalNewInputEntry(
+                        ((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto as NumberSearchExcludeEqualToType).single,
+                        'NOT-EQUAL-TO'
+                      )
+                      :
+                      ''
                   "
-                  class="btn w-100 cursor-pointer"
+                  @click="
+                    notequaltoAddNew?
+                      addLocalNewInputEntry(
+                        ((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto as NumberSearchExcludeEqualToType).single,
+                        'NOT-EQUAL-TO'
+                      )
+                      :
+                      ''
+                  "
+                  class="btn w-100 text-center"
+                  :class="[
+                    notequaltoAddNew? 'cursor-pointer' : ''
+                  ]"
                   :style="
                     notequaltoAddNew
                     ? 'background-color: #F0E68C;'
@@ -269,14 +380,15 @@ const notequaltoAddNew = computed(() => {
               </div>
             </div>
             <Paste
+              :breakdescription="(true as boolean)"
               :from="props.from"
               :receiveclosepastemodalsignal="closenotequaltopastemodalsignal"
               title="numbers"
-              :datatype="cards[index].info.datatype as 'Number' | 'NumberString'"
+              :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              :text-area-height="'height:450px;'"
-              @return:newlypasteditems="$val => { notequaltonewlypasteditems = $val; }"
+              :text-area-height="'height:180px;'"
+              @return:newlypasteditems="$val => { addPastedItems($val, 'NOT-EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
                 <div
@@ -300,9 +412,11 @@ const notequaltoAddNew = computed(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              :tree="holder.notequalto"
+              :current="notequaltocurrent"
+              @update:current="$val => notequaltocurrent = $val"
+              :tree="(holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).notequalto"
               treetype="NumberSearchExcludeEqualToType"
-              :display-area-height="'height: 167.9px;'"
+              :display-area-height="'height: 157.9px;'"
               :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
@@ -320,8 +434,7 @@ const notequaltoAddNew = computed(() => {
         <div class="d-block">
           <input
             @keydown.space.prevent
-            v-model.trim="(holder.fromto as NumberSearchType['fromto']).from"
-            @keyup="localResetOthers('FROM-TO')"
+            v-model.trim="((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).fromto as NumberSearchType['fromto']).from"
             type="text"
             class="w-100 text-left"
             style="height: 30px"
@@ -335,8 +448,7 @@ const notequaltoAddNew = computed(() => {
         <div class="d-block">
           <input
             @keydown.space.prevent
-            v-model.trim="(holder.fromto as NumberSearchType['fromto']).to"
-            @keyup="localResetOthers('FROM-TO')"
+            v-model.trim="((holder as NumberType['search'] | AtNumber<NumberSearchType>['search']).fromto as NumberSearchType['fromto']).to"
             type="text"
             class="w-100 text-left"
             style="height: 30px"

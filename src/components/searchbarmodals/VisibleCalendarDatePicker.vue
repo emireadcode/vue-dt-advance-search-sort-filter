@@ -655,6 +655,7 @@ onBeforeUnmount(() => {
       >
         <div class="flex-grow-0 flex-shrink-0 align-self-stretch">
           <a
+            @keypress.enter="clickPrevious()"
             @click="clickPrevious()"
             style="height: 25px; width: 25px; border-radius: 50%"
             class="flex-box align-items-center justify-content-center underline-none cursor-pointer text-center"
@@ -781,12 +782,14 @@ onBeforeUnmount(() => {
                   :ref="
                     (el) => assignRef((visiblecalendar as VisibleCalendarType).previous, el as HTMLLabelElement, weekindex as number, dayindex as number)
                   "
+                  @keypress.enter="handleDateClick(day)"
                   @click="handleDateClick(day)"
                   :disabled="day.status === 'DISABLE' ? true : false"
                   class="w-100"
                   style="float: left; line-height: 2.805em; height: 2.805em;"
                 >
                   <input
+                    @keypress.enter.stop=""
                     @click.stop=""
                     :disabled="day.status === 'DISABLE' ? true : false"
                     type="checkbox"
@@ -882,6 +885,7 @@ onBeforeUnmount(() => {
         </div>
         <div class="flex-grow-0 flex-shrink-0 align-self-stretch">
           <a
+            @keypress.enter="clickNext()"
             @click="clickNext()"
             style="height: 25px; width: 25px; border-radius: 50%"
             class="flex-box align-items-center justify-content-center underline-none cursor-pointer text-center"
@@ -991,12 +995,14 @@ onBeforeUnmount(() => {
                   :ref="
                     (el) => assignRef((visiblecalendar as VisibleCalendarType).current, el as HTMLLabelElement, weekindex as number, dayindex as number)
                   "
+                  @keypress.enter="handleDateClick(day)"
                   @click="handleDateClick(day)"
                   :disabled="day.status === 'DISABLE' ? true : false"
                   class="w-100"
                   style="float: left; line-height: 2.805em; height: 2.805em;"
                 >
                   <input
+                    @keypress.enter.stop=""
                     @click.stop=""
                     :disabled="day.status === 'DISABLE' ? true : false"
                     type="checkbox"

@@ -32,6 +32,7 @@ function updateCard() {
       >
         <template v-if="wordtypeandconcatfieldindex.concatfieldindex === undefined">
           <button
+            @keypress.enter="() => { (cards[index].search.include as StringSearchType).tabclicked = true; (cards[index].search.exclude as StringSearchType).tabclicked = false; updateCard(); }"
             @click="() => { (cards[index].search.include as StringSearchType).tabclicked = true; (cards[index].search.exclude as StringSearchType).tabclicked = false; updateCard(); }"
             class="text-lowercase tab w-100" 
             :style="((cards[index] as SingleWordStringType).search.include as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
@@ -42,6 +43,7 @@ function updateCard() {
         </template>
         <template v-else>
           <button
+            @keypress.enter="() => { (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = true; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = false; updateCard(); }"
             @click="() => { (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = true; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = false; updateCard(); }"
             class="text-lowercase tab w-100" 
             :style="(((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
@@ -56,6 +58,7 @@ function updateCard() {
       >
         <template v-if="wordtypeandconcatfieldindex.concatfieldindex === undefined">
           <button
+            @keypress.enter="() => { (cards[index].search.include as StringSearchType).tabclicked = false; (cards[index].search.exclude as StringSearchType).tabclicked = true; updateCard(); }"
             @click="() => { (cards[index].search.include as StringSearchType).tabclicked = false; (cards[index].search.exclude as StringSearchType).tabclicked = true; updateCard(); }"
             class="text-lowercase tab w-100" 
             :style="(cards[index].search.exclude as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
@@ -66,6 +69,7 @@ function updateCard() {
         </template>
         <template v-else>
           <button
+            @keypress.enter="() => { (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = false; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = true; updateCard(); }"
             @click="() => { (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = false; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = true; updateCard(); }"
             class="text-lowercase tab w-100" 
             :style="(((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"

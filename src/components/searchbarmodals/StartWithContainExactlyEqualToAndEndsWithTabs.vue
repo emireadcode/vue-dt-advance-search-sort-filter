@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { inject, type ShallowRef } from "vue";
+import { inject, type ShallowRef, ref, } from "vue";
 import type { MultipleWordsStringType, SingleWordStringType, NumberStringType, SingleWordStringConcatenatedFieldType } from "../types/SupportedDatatypesTypeDeclaration";
 
 const 
+
+  props = defineProps<{
+    format: 'STARTS-WITH' | 'ENDS-WITH' | 'CONTAINS' | 'EQUAL-TO' | '@NUMBER';
+  }>(),
+
   buttonnames = ['starts with', 'contains', 'equal to', 'ends with'],
 
   emits = defineEmits<{
     (e: "update:format", action: 'STARTS-WITH' | 'ENDS-WITH' | 'CONTAINS' | 'EQUAL-TO' | '@NUMBER'): void;
   }>(),
+
+  format = ref<'STARTS-WITH' | 'ENDS-WITH' | 'CONTAINS' | 'EQUAL-TO' | '@NUMBER'>(),
 
   cards = inject("cards") as ShallowRef<(MultipleWordsStringType | SingleWordStringType | NumberStringType)[]>,
 
@@ -15,8 +22,10 @@ const
 
   wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; }
 ;
-</script>
 
+format.value = props.format;
+
+</script>
 
 <template>
   <div class="d-block" style="padding: 7px 0px 15px 0px;">
@@ -42,18 +51,42 @@ const
         ]"
       >
         <button
-          @click="
-            emits(
-              'update:format', 
-              name==='starts with'? 'STARTS-WITH'
-              : (
-                name==='ends with'? 'ENDS-WITH'
-                : (
-                  name==='contains'? 'CONTAINS' : 'EQUAL-TO'
-                )
-              )
-            )
+          :style="
+            (
+              (format==='@NUMBER' && name==='@number')
+              ||
+              (format==='STARTS-WITH' && name==='starts with')
+              ||
+              (format==='ENDS-WITH' && name==='ends with')
+              ||
+              (format==='CONTAINS' && name==='contains')
+              ||
+              (format==='EQUAL-TO' && name==='equal to')
+            )?
+              'background-color:#F0E68C;' 
+              : 
+              'background-color:lightgray;'
           "
+          @keypress.enter="() => {
+            name==='starts with'? format = 'STARTS-WITH'
+            : (
+              name==='ends with'? format = 'ENDS-WITH'
+              : (
+                name==='contains'? format = 'CONTAINS' : format = 'EQUAL-TO'
+              )
+            );
+            emits('update:format', format);
+          }"
+          @click="() => {
+            name==='starts with'? format = 'STARTS-WITH'
+            : (
+              name==='ends with'? format = 'ENDS-WITH'
+              : (
+                name==='contains'? format = 'CONTAINS' : format = 'EQUAL-TO'
+              )
+            );
+            emits('update:format', format);
+          }"
           class="text-lowercase tab w-100" 
           style="padding:5px;font-size:0.9em;border-top-right-radius: 8px;border-top-left-radius: 8px;"
         >
@@ -67,7 +100,15 @@ const
               class="flex-shrink-0 flex-grow-0 align-self-stretch flex-w-20"
             >
               <button
-                @click="emits('update:format', '@NUMBER')"
+                :style="format==='@NUMBER'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
+                @click="() => {
+                  format = '@NUMBER';
+                  emits('update:format', format);
+                }"
+                @keypress.enter="() => {
+                  format = '@NUMBER';
+                  emits('update:format', format);
+                }"
                 class="text-lowercase tab w-100" 
                 style="padding:5px;font-size:0.9em;border-top-right-radius: 8px;border-top-left-radius: 8px;"
               >
@@ -82,7 +123,15 @@ const
               class="flex-shrink-0 flex-grow-0 align-self-stretch flex-w-20"
             >
               <button
-                @click="emits('update:format', '@NUMBER')"
+                :style="format==='@NUMBER'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
+                @click="() => {
+                  format = '@NUMBER';
+                  emits('update:format', format);
+                }"
+                @keypress.enter="() => {
+                  format = '@NUMBER';
+                  emits('update:format', format);
+                }"
                 class="text-lowercase tab w-100" 
                 style="padding:5px;font-size:0.9em;border-top-right-radius: 8px;border-top-left-radius: 8px;"
               >

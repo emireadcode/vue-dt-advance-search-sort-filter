@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { 
   type ShallowRef,
-  onBeforeMount, 
+  onBeforeMount,
   type Ref,
   inject,
   ref,
@@ -18,7 +18,7 @@ import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputen
 import ReusableNumberSearch from "./ReusableNumberSearch.vue";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
-let 
+const
   index = inject("index") as number,
   accessibility = inject("accessibility") as {
     cardsmultiplesearchopenstatus: Ref<Boolean[]>;
@@ -26,8 +26,8 @@ let
   openexclude = ref(false),
   closefromtopastemodalsignal = ref(0),
   closeequaltopastemodalsignal = ref(0),
-  equaltonewlypasteditems = ref<string[][]>([]),
-  fromtonewlypasteditems = ref<string[][]>([]),
+  fromtocurrent = ref(0),
+  equaltocurrent = ref(0),
   cards = inject("cards") as ShallowRef<NumberType[]>,
   holder = ref<NumberType['search']>()
 ;
@@ -40,17 +40,40 @@ function resetExclude(action: boolean) {
   }
 }
 
-function addLocalNewInputEntry(
-  nonerangeorrange: 'RANGE' | 'NONE-RANGE',
+async function addLocalNewInputEntry(
   newinputentry: [string, string] | string,
   inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO'
 ) {
-  addNewInputEntry(
-    nonerangeorrange,
+  await addNewInputEntry(
     newinputentry,
     inputtype,
+    (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrent : fromtocurrent,
     holder as Ref<NumberType['search']>
   );
+}
+
+async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
+  let time: NodeJS.Timeout[] = [], timeIndex = 0;
+  for(let i=0; i<pasteditems.length; i++) {
+    let item = pasteditems[i];
+    if (item[1] !== "ERROR") {
+      let splititem = (inputtype==='EXCLUDE-EQUAL-TO')? '' : item[0].split("-");
+      time[timeIndex] = setTimeout(async () => {
+        await addNewInputEntry(
+          (inputtype==='EXCLUDE-EQUAL-TO')? item[0] : [splititem[0].trim(), splititem[1].trim()],
+          inputtype,
+          (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrent : fromtocurrent,
+          holder as Ref<NumberType['search']>
+        );
+        clearTimeout(time[timeIndex]);
+      }, 10);
+      timeIndex++;
+    }
+  }
+  (inputtype==='EXCLUDE-EQUAL-TO')?
+    closeequaltopastemodalsignal.value++
+    :closefromtopastemodalsignal.value++
+  ;
 }
 
 function openExcludeWindow() {
@@ -65,30 +88,6 @@ function openExcludeWindow() {
   ) {
     openexclude.value = true;
   }
-}
-
-function localDeleteSaved(
-  index: number, 
-  operator: "EXCLUDE-FROM-TO" | "EXCLUDE-EQUAL-TO"
-) {
-  /*deleteSaved(
-    index,
-    operator,
-    numbersearcherui
-  );*/
-}
-
-function localIncreaseIndexAndSavePrevious(
-  rangeornonerange: "NONE-RANGE" | "RANGE",
-  inputvalue: string | string[],
-  operator: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO'
-) {
-  /*increaseIndexAndSavePrevious(
-    rangeornonerange,
-    inputvalue,
-    operator,
-    numbersearcherui
-  );*/
 }
 
 const excludeAddNewFromTo = computed(() => {
@@ -136,59 +135,6 @@ const excludeAddNewEqualto = computed(() => {
       parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.fromto?.to as string)
     );
   }
-});
-
-const excludeDone = computed(() => {
-  if (holder.value?.tab === "GREATER-THAN") {
-    return (
-      (parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) > parseFloat(holder.value?.greaterthan as string) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) <
-          parseFloat(cards.value[index].result.max) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <=
-          parseFloat(cards.value[index].result.max)) ||
-      (parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.greaterthan as string) &&
-        parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <=
-          parseFloat(cards.value[index].result.max)) ||
-      (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
-      (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
-    );
-  } else if (holder.value?.tab === "LESS-THAN") {
-    return (
-      (parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <= parseFloat(holder.value?.lessthan as string) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >=
-          parseFloat(cards.value[index].result.min) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) >
-          parseFloat(cards.value[index].result.min)) ||
-      (parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.lessthan as string) &&
-        parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >=
-          parseFloat(cards.value[index].result.min)) ||
-      (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
-      (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
-    );
-  } else {
-    return (
-      (parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <= parseFloat(holder.value?.fromto?.to as string) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >= parseFloat(holder.value?.fromto?.from as string) &&
-        parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) > parseFloat(holder.value?.fromto?.from as string)) ||
-      (parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.fromto?.from as string) &&
-        parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.fromto?.to as string)) ||
-      (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
-      (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
-    );
-  }
-});
-
-const excludeClear = computed(() => {
-  return (
-    (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom ||
-    (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto ||
-    (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single ||
-    (holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length  > 0 ||
-    (holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length  > 0
-  );
 });
 
 const done = computed(() => {
@@ -277,7 +223,7 @@ onBeforeMount(() => {
             <div class="d-block" style="height:585px;">
               <div
                 style="background-color: #fff; padding: 5px 5px 0 5px;white-space: nowrap;"
-                class="shadow-sm d-block overflow-x-scroll"
+                class="shadow-sm d-block"
               >
                 <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
                   <li
@@ -326,6 +272,7 @@ onBeforeMount(() => {
                         <a
                           class="underline-none cursor-pointer align-middle"
                           @click="openexclude = false"
+                          @keypress.enter="openexclude = false"
                         >
                           <img
                             src="/src/assets/icons/close.png"
@@ -358,11 +305,11 @@ onBeforeMount(() => {
                           >
                             Min:
                               {{
-                                holder?.tab === "LESS-THAN"
-                                  ? cards[index].result.min
-                                  : holder?.tab === "GREATER-THAN"
-                                  ? holder?.greaterthan
-                                  : holder?.fromto?.from
+                                holder?.tab === "LESS-THAN"? 
+                                  cards[index].result.min
+                                  : holder?.tab === "GREATER-THAN"? 
+                                    holder?.greaterthan
+                                    : holder?.fromto?.from
                               }}
                           </span>
                         </div>
@@ -496,13 +443,37 @@ onBeforeMount(() => {
                                           <label>To</label>
                                         </div>
                                         <div class="d-block">
-                                          <input
-                                            @keydown.space.prevent
-                                            v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singleto"
-                                            type="text"
-                                            class="w-100 text-left"
-                                            style="height: 30px;z-index: 1110;"
-                                          />
+                                          <template v-if="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom.trim().length > 0">
+                                            <input
+                                              aria-disabled="false"
+                                              v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singleto"
+                                              @keypress.enter="
+                                                excludeAddNewFromTo?
+                                                  addLocalNewInputEntry(
+                                                    [
+                                                      (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
+                                                      (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
+                                                    ],
+                                                    'EXCLUDE-FROM-TO'
+                                                  )
+                                                  :
+                                                  ''
+                                              "
+                                              @keydown.space.prevent
+                                              type="text"
+                                              class="w-100 text-left"
+                                              style="height: 30px;z-index: 1110;"
+                                            />
+                                          </template>
+                                          <template v-else>
+                                            <input
+                                              @keydown.space.prevent
+                                              aria-disabled="true"
+                                              type="text"
+                                              class="w-100 text-left"
+                                              style="height: 30px;z-index: 1110;"
+                                            />
+                                          </template>
                                         </div>
                                       </div>
                                     </div>
@@ -528,15 +499,32 @@ onBeforeMount(() => {
                                             ? false
                                             : true
                                         "
+                                        :class="[
+                                          excludeAddNewFromTo? 'cursor-pointer' : ''
+                                        ]"
+                                        @keypress.enter="
+                                          excludeAddNewFromTo?
+                                            addLocalNewInputEntry(
+                                              [
+                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
+                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
+                                              ],
+                                              'EXCLUDE-FROM-TO'
+                                            )
+                                            :
+                                            ''
+                                        "
                                         @click="
-                                          addLocalNewInputEntry(
-                                            'RANGE',
-                                            [
-                                              (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
-                                              (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
-                                            ],
-                                            'EXCLUDE-FROM-TO'
-                                          )
+                                          excludeAddNewFromTo?
+                                            addLocalNewInputEntry(
+                                              [
+                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
+                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
+                                              ],
+                                              'EXCLUDE-FROM-TO'
+                                            )
+                                            :
+                                            ''
                                         "
                                         class="btn w-100 shadow-sm font-0-dot-85-rem text-center"
                                         style="height:30px; padding:0 2px;"
@@ -547,10 +535,11 @@ onBeforeMount(() => {
                                   </div>
                                 </div>
                                 <Paste
-                                  @return:newlypasteditems="$val => { fromtonewlypasteditems = $val; }"
+                                  :breakdescription="(true as boolean)"
+                                  @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
                                   :receiveclosepastemodalsignal="closefromtopastemodalsignal"
                                   title="none overlapping a-b range"
-                                  :datatype="cards[index].info.datatype as 'Number'"
+                                  :datatype="'NumberRange'"
                                   :max="((
                                     holder?.tab ===
                                       'GREATER-THAN'
@@ -566,7 +555,7 @@ onBeforeMount(() => {
                                       ? holder?.greaterthan
                                       : holder?.fromto?.from
                                   ) as string)"
-                                  :text-area-height="'height:450px;'"
+                                  :text-area-height="'height:180px;'"
                                 >
                                   <template v-slot:outcomeidentifier>
                                     <div
@@ -590,9 +579,11 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
+                                  :current="fromtocurrent"
+                                  @update:current="$val => fromtocurrent = $val"
                                   :tree="(holder?.exclude?.fromto as NumberSearchExcludeFromToType)"
                                   treetype="NumberSearchExcludeFromToType"
-                                  :display-area-height="'height: 167.9px;'"
+                                  :display-area-height="'height: 157.9px;'"
                                   :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
                                 ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
@@ -631,6 +622,15 @@ onBeforeMount(() => {
                                       v-model.trim="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType).single"
                                       type="text"
                                       @keydown.space.prevent
+                                      @keypress.enter="
+                                        excludeAddNewEqualto?
+                                          addLocalNewInputEntry(
+                                            (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
+                                            'EXCLUDE-EQUAL-TO'
+                                          )
+                                          :
+                                          ''
+                                      "
                                       class="w-100 text-left"
                                       style="height: 30px;z-index: 1110;"
                                     />
@@ -641,12 +641,26 @@ onBeforeMount(() => {
                                   >
                                     <button
                                       @click="
-                                        addLocalNewInputEntry(
-                                          'NONE-RANGE',
-                                          (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
-                                          'EXCLUDE-EQUAL-TO'
-                                        )
+                                        excludeAddNewEqualto?
+                                          addLocalNewInputEntry(
+                                            (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
+                                            'EXCLUDE-EQUAL-TO'
+                                          )
+                                          :
+                                          ''
                                       "
+                                      @keypress.enter="
+                                        excludeAddNewEqualto?
+                                          addLocalNewInputEntry(
+                                            (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
+                                            'EXCLUDE-EQUAL-TO'
+                                          )
+                                          :
+                                          ''
+                                      "
+                                      :class="[
+                                        excludeAddNewEqualto? 'cursor-pointer' : ''
+                                      ]"
                                       class="btn w-100 shadow-sm font-0-dot-85-rem"
                                       style="height:30px; padding:0 2px;"
                                       :style="
@@ -665,7 +679,8 @@ onBeforeMount(() => {
                                   </div>
                                 </div>
                                 <Paste
-                                  @return:newlypasteditems="$val => { equaltonewlypasteditems = $val; }"
+                                  :breakdescription="(true as boolean)"
+                                  @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
                                   :receiveclosepastemodalsignal="closeequaltopastemodalsignal"
                                   title="numbers"
                                   :datatype="cards[index].info.datatype as 'Number'"
@@ -683,7 +698,8 @@ onBeforeMount(() => {
                                       ? holder?.greaterthan
                                       : holder?.fromto?.from
                                   ) as string)"
-                                  :text-area-height="'height:450px;'"
+                                  :text-area-height="'height:180px;'"
+                                  :descriptionfontsize="'font-size: 0.7rem;'"
                                 >
                                   <template v-slot:outcomeidentifier>
                                     <div
@@ -707,9 +723,11 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
+                                  :current="equaltocurrent"
+                                  @update:current="$val => equaltocurrent = $val"
                                   :tree="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                                   treetype="NumberSearchExcludeEqualToType"
-                                  :display-area-height="'height: 167.9px;'"
+                                  :display-area-height="'height: 157.9px;'"
                                   :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
                                 ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
@@ -734,7 +752,7 @@ onBeforeMount(() => {
                       : 'background-color: #eee;'
                   "
                   :disabled="done ? false : true"
-                  class="btn w-100 shadow-sm"
+                  class="btn w-100 shadow-sm font-family"
                   style="padding:6px;font-size:1rem;border-radius: 12px"
                 >
                   Done
@@ -743,7 +761,8 @@ onBeforeMount(() => {
               <div class="flex-w-100-over-3" style="padding-right:2.5px;">
                 <button
                   @click="openExcludeWindow()"
-                  class="btn w-100 shadow-sm"
+                  @keypress.enter="openExcludeWindow()"
+                  class="btn w-100 shadow-sm font-family"
                   style="padding:6px;font-size:1rem;border-radius: 12px"
                   :style="
                     exclude
@@ -763,7 +782,7 @@ onBeforeMount(() => {
                       ? 'background-color:red;color:#fff;'
                       : 'background-color:#eee;'
                   "
-                  class="btn w-100 shadow-sm"
+                  class="btn w-100 shadow-sm font-family"
                   style="padding:6px;font-size:1rem;border-radius: 12px"
                 >
                   Clear

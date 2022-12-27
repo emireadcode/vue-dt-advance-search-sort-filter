@@ -9,12 +9,12 @@ import ReusableNumberSearch from "./ReusableNumberSearch.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 
 const
+  current = ref(0),
   props = defineProps<{
     context: string;
   }>(),
   holder = ref<StringSearchType>(),
   format = ref<'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER'>(),
-  newlypasteditems = ref(),
   closepastemodalsignal = ref(0),
   wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; },
   index = inject("index") as number,
@@ -27,7 +27,7 @@ if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
       if((cards.value[index] as SingleWordStringType | NumberStringType).fixedlengthofstring !== undefined) {
         provide(
           "mainnumbersearcherui", 
-          (cards.value[index] as SingleWordStringType | NumberStringType).search.atnumbersearch?.search
+          ref((cards.value[index] as SingleWordStringType | NumberStringType).search.atnumbersearch)
         )
       }
     }
@@ -39,20 +39,42 @@ else {
       if((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].fixedlengthofstring !== undefined) {
         provide(
           "mainnumbersearcherui", 
-          (cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search?.atnumbersearch?.search
+          ref((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search?.atnumbersearch)
         )
       }
     }
   }
 }
 
-function addLocalNewInputEntry(nonerangeorrange: 'NONE-RANGE', newinputentry: string, inputtype: 'WORD') {
-  addNewInputEntry(
-    nonerangeorrange,
+async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
+  await addNewInputEntry(
     newinputentry,
     inputtype,
+    current,
     holder as Ref<StringSearchType>
   );
+}
+
+async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
+  let time: NodeJS.Timeout[] = [], timeIndex = 0;
+  for(let i=0; i<pasteditems.length; i++) {
+    let item = pasteditems[i];
+    if (item[1] !== "ERROR") {
+      if (item[0].trim().length > 0) {
+        time[timeIndex] = setTimeout(async () => {
+          await addNewInputEntry(
+            item[0],
+            inputtype,
+            current,
+            holder as Ref<StringSearchType>
+          );
+          clearTimeout(time[timeIndex]);
+        }, 10);
+        timeIndex++;
+      }
+    }
+  }
+  closepastemodalsignal.value++;
 }
 
 onBeforeMount(() => {
@@ -77,7 +99,7 @@ onBeforeMount(() => {
     <DescribeLabel 
       :context="context"
     ></DescribeLabel>
-    <StartWithContainExactlyEqualToAndEndsWithTabs @update:format="$val => format = $val"></StartWithContainExactlyEqualToAndEndsWithTabs>
+    <StartWithContainExactlyEqualToAndEndsWithTabs :format="format as 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER'" @update:format="$val => format = $val"></StartWithContainExactlyEqualToAndEndsWithTabs>
     <div class="d-block">
       <template v-if="format === '@NUMBER'">
         <div class="d-block overflow-y-auto" style="height:305px;padding: 10px 0;">
@@ -86,11 +108,16 @@ onBeforeMount(() => {
       </template>
       <template v-else>
         <div
-          class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center"
+          class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
         >
           <div class="flex-fill p-0 m-0 align-self-stretch">
             <input
-              @keypress.enter=""
+              @keypress.enter="
+                addLocalNewInputEntry(
+                  (holder as StringSearchType).single,
+                  'WORD'
+                )
+              "
               v-model="(holder as StringSearchType).single"
               maxlength="40"
               type="text"
@@ -102,26 +129,31 @@ onBeforeMount(() => {
             class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
             style="background-color:#eee;outline:1px solid rgba(0, 0, 0, 0.2)"
           >
-            <a
-              class="cursor-pointer d-block text-center"
-              style="padding:3px 0"
+            <button
+              class="cursor-pointer text-center btn w-100"
+              style="padding:3px 0;height:30px;"
               @click="
                 addLocalNewInputEntry(
-                  'NONE-RANGE',
+                  (holder as StringSearchType).single,
+                  'WORD'
+                )
+              "
+              @keypress.enter="
+                addLocalNewInputEntry(
                   (holder as StringSearchType).single,
                   'WORD'
                 )
               "
             >
               <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
-            </a>
+            </button>
           </div>
         </div>
         <Paste
           :receiveclosepastemodalsignal="closepastemodalsignal"
           :title="
             format==='STARTS-WITH'?
-              'start with'
+              'starts with'
               : (
                 format==='ENDS-WITH'?
                   'ends with'
@@ -134,8 +166,8 @@ onBeforeMount(() => {
               )
           "
           :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
-          :text-area-height="'height:450px;'"
-          @return:newlypasteditems="$val => { newlypasteditems = $val; }"
+          :text-area-height="'height:197px;'"
+          @return:newlypasteditems="$val => { addPastedItems($val, 'WORD'); }"
         >
           <template v-slot:outcomeidentifier>
             <div
@@ -159,9 +191,11 @@ onBeforeMount(() => {
           </template>
         </Paste>
         <PastedItemAndNewlyInputedEntryDisplayer
+          :current="current"
+          @update:current="$val => current = $val"
           :tree="(holder as StringSearchType)"
           treetype="StringSearchType"
-          :display-area-height="'height: 167.9px;'"
+          :display-area-height="'height: 185.9px;'"
           :scrollareaid="cards[index].scroll.areaid+'-search'"
         ></PastedItemAndNewlyInputedEntryDisplayer>
       </template>

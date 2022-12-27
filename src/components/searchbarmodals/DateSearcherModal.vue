@@ -67,20 +67,31 @@ onBeforeMount(() => {
           <div class="modal-container d-block">
             <div class="d-block" style="height: 585px;">
               <div
-                class="d-block text-center font-bold letter-spacing m-0"
-                style="padding: 5px 0; font-size: 0.7rem"
+                style="background-color: #fff; padding: 5px 5px 0 5px;white-space: nowrap;"
+                class="shadow-sm d-block"
               >
-                {{ cards[index].info.name }}
+                <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
+                  <li
+                    class="flex-shrink-0 flex-grow-0 align-self-stretch"
+                  >
+                    <button 
+                      aria-disabled="true" 
+                      class="text-lowercase tab" 
+                      style="padding:2.5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
+                    >
+                      {{ cards[index].info.name }}
+                    </button>
+                  </li>
+                </ul>
               </div>
               <div class="d-block m-0 p-0">
                 <div
                   class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center m-0"
-                  style="padding: 2px 0;"
+                  style="padding: 8px 0"
                 >
                   <div class="flex-w-50 p-0 m-0 align-self-stretch">
                     <div
-                      class="d-inline-block p-0 m-0 letter-spacing align-middle font-bold"
-                      style="font-size: 0.7rem; color: gray"
+                      class="d-inline-block p-0 m-0 letter-spacing align-middle"
                     >
                       Min:
                       {{
@@ -98,8 +109,7 @@ onBeforeMount(() => {
                   </div>
                   <div class="flex-w-50 p-0 m-0 align-self-stretch">
                     <div
-                      class="d-inline-block p-0 m-0 letter-spacing align-middle font-bold"
-                      style="font-size: 0.7rem; color: gray"
+                      class="d-inline-block p-0 m-0 letter-spacing align-middle"
                     >
                       Max:
                       {{
@@ -122,6 +132,7 @@ onBeforeMount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch">
                     <a
+                      @keypress.enter="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
                       @click="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
@@ -135,6 +146,7 @@ onBeforeMount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch">
                     <a
+                      @keypress.enter="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
                       @click="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 1px solid rgba(0, 0, 0, 0.2);padding: 2px 0;"
@@ -171,6 +183,7 @@ onBeforeMount(() => {
             >
               <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
                 <button
+                  @keypress.enter="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
                   @click="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
@@ -184,7 +197,7 @@ onBeforeMount(() => {
               >
                 <button
                   @click="excludedates = true"
-                  @keyup.enter="excludedates = true"
+                  @keypress.enter="excludedates = true"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
                 >

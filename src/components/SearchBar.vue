@@ -43,11 +43,11 @@ let
       </div>
       <div class="flex-fill m-0 align-self-stretch p-0">
         <div
-          class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center h-100"
+          class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center h-100"
         >
           <div class="flex-fill p-0 m-0 h-100">
             <div
-              class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-end align-items-center h-100"
+              class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center h-100"
             >
               <div class="flex-fill m-0 h-100" style="padding: 0 1px;">
                 <input

@@ -87,6 +87,7 @@ onMounted(() => {
         >
           <button 
             :style="(concatenated.search as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            @keypress.enter="() => { (concatenated.search as StringSearchType).tabclicked=true; updateAttributeButtonTabClicked(cindex as number); }"
             @click="() => { (concatenated.search as StringSearchType).tabclicked=true; updateAttributeButtonTabClicked(cindex as number); }"
             class="text-lowercase tab" 
             style="padding:5px 8px;font-size:1em;border-top-right-radius: 8px;border-top-left-radius: 8px;"

@@ -9,16 +9,27 @@ import {
   deselectAll,
   fillYearArray,
 } from "../utility/days_months_years_utility_fns";
-import type {YearType,} from "../types/SupportedDatatypesTypeDeclaration";
+import type {YearType} from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
 
 let 
+  unwatchrangecount: WatchStopHandle,
+  unwatchmultipleselectcount: WatchStopHandle,
+  unwatchformat: WatchStopHandle,
+  unwatchgreaterthan: WatchStopHandle,
+  unwatchlessthan: WatchStopHandle
+;
 
-cards = inject("cards") as ShallowRef<YearType[]>,
-
-index = inject("index") as number,
+const 
+  props = defineProps<{
+    maxyear: number;
+    minyear: number;
+    yearselectionandformat: YearSelectionFormat;
+  }>(),
+  cards = inject("cards") as ShallowRef<YearType[]>,
+  index = inject("index") as number,
   years = shallowRef<YearSelectionType>(),
-  format = ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO">(),
+  format = ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">(),
   page = ref(0),
   rangecount = ref(0),
   multipleselectcount = ref(0),
@@ -27,23 +38,8 @@ index = inject("index") as number,
   lessthan = ref(""),
   greaterthan = ref(""),
   lessthanref = ref(),
-  greaterthanref = ref(),
-  from = ref(""),
-  to = ref(""),
-  fromref = ref(),
-  toref = ref(),
-  unwatchrangecount: WatchStopHandle,
-  unwatchmultipleselectcount: WatchStopHandle,
-  unwatchformat: WatchStopHandle,
-  unwatchgreaterthan: WatchStopHandle,
-  unwatchlessthan: WatchStopHandle,
-  unwatchfromto: WatchStopHandle;
-
-const props = defineProps<{
-  maxyear: number;
-  minyear: number;
-  yearselectionandformat: YearSelectionFormat;
-}>();
+  greaterthanref = ref()
+;
 
 const compYearsLength = computed(() => {
   return Object.keys(years.value as YearSelectionType).length;
@@ -54,11 +50,11 @@ function processDimensions() {
 }
 
 function addYearByClick(year: number, clickedorpasted: boolean) {
-  addYear(page, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, rangecount, multipleselectcount, year, clickedorpasted, years as ShallowRef<YearSelectionType>, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO">);
+  addYear(page, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, rangecount, multipleselectcount, year, clickedorpasted, years as ShallowRef<YearSelectionType>, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">);
 }
 
-
 onBeforeMount(() => {
+  format.value = "RANGE";
   rangefirstselection.value = { page: -1, year: -1 };
   rangecount.value = 0;
   multipleselectcount.value = 0;
@@ -74,11 +70,10 @@ onBeforeMount(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', processDimensions, true);
   window.removeEventListener('scroll', processDimensions, true);
-  unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO">);
+  unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">);
   unwatchformat();
   unwatchgreaterthan();
   unwatchlessthan();
-  unwatchfromto();
   unwatchmultipleselectcount();
   unwatchrangecount();
 });
@@ -110,7 +105,7 @@ onMounted(() => {
     () => format.value,
     (x) => {
       deselectAll(years as ShallowRef<YearSelectionType>);
-      unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO">);
+      unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">);
       rangefirstselection.value = { page: -1, year: -1 };
       rangecount.value = 0;
       multipleselectcount.value = 0;
@@ -256,143 +251,6 @@ onMounted(() => {
       });
     }
   );
-  unwatchfromto = watch(
-    [
-      () => from.value,
-      () => to.value
-    ],
-    ([x, y]) => {
-      greaterthanref.value.style.backgroundColor = '#fff';
-      greaterthanref.value.style.color = 'black';
-      lessthanref.value.style.backgroundColor = '#fff';
-      lessthanref.value.style.color = 'black';
-      deselectAll(years as ShallowRef<YearSelectionType>);
-      rangefirstselection.value = { page: -1, year: -1 };
-      rangecount.value = 0;
-      multipleselectcount.value = 0;
-
-      let fromfound = false, tofound = false, fromisnumber = false, toisnumber = false, fromfoundindex = -1, tofoundindex = -1;
-      if(x || y) {
-        nextTick(() => {
-          if(y) {
-            try {
-              if(/^\d+$/g.test(y)) {
-                toisnumber = true;
-                toref.value.style.backgroundColor = '#fff';
-                toref.value.style.color = 'black';
-                for(let p in years.value) {
-                  for(let row in years.value[parseInt(p)]) {
-                    for(let col in years.value[parseInt(p)][row]) {
-                      if(parseInt(y) === (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).year
-                        &&
-                        (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE'
-                      ) {
-                        tofound = true;
-                        tofoundindex = parseInt(p);
-                        break;
-                      }
-                    }
-                    if(tofound) break;
-                  }
-                  if(tofound) break;
-                }
-              }
-              else {
-                toref.value.style.backgroundColor = 'red';
-                toref.value.style.color = '#fff';
-                toisnumber = false;
-              }
-            }
-            catch(ex) {
-              toref.value.style.backgroundColor = 'red';
-              toref.value.style.color = '#fff';
-              toisnumber = false;
-            }
-            if(tofound == false && toisnumber) {
-              deselectAll(years as ShallowRef<YearSelectionType>);
-              toref.value.style.backgroundColor = '#E8E8E8';
-              toref.value.style.color = 'black';
-            }
-          }
-          else {
-            toref.value.style.backgroundColor = '#fff';
-            toref.value.style.color = 'black';
-          }
-          if(x) {
-            try {
-              if(/^\d+$/g.test(x)) {
-                fromisnumber = true;
-                fromref.value.style.backgroundColor = '#fff';
-                fromref.value.style.color = 'black';
-                for(let p in years.value) {
-                  for(let row in years.value[parseInt(p)]) {
-                    for(let col in years.value[parseInt(p)][row]) {
-                      if(parseInt(x) === (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).year
-                        &&
-                        (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE'
-                      ) {
-                        fromfound = true;
-                        fromfoundindex = parseInt(p);
-                        break;
-                      }
-                    }
-                    if(fromfound) break;
-                  }
-                  if(fromfound) break;
-                }
-              }
-              else {
-                fromref.value.style.backgroundColor = 'red';
-                fromref.value.style.color = '#fff';
-                fromisnumber = false;
-              }
-            }
-            catch(ex) {
-              fromref.value.style.backgroundColor = 'red';
-              fromref.value.style.color = '#fff';
-              fromisnumber = false;
-            }
-            if(fromfound == false && fromisnumber) {
-              deselectAll(years as ShallowRef<YearSelectionType>);
-              fromref.value.style.backgroundColor = '#E8E8E8';
-              fromref.value.style.color = 'black';
-            }
-          }
-          else {
-            fromref.value.style.backgroundColor = '#fff';
-            fromref.value.style.color = 'black';
-          }
-          if((fromisnumber && fromfound) && (toisnumber && tofound)) {
-            if(parseInt(from.value) < parseInt(to.value)) {
-              for(let p in years.value) {
-                for(let row in years.value[parseInt(p)]) {
-                  for(let col in years.value[parseInt(p)][row]) {
-                    if((years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).year <= parseInt(to.value) && (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).year >= parseInt(from.value)) {
-                      (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).selected = 'SELECTED';
-                      multipleselectcount.value++;
-                    }
-                  }
-                }
-              }
-              triggerRef(years);
-              page.value = fromfoundindex;
-            }
-            else {
-              fromref.value.style.backgroundColor = 'red';
-              fromref.value.style.color = '#fff';
-            }
-          }
-        });
-      }
-      else {
-        fromref.value.style.backgroundColor = '#fff';
-        fromref.value.style.color = 'black';
-
-        toref.value.style.backgroundColor = '#fff';
-        toref.value.style.color = 'black';
-      }
-    }
-  );
   window.addEventListener('resize', processDimensions, true);
   window.addEventListener('scroll', processDimensions, true);
 });
@@ -405,32 +263,30 @@ onMounted(() => {
       class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
     >
       <div class="flex-w-50 align-self-stretch">
-        <a
-          @click="
+        <button
+          @keypress.enter="() => {format = 'RANGE'; greaterthan = ''; lessthan = '';}"
+          @click="() => {format = 'RANGE'; greaterthan = ''; lessthan = '';}"
+          :style="
+            format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
+          "
+          class="font-family letter-spacing cursor-pointer btn w-100"
+          style="color: #fff; padding: 2px 0; border-right: 1px solid #fff"
+        >
+          Range
+        </button>
+      </div>
+      <div class="flex-w-50 align-self-stretch">
+        <button
+          @keypress.enter="
             () => {
-              format = 'RANGE';
-              from = '';
-              to = '';
+              format = 'MULTIPLE-OR-SINGLE';
               greaterthan = '';
               lessthan = '';
             }
           "
-          :style="
-            format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
-          "
-          class="font-family letter-spacing cursor-pointer d-block underline-none"
-          style="color: #fff; padding: 2px 0; border-right: 1px solid #fff"
-        >
-          Range
-        </a>
-      </div>
-      <div class="flex-w-50 align-self-stretch">
-        <a
           @click="
             () => {
               format = 'MULTIPLE-OR-SINGLE';
-              from = '';
-              to = '';
               greaterthan = '';
               lessthan = '';
             }
@@ -440,34 +296,20 @@ onMounted(() => {
               ? 'background-color:green;'
               : 'background-color:gray;'
           "
-          class="font-family letter-spacing cursor-pointer d-block underline-none"
+          class="font-family letter-spacing cursor-pointer btn w-100"
           style="color: #fff; padding: 2px 0; border-left: 1px solid #fff"
         >
           Multiple or Single
-        </a>
+        </button>
       </div>
     </div>
-    <!--<paste_year
-      :yyears="(years as YearSelectionType)"
-      :yformat="(format as 'RANGE' | 'MULTIPLE-OR-SINGLE' | 'GREATER-THAN' | 'LESS-THAN' | 'FROM-TO')"
-      :updateyyearsvalue="updateyyearsvalue"
-      @change:format="
-        ($val) => {
-          format = $val;
-          updateyyearsvalue = false;
-          emits('forward:format', format);
-        }
-      "
-      @update:yyears-and-page-value="($val) => updateYYearsValueFn($val)"
-    ></paste_year>-->
     <Paste
       :title="cards[index].info.name"
-      :owner="cards[index].info.datatype as 'Year'"
+      :datatype="'Year'"
       :max="''+props.maxyear"
       :min="''+props.minyear"
-      :text-area-height="'height:450px;'"
+      :text-area-height="'height:184px;'"
     >
-      <template v-slot:controlbuttons></template>
       <template v-slot:outcomeidentifier>
         <div
           class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
@@ -494,140 +336,70 @@ onMounted(() => {
                 width: 15px;
                 height: 15px;
               "
-            ></div>
-            Out of Range
+            ></div>Out of Range
           </div>
         </div>
       </template>
     </Paste>
     <div
-      style="padding: 0 0 7px 0"
-      class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
+      class="p-0 m-0 flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
     >
       <div class="flex-w-50 align-self-stretch" style="padding-right: 3px">
-        <div
-          class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
-        >
-          <div class="flex-w-50 align-self-stretch">
-            <div class="d-block text-center" style="padding-bottom: 1.5px">
-              <img
-                src="/src/assets/icons/less-than.png"
-                style="width: 20px; height: 20px"
-                class="align-middle"
-              />
-            </div>
-            <div class="d-block">
-              <input
-                @keydown.space.prevent
-                :ref="
-                  (el) => {
-                    lessthanref = el;
-                  }
-                "
-                @focus="
-                  () => {
-                    greaterthan = '';
-                    from = '';
-                    to = '';
-                    format = 'LESS-THAN';
-                  }
-                "
-                type="text"
-                v-model.trim="lessthan"
-                class="text-center w-100 align-middle"
-                style="height: 30px"
-              />
-            </div>
-          </div>
-          <div class="flex-w-50 align-self-stretch">
-            <div class="d-block text-center" style="padding-bottom: 1.5px">
-              <img
-                src="/src/assets/icons/greater-than.png"
-                style="width: 20px; height: 20px"
-                class="align-middle"
-              />
-            </div>
-            <div class="d-block">
-              <input
-                @keydown.space.prevent
-                :ref="
-                  (el) => {
-                    greaterthanref = el;
-                  }
-                "
-                @focus="
-                  () => {
-                    lessthan = '';
-                    from = '';
-                    to = '';
-                    format = 'GREATER-THAN';
-                  }
-                "
-                type="text"
-                v-model.trim="greaterthan"
-                class="text-center w-100 align-middle"
-                style="height: 30px"
-              />
-            </div>
-          </div>
+        <div class="d-block text-center" style="padding-bottom: 1.5px">
+          <img
+            src="/src/assets/icons/less-than.png"
+            style="width: 20px; height: 20px"
+            class="align-middle"
+          />
+        </div>
+        <div class="d-block">
+          <input
+            @keydown.space.prevent
+            :ref="
+              (el) => {
+                lessthanref = el;
+              }
+            "
+            @focus="
+              () => {
+                greaterthan = '';
+                format = 'LESS-THAN';
+              }
+            "
+            type="text"
+            v-model.trim="lessthan"
+            class="text-center w-100 align-middle"
+            style="height: 30px"
+          />
         </div>
       </div>
-      <div class="flex-w-50 align-self-stretch" style="padding-left: 3px">
-        <div
-          class="flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
-        >
-          <div class="flex-w-50 align-self-stretch">
-            <div class="d-block" style="padding-bottom: 1.5px">
-              <label>From</label>
-            </div>
-            <div class="d-block">
-              <input
-                :ref="
-                  (el) => {
-                    fromref = el;
-                  }
-                "
-                @keydown.space.prevent
-                v-model.trim="from"
-                @focus="
-                  () => {
-                    lessthan = '';
-                    greaterthan = '';
-                    format = 'FROM-TO';
-                  }
-                "
-                type="text"
-                class="w-100 text-center"
-                style="height: 30px"
-              />
-            </div>
-          </div>
-          <div class="flex-w-50 align-self-stretch">
-            <div class="d-block" style="padding-bottom: 1.5px">
-              <label>To</label>
-            </div>
-            <div class="d-block">
-              <input
-                :ref="
-                  (el) => {
-                    toref = el;
-                  }
-                "
-                @keydown.space.prevent
-                v-model.trim="to"
-                @focus="
-                  () => {
-                    lessthan = '';
-                    greaterthan = '';
-                    format = 'FROM-TO';
-                  }
-                "
-                type="text"
-                class="w-100 text-center"
-                style="height: 30px"
-              />
-            </div>
-          </div>
+      <div class="flex-w-50 align-self-stretch">
+        <div class="d-block text-center" style="padding-bottom: 1.5px">
+          <img
+            src="/src/assets/icons/greater-than.png"
+            style="width: 20px; height: 20px"
+            class="align-middle"
+          />
+        </div>
+        <div class="d-block">
+          <input
+            @keydown.space.prevent
+            :ref="
+              (el) => {
+                greaterthanref = el;
+              }
+            "
+            @focus="
+              () => {
+                lessthan = '';
+                format = 'GREATER-THAN';
+              }
+            "
+            type="text"
+            v-model.trim="greaterthan"
+            class="text-center w-100 align-middle"
+            style="height: 30px"
+          />
         </div>
       </div>
     </div>
@@ -649,6 +421,12 @@ onMounted(() => {
                 : 'background-color:gray;'
             "
             class="flex-box align-items-center justify-content-center text-center"
+            @keypress.enter="
+              () => {
+                page = page - 1 < 0 ? 0 : page - 1;
+                processDimensions();
+              }
+            "
             @click="
               () => {
                 page = page - 1 < 0 ? 0 : page - 1;
@@ -685,6 +463,12 @@ onMounted(() => {
                 : 'background-color:gray;'
             "
             class="flex-box align-items-center justify-content-center text-center"
+            @keypress.enter="
+              () => {
+                page = page + 1 > compYearsLength - 1 ? compYearsLength - 1 : page + 1;
+                processDimensions();
+              }
+            "
             @click="
               () => {
                 page = page + 1 > compYearsLength - 1 ? compYearsLength - 1 : page + 1;
@@ -719,11 +503,13 @@ onMounted(() => {
             >
               <label
                 :ref="(el) => ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).ref = el as HTMLLabelElement"
+                @keypress.enter="() => { ((format==='RANGE' || format==='MULTIPLE-OR-SINGLE') && (col as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).year, true) : ''; }"
                 @click="() => { ((format==='RANGE' || format==='MULTIPLE-OR-SINGLE') && (col as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).year, true) : ''; }"
                 class="w-100"
                 style="float: left; line-height: 2em; height: 2em"
               >
                 <input
+                  @keypress.enter.stop=""
                   @click.stop=""
                   type="checkbox"
                   :value="((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).year"

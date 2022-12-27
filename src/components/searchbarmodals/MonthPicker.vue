@@ -264,36 +264,37 @@ onBeforeMount(() => {
   <div class="d-block">
     <div
       class="flex-box shadow-sm flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
-      style="border: 1px solid gray"
     >
       <div class="flex-w-50">
-        <a
+        <button
+          @keypress.enter="format = 'RANGE'"
           @click="format = 'RANGE'"
           :style="
             format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
           "
-          class="font-family letter-spacing cursor-pointer d-block underline-none"
-          style="color: #fff; padding: 2px 0"
+          class="font-family letter-spacing cursor-pointer btn w-100"
+          style="color: #fff; padding: 2px 0;border-right: 1px solid #fff"
         >
           Range
-        </a>
+        </button>
       </div>
       <div class="flex-w-50">
-        <a
+        <button
+          @keypress.enter="format = 'MULTIPLE-OR-SINGLE'"
           @click="format = 'MULTIPLE-OR-SINGLE'"
           :style="
             format === 'MULTIPLE-OR-SINGLE'
               ? 'background-color:green;'
               : 'background-color:gray;'
           "
-          class="font-family letter-spacing cursor-pointer d-block underline-none"
-          style="color: #fff; padding: 2px 0"
+          class="btn font-family letter-spacing cursor-pointer w-100"
+          style="color: #fff; padding: 2px 0;border-left: 1px solid #fff"
         >
           Multiple or Single
-        </a>
+        </button>
       </div>
     </div>
-    <div class="d-block shadow-sm" style="height: 98px;" id="monthbox">
+    <div class="d-block shadow-sm" style="height: 98px;padding-top:2px;" id="monthbox">
       <div
         class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
       >
@@ -305,11 +306,13 @@ onBeforeMount(() => {
             >
               <label
                 :ref="(el) => months[rindex][cindex].ref = el as HTMLLabelElement"
+                @keypress.enter="() => { format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? addMonth(months[rindex][cindex].monthnumber) : ''; }"
                 @click="() => { format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? addMonth(months[rindex][cindex].monthnumber) : ''; }"
                 class="w-100"
                 style="float: left; line-height: 2em; height: 2em;"
               >
                 <input
+                  @keypress.enter.stop=""
                   @click.stop=""
                   type="checkbox"
                   :value="months[rindex][cindex].monthnumber"
