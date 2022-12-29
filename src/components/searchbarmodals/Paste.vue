@@ -152,6 +152,16 @@ function removeDuplicateAndValidateNumericRangeLine(acceptedArray: string[], min
                     (
                       parseFloat(splititem[0].trim()) >= parseFloat(splititem1[0].trim())
                       &&
+                      (
+                        parseFloat(splititem[0].trim()) < parseFloat(splititem1[1].trim())
+                        &&
+                        parseFloat(splititem[1].trim()) >= parseFloat(splititem1[1].trim())
+                      )
+                    )
+                    ||
+                    (
+                      parseFloat(splititem[0].trim()) >= parseFloat(splititem1[0].trim())
+                      &&
                       parseFloat(splititem[1].trim()) <= parseFloat(splititem1[1].trim())
                     )
                     ||
@@ -215,12 +225,12 @@ function removeDuplicateAndValidateNumericLineWithoutLimit(acceptedArray: string
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === undefined ||
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === null
       ) {
-        if(/^\d+$/g.test(item)) {
+        if(/^\s*\d+\s*$/g.test(item)) {
           (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
           newArray[index] = [item, "GOOD"];
           hassomethingtopaste.value = true;
         }
-          else {
+        else {
           (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
           newArray[index] = [item, "ERROR"];
         }
@@ -293,7 +303,7 @@ function removeDuplicateAndValidateDateLine(acceptedArray: string[], min: string
   return newArray;
 }
 
-function removeDuplicateAndValidateNumericLine(acceptedArray: string[], max?: string | undefined, min?: string | undefined) {
+function removeDuplicateAndValidateNumericLine(acceptedArray: string[], min?: string | undefined, max?: string | undefined) {
   let 
     newArray: [string, string][] = [],
     index = 0
@@ -305,15 +315,15 @@ function removeDuplicateAndValidateNumericLine(acceptedArray: string[], max?: st
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === null
       ) {
         if(max !== undefined && min !== undefined) {
-          if(/^\d+$/g.test(item)) {
-            if(parseInt(item) >= parseInt(min) && parseInt(item) <= parseInt(max)) {
+          if(/^\s*\d+\s*$/g.test(item)) {
+            if(parseFloat(item) >= parseFloat(min) && parseFloat(item) <= parseFloat(max)) {
               (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
               newArray[index] = [item, "GOOD"];
               hassomethingtopaste.value = true;
             }
             else {
               (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
-              newArray[index] = [item, "OUT-OF-RANGE"];
+              newArray[index] = [item, "ERROR"];
             }
           } else {
             (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
@@ -338,19 +348,12 @@ function removeDuplicateAndValidateStringLine(acceptedArray: string[]) {
         duplicateCheckerObject["" + item] === undefined ||
         duplicateCheckerObject["" + item] === null
       ) {
-        if (!/^\s*\d+\s*$/g.test(item) && item.length <= 40) {
+        if (item.length <= 40) {
           duplicateCheckerObject["" + item] = "";
           newArray[index] = [item, "GOOD"];
         } else {
-          if (/^\s*\d+\s*$/g.test(item)) {
-            duplicateCheckerObject["" + item] = "";
-            newArray[index] = [item, "GOOD"];
-          } else {
-            if (item.length > 40) {
-              duplicateCheckerObject["" + item] = "";
-              newArray[index] = [item, "ERROR"];
-            }
-          }
+          duplicateCheckerObject["" + item] = "";
+          newArray[index] = [item, "ERROR"];
         }
         index++;
       }

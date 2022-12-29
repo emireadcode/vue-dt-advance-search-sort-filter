@@ -1,61 +1,87 @@
 <script setup lang="ts">
 import {
   ref,
+  onBeforeMount,
+  type WatchStopHandle,
+  watch,
+  onBeforeUnmount,
 } from "vue";
 
 const 
   current = ref(0),
   props = defineProps<{
     length: number;
-    current: number;
+    _current: [number, number];
   }>(),
   emits = defineEmits<{
     (e: "update:current", action: number): void
   }>(),
+  limit = 10,
   inputpagenumberref = ref()
 ;
 
-current.value = props.current;
+let unwatchcurrent: WatchStopHandle;
+
+onBeforeMount(() => {
+  current.value = props._current[1];
+  unwatchcurrent = watch(
+    () => props._current[0],
+    (x) => {
+      current.value = props._current[1] + 1;
+    }
+  )
+});
+
+onBeforeUnmount(() => {
+  unwatchcurrent();
+});
 
 function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
   if (previousornext === "NEXT") {
     if (current.value >= 1 && current.value < props.length) {
       current.value++;
       if (inputpagenumberref.value) {
-        if (props.length > 10 && props.length < 999) {
+        if (props.length > 10 && props.length < limit) {
           if (current.value >= 5 && current.value <= props.length - 4) {
             inputpagenumberref.value.value = current.value;
           }
         } else {
-          if (props.length >= 999) {
+          if (props.length >= limit) {
             if (current.value >= 5 && current.value <= props.length - 1) {
               inputpagenumberref.value.value = current.value;
             }
           }
         }
       }
+      emits("update:current", current.value-1);
     }
   } else if (previousornext === "PREVIOUS") {
     if (current.value > 1) {
       current.value--;
       if (inputpagenumberref.value) {
-        if (props.length > 10 && props.length < 999) {
+        if (props.length > 10 && props.length < limit) {
           if (current.value >= 5 && current.value <= props.length - 4) {
             inputpagenumberref.value.value = current.value;
           }
         } else {
-          if (props.length >= 999) {
+          if (props.length >= limit) {
             if (current.value >= 5 && current.value <= props.length - 1) {
               inputpagenumberref.value.value = current.value;
             }
           }
         }
       }
+      emits("update:current", current.value-1);
     }
   } else {
     current.value = inputpagenumberref.value.value;
+    emits("update:current", current.value-1);
   }
-  emits("update:current", current.value);
+}
+
+function setCurrent(pageindex: number) {
+  current.value = pageindex; 
+  emits('update:current', current.value === 0? 0 : current.value-1);
 }
 
 </script>
@@ -70,8 +96,8 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
         class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
         style="padding: 5px 3px 5px 0px; width: 10%"
       >
-        <a
-          class="btn underline-none shadow-sm d-block"
+        <button
+          class="btn shadow-sm w-100 text-center"
           style="font-size: 0.8rem; padding: 5.2px 0"
         >
           <img
@@ -79,9 +105,9 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
             class="align-middle"
             style="width: 15px; height: 15px;"
           />
-        </a>
+        </button>
       </li>
-      <li class="flex-fill align-self-stretch" style="width: 80%">
+      <li class="flex-fill align-self-stretch" :style="length > 1? 'width: 80%' : 'width: 90%'">
         <template v-if="length > 1">
           <ul
             class="m-0 p-0 flex-box flex-direction-row flex-nowrap list-style-none justify-content-center align-items-center w-100"
@@ -95,10 +121,10 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                   : 'width:' + 100 / 11 + '%'
               "
             >
-              <a
+              <button
                 @keypress.enter="previousOrNextClicked('PREVIOUS')"
                 @click="previousOrNextClicked('PREVIOUS')"
-                class="btn underline-none shadow-sm d-block"
+                class="btn shadow-sm w-100 text-center"
                 style="padding: 2.7px 0"
               >
                 <img
@@ -106,7 +132,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                   class="align-middle"
                   style="width: 15px; height: 15px"
                 />
-              </a>
+              </button>
             </li>
             <template v-if="length <= 10">
               <li
@@ -120,18 +146,18 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                     : 'width:' + 100 / 11 + '%'
                 "
               >
-                <a
-                  class="btn underline-none shadow-sm d-block"
+                <button
+                  class="btn shadow-sm w-100 text-center"
                   style="font-size: 0.8rem; padding: 5.2px 0px"
-                  :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
-                  @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
-                  @click="() => { current = pageindex; emits('update:current', current); }"
+                  :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                  @keypress.enter="setCurrent(pageindex)"
+                  @click="setCurrent(pageindex)"
                 >
                   {{ pageindex }}
-                </a>
+                </button>
               </li>
             </template>
-            <template v-else-if="length > 10 && length < 999">
+            <template v-else-if="length > 10 && length < limit">
               <template v-for="pageindex in length">
                 <template v-if="pageindex < 5">
                   <li
@@ -139,15 +165,15 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                     class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
                     :key="pageindex + '-pagination'"
                   >
-                    <a
-                      class="btn underline-none shadow-sm d-block"
+                    <button
+                      class="btn shadow-sm w-100 text-center"
                       style="font-size: 0.8rem; padding: 5.2px 0px"
-                      :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
-                      @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
-                      @click="() => { current = pageindex; emits('update:current', current); }"
+                      :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                      @keypress.enter="setCurrent(pageindex)"
+                      @click="setCurrent(pageindex)"
                     >
                       {{ pageindex }}
-                    </a>
+                    </button>
                   </li>
                 </template>
                 <template v-else-if="pageindex === 5">
@@ -182,17 +208,17 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                       class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
                       :key="pageindex + '-pagination'"
                     >
-                      <a
-                        class="btn underline-none shadow-sm d-block"
+                      <button
+                        class="btn shadow-sm w-100 text-center"
                         style="font-size: 0.8rem; padding: 5.2px 0px"
                         :style="
-                          current === pageindex ? 'background-color: #F0E68C;' : ''
+                          current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
                         "
-                        @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
-                        @click="() => { current = pageindex; emits('update:current', current); }"
+                        @keypress.enter="setCurrent(pageindex)"
+                        @click="setCurrent(pageindex)"
                       >
                         {{ pageindex }}
-                      </a>
+                      </button>
                     </li>
                   </template>
                 </template>
@@ -206,20 +232,20 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                     class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
                     :key="pageindex + '-pagination'"
                   >
-                    <a
-                      class="btn underline-none shadow-sm d-block"
+                    <button
+                      class="btn shadow-sm w-100 text-center"
                       style="font-size: 0.8rem; padding: 5.2px 0px"
-                      :style="current === pageindex ? 'background-color: #F0E68C;' : ''"
-                      @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
-                      @click="() => { current = pageindex; emits('update:current', current); }"
+                      :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                      @keypress.enter="setCurrent(pageindex)"
+                      @click="setCurrent(pageindex)"
                     >
                       {{ pageindex }}
-                    </a>
+                    </button>
                   </li>
                 </template>
                 <template v-else-if="pageindex === 5">
                   <li
-                    style="padding: 5px 3px; width: 24.999999%"
+                    style="padding: 5px 3px; width: 24.limitlimit%"
                     class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
                     :key="pageindex + '-pagination'"
                   >
@@ -245,21 +271,21 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                 <template v-else>
                   <template v-if="pageindex + 1 > length">
                     <li
-                      style="padding: 5px 3px; width: 24.999999%"
+                      style="padding: 5px 3px; width: 24.limitlimit%"
                       class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
                       :key="pageindex + '-pagination'"
                     >
-                      <a
-                        class="btn underline-none shadow-sm d-block"
+                      <button
+                        class="btn shadow-sm w-100 text-center"
                         style="font-size: 0.8rem; padding: 5.2px 0px"
                         :style="
-                          current === pageindex ? 'background-color: #F0E68C;' : ''
+                          current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
                         "
-                        @keypress.enter="() => { current = pageindex; emits('update:current', current); }"
-                        @click="() => { current = pageindex; emits('update:current', current); }"
+                        @keypress.enter="setCurrent(pageindex)"
+                        @click="setCurrent(pageindex)"
                       >
                         {{ pageindex }}
-                      </a>
+                      </button>
                     </li>
                   </template>
                 </template>
@@ -274,10 +300,10 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                   : 'width:' + 100 / 11 + '%'
               "
             >
-              <a
+              <button
                 @keypress.enter="previousOrNextClicked('NEXT')"
                 @click="previousOrNextClicked('NEXT')"
-                class="btn underline-none shadow-sm d-block"
+                class="btn shadow-sm w-100 text-center"
                 style="padding: 2.7px 0"
               >
                 <img
@@ -285,29 +311,31 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
                   class="align-middle"
                   style="width: 15px; height: 15px"
                 />
-              </a>
+              </button>
             </li>
           </ul>
         </template>
       </li>
-      <li
-        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-        style="padding: 5px 3px 5px 0px; width: 10%"
-      >
-        <a
-          class="btn underline-none shadow-sm d-block"
-          style="font-size: 0.8rem; padding: 5.2px 0"
-          :style="current === 0 && length > 1 ? 'background-color: #F0E68C;' : ''"
-          @keypress.enter="() => { current = 0; emits('update:current', current); }"
-          @click="() => { current = 0; emits('update:current', current); }"
+      <template v-if="length > 1">
+        <li
+          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
+          style="padding: 5px 0px 5px 3px; width: 10%"
         >
-          <img
-            src="/src/assets/icons/all.png"
-            class="align-middle"
-            style="width: 15px; height: 15px"
-          />
-        </a>
-      </li>
+          <button
+            class="btn shadow-sm w-100 text-center"
+            style="font-size: 0.8rem; padding: 5.2px 0"
+            :style="current === 0 && length > 1 ? 'background-color: #F0E68C;' : ''"
+            @keypress.enter="setCurrent(0)"
+            @click="setCurrent(0)"
+          >
+            <img
+              src="/src/assets/icons/all.png"
+              class="align-middle"
+              style="width: 15px; height: 15px"
+            />
+          </button>
+        </li>
+      </template>
     </ul>
   </div>
 </template>

@@ -10,6 +10,7 @@ import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputen
 
 const
   current = ref(0),
+  currentsignal = ref(0),
   props = defineProps<{
     context: string;
   }>(),
@@ -27,7 +28,7 @@ if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
       if((cards.value[index] as SingleWordStringType | NumberStringType).fixedlengthofstring !== undefined) {
         provide(
           "mainnumbersearcherui", 
-          ref((cards.value[index] as SingleWordStringType | NumberStringType).search.atnumbersearch)
+          ref(JSON.parse(JSON.stringify((cards.value[index] as SingleWordStringType | NumberStringType).search.atnumbersearch)))
         )
       }
     }
@@ -39,7 +40,7 @@ else {
       if((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].fixedlengthofstring !== undefined) {
         provide(
           "mainnumbersearcherui", 
-          ref((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search?.atnumbersearch)
+          ref(JSON.parse(JSON.stringify((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search?.atnumbersearch)))
         )
       }
     }
@@ -53,6 +54,7 @@ async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
     current,
     holder as Ref<StringSearchType>
   );
+  currentsignal.value++;
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
@@ -75,6 +77,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
     }
   }
   closepastemodalsignal.value++;
+  currentsignal.value++;
 }
 
 onBeforeMount(() => {
@@ -191,8 +194,7 @@ onBeforeMount(() => {
           </template>
         </Paste>
         <PastedItemAndNewlyInputedEntryDisplayer
-          :current="current"
-          @update:current="$val => current = $val"
+          :current="[currentsignal, current]"
           :tree="(holder as StringSearchType)"
           treetype="StringSearchType"
           :display-area-height="'height: 185.9px;'"

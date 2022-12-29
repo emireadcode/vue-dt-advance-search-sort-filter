@@ -8,8 +8,8 @@ import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputed
 
 const
   closepastemodalsignal = ref(0),
+  currentsignal = ref(0),
   current = ref(0),
-  newlypasteditems = ref<string[][]>([]),
   holder = ref<StringSearchType>(),
   props = defineProps<{
     concatfieldindex?: string | number | undefined;
@@ -29,6 +29,7 @@ async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
     current,
     holder as Ref<StringSearchType>
   );
+  currentsignal.value++;
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
@@ -51,6 +52,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
     }
   }
   closepastemodalsignal.value++;
+  currentsignal.value++;
 }
 
 onBeforeMount(() => {
@@ -157,8 +159,7 @@ onBeforeMount(() => {
       </template>
     </Paste>
     <PastedItemAndNewlyInputedEntryDisplayer
-      :current="current"
-      @update:current="$val => current = $val"
+      :current="[currentsignal, current]"
       :tree="(holder as StringSearchType)"
       treetype="StringSearchType"
       :display-area-height="'height: 358.9px;'"

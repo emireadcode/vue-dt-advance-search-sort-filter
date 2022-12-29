@@ -26,6 +26,8 @@ const
   openexclude = ref(false),
   closefromtopastemodalsignal = ref(0),
   closeequaltopastemodalsignal = ref(0),
+  fromtocurrentsignal = ref(0),
+  equaltocurrentsignal = ref(0),
   fromtocurrent = ref(0),
   equaltocurrent = ref(0),
   cards = inject("cards") as ShallowRef<NumberType[]>,
@@ -36,7 +38,34 @@ provide("mainnumbersearcherui", holder);
 
 function resetExclude(action: boolean) {
   if(action) {
-    
+    (holder.value as NumberType['search']).exclude = {
+      equalto : {
+        single: "",
+        loading: false,
+        addloading: false,
+        shake: [],
+        show: [],
+        bottom: false,
+        pages: [],
+        addeditemsref: [],
+        inneraddeditemsref: [],
+        endoflistitemref: undefined,
+      } as NumberSearchExcludeEqualToType,
+      fromto: {
+        singlefrom: "",
+        singleto: "",
+        fromto: [],
+        loading: false,
+        addloading: false,
+        shake: [],
+        show: [],
+        bottom: false,
+        pages: [],
+        addeditemsref: [],
+        inneraddeditemsref: [],
+        endoflistitemref: undefined,
+      } as NumberSearchExcludeFromToType
+    };
   }
 }
 
@@ -50,6 +79,7 @@ async function addLocalNewInputEntry(
     (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrent : fromtocurrent,
     holder as Ref<NumberType['search']>
   );
+  (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrentsignal.value++ : fromtocurrent.value++;
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
@@ -74,6 +104,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
     closeequaltopastemodalsignal.value++
     :closefromtopastemodalsignal.value++
   ;
+  (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrentsignal.value++ : fromtocurrent.value++;
+  console.log(holder.value);
 }
 
 function openExcludeWindow() {
@@ -579,8 +611,7 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
-                                  :current="fromtocurrent"
-                                  @update:current="$val => fromtocurrent = $val"
+                                  :current="[fromtocurrentsignal, fromtocurrent]"
                                   :tree="(holder?.exclude?.fromto as NumberSearchExcludeFromToType)"
                                   treetype="NumberSearchExcludeFromToType"
                                   :display-area-height="'height: 157.9px;'"
@@ -723,8 +754,7 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
-                                  :current="equaltocurrent"
-                                  @update:current="$val => equaltocurrent = $val"
+                                  :current="[equaltocurrentsignal, equaltocurrent]"
                                   :tree="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                                   treetype="NumberSearchExcludeEqualToType"
                                   :display-area-height="'height: 157.9px;'"

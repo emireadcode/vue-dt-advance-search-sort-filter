@@ -15,11 +15,8 @@ import Pagination from "./Pagination.vue";
 
 const
   _current = ref(0),
-  emits = defineEmits<{
-    (e: "update:current", action: number): void
-  }>(),
   props = defineProps<{
-    current: number,
+    current: [number, number],
     treetype: 'StringSearchType' | 'NumberSearchExcludeFromToType' | 'NumberSearchExcludeEqualToType';
     displayAreaHeight: string;
     scrollareaid: string;
@@ -28,7 +25,9 @@ const
   holder = ref()
 ;
 
-let unwatchcurrent: WatchStopHandle;
+let 
+  unwatchcurrent: WatchStopHandle
+;
 
 function localDeleteSaved(dindex: number, action: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
 
@@ -36,11 +35,11 @@ function localDeleteSaved(dindex: number, action: 'EXCLUDE-FROM-TO' | 'EXCLUDE-E
 
 onBeforeMount(() => {
   holder.value = props.tree;
-  _current.value = props.current;
+  _current.value = props.current[1];
   unwatchcurrent = watch(
-    () => _current.value,
+    () => props.current[0],
     (x) => {
-      emits("update:current", _current.value);
+      _current.value = props.current[1];
     }
   );
 });
@@ -53,9 +52,9 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="d-block">
-    <Pagination :current="_current" :length="holder.pages.length" @update:current="$val => _current = $val"></Pagination>
+    <Pagination :_current="[props.current[0],_current]" :length="holder.pages.length" @update:current="$val => _current = $val"></Pagination>
     <div
-      :id="current === 0 ? scrollareaid : ''"
+      :id="_current === 0 ? scrollareaid : ''"
       class="m-0 p-0 d-block overflow-y-auto overflow-x-hidden"
       style="z-index: 1000; background-color: #eee"
       :style="displayAreaHeight"
