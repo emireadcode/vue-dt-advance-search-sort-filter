@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { provide, inject, type ShallowRef, ref, onBeforeMount, type Ref, } from "vue";
-import type { MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, SingleWordStringConcatenatedFieldType, StringSearchType, SingleWordStringType, NumberStringType } from "../types/SupportedDatatypesTypeDeclaration";
+import { triggerRef, shallowRef, provide, inject, type ShallowRef, ref, onBeforeMount, type Ref, } from "vue";
+import type { CurrentAndSignalType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, SingleWordStringConcatenatedFieldType, StringSearchType, SingleWordStringType, NumberStringType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import StartWithContainExactlyEqualToAndEndsWithTabs from "./StartWithContainExactlyEqualToAndEndsWithTabs.vue";
 import Paste from "./Paste.vue";
@@ -9,14 +9,40 @@ import ReusableNumberSearch from "./ReusableNumberSearch.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 
 const
-  current = ref(0),
-  currentsignal = ref(0),
+  currentandsignal = shallowRef<CurrentAndSignalType>({
+    word: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    equalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    notequalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    exclude: {
+      fromto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      },
+      equalto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      }
+    }
+  }),
   props = defineProps<{
     context: string;
   }>(),
   holder = ref<StringSearchType>(),
   format = ref<'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER'>(),
-  closepastemodalsignal = ref(0),
   wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; },
   index = inject("index") as number,
   cards = inject("cards") as ShallowRef<(SingleWordStringType | MultipleWordsStringType | NumberStringType)[]>
@@ -51,10 +77,9 @@ async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
   await addNewInputEntry(
     newinputentry,
     inputtype,
-    current,
+    currentandsignal as ShallowRef<CurrentAndSignalType>,
     holder as Ref<StringSearchType>
   );
-  currentsignal.value++;
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
@@ -67,7 +92,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
           await addNewInputEntry(
             item[0],
             inputtype,
-            current,
+            currentandsignal as ShallowRef<CurrentAndSignalType>,
             holder as Ref<StringSearchType>
           );
           clearTimeout(time[timeIndex]);
@@ -76,8 +101,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
       }
     }
   }
-  closepastemodalsignal.value++;
-  currentsignal.value++;
+  (currentandsignal.value as CurrentAndSignalType).word.closepaste++;
+  triggerRef(currentandsignal);
 }
 
 onBeforeMount(() => {
@@ -153,7 +178,7 @@ onBeforeMount(() => {
           </div>
         </div>
         <Paste
-          :receiveclosepastemodalsignal="closepastemodalsignal"
+          :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).word.closepaste"
           :title="
             format==='STARTS-WITH'?
               'starts with'
@@ -194,7 +219,7 @@ onBeforeMount(() => {
           </template>
         </Paste>
         <PastedItemAndNewlyInputedEntryDisplayer
-          :current="[currentsignal, current]"
+          :current="[(currentandsignal as CurrentAndSignalType).word.signal, (currentandsignal as CurrentAndSignalType).word.current]"
           :tree="(holder as StringSearchType)"
           treetype="StringSearchType"
           :display-area-height="'height: 185.9px;'"

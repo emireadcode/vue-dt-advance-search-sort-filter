@@ -2,6 +2,8 @@
 import { 
   type ShallowRef,
   onBeforeMount,
+  shallowRef,
+  triggerRef,
   type Ref,
   inject,
   ref,
@@ -12,6 +14,7 @@ import type {
   NumberSearchExcludeFromToType, 
   NumberSearchExcludeEqualToType, 
   NumberType,
+  CurrentAndSignalType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
@@ -23,13 +26,36 @@ const
   accessibility = inject("accessibility") as {
     cardsmultiplesearchopenstatus: Ref<Boolean[]>;
   },
+  currentandsignal = shallowRef<CurrentAndSignalType>({
+    word: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    equalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    notequalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    exclude: {
+      fromto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      },
+      equalto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      }
+    }
+  }),
   openexclude = ref(false),
-  closefromtopastemodalsignal = ref(0),
-  closeequaltopastemodalsignal = ref(0),
-  fromtocurrentsignal = ref(0),
-  equaltocurrentsignal = ref(0),
-  fromtocurrent = ref(0),
-  equaltocurrent = ref(0),
   cards = inject("cards") as ShallowRef<NumberType[]>,
   holder = ref<NumberType['search']>()
 ;
@@ -76,10 +102,9 @@ async function addLocalNewInputEntry(
   await addNewInputEntry(
     newinputentry,
     inputtype,
-    (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrent : fromtocurrent,
+    currentandsignal as ShallowRef<CurrentAndSignalType>,
     holder as Ref<NumberType['search']>
   );
-  (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrentsignal.value++ : fromtocurrent.value++;
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
@@ -92,7 +117,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
         await addNewInputEntry(
           (inputtype==='EXCLUDE-EQUAL-TO')? item[0] : [splititem[0].trim(), splititem[1].trim()],
           inputtype,
-          (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrent : fromtocurrent,
+          currentandsignal as ShallowRef<CurrentAndSignalType>,
           holder as Ref<NumberType['search']>
         );
         clearTimeout(time[timeIndex]);
@@ -101,11 +126,11 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
     }
   }
   (inputtype==='EXCLUDE-EQUAL-TO')?
-    closeequaltopastemodalsignal.value++
-    :closefromtopastemodalsignal.value++
+    (currentandsignal.value as CurrentAndSignalType).exclude.equalto.closepaste++
+    :
+    (currentandsignal.value as CurrentAndSignalType).exclude.fromto.closepaste++
   ;
-  (inputtype==='EXCLUDE-EQUAL-TO')? equaltocurrentsignal.value++ : fromtocurrent.value++;
-  console.log(holder.value);
+  triggerRef(currentandsignal);
 }
 
 function openExcludeWindow() {
@@ -569,7 +594,7 @@ onBeforeMount(() => {
                                 <Paste
                                   :breakdescription="(true as boolean)"
                                   @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
-                                  :receiveclosepastemodalsignal="closefromtopastemodalsignal"
+                                  :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).exclude.fromto.closepaste"
                                   title="none overlapping a-b range"
                                   :datatype="'NumberRange'"
                                   :max="((
@@ -611,7 +636,7 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
-                                  :current="[fromtocurrentsignal, fromtocurrent]"
+                                  :current="[(currentandsignal as CurrentAndSignalType).exclude.fromto.signal, (currentandsignal as CurrentAndSignalType).exclude.fromto.current]"
                                   :tree="(holder?.exclude?.fromto as NumberSearchExcludeFromToType)"
                                   treetype="NumberSearchExcludeFromToType"
                                   :display-area-height="'height: 157.9px;'"
@@ -621,7 +646,7 @@ onBeforeMount(() => {
                             </div>
                             <div
                               class="flex-w-40"
-                              style="padding-left: 5px"
+                              style="padding-left:5px;"
                             >
                               <div
                                 class="d-block text-center shadow-sm"
@@ -712,7 +737,7 @@ onBeforeMount(() => {
                                 <Paste
                                   :breakdescription="(true as boolean)"
                                   @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
-                                  :receiveclosepastemodalsignal="closeequaltopastemodalsignal"
+                                  :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).exclude.equalto.closepaste"
                                   title="numbers"
                                   :datatype="cards[index].info.datatype as 'Number'"
                                   :max="((
@@ -754,7 +779,7 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
-                                  :current="[equaltocurrentsignal, equaltocurrent]"
+                                  :current="[(currentandsignal as CurrentAndSignalType).exclude.equalto.signal, (currentandsignal as CurrentAndSignalType).exclude.equalto.current]"
                                   :tree="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                                   treetype="NumberSearchExcludeEqualToType"
                                   :display-area-height="'height: 157.9px;'"

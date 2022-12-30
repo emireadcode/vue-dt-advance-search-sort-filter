@@ -1,15 +1,41 @@
 <script setup lang="ts">
-import { type Ref, provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
-import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType, SingleWordStringConcatenatedFieldType } from "../types/SupportedDatatypesTypeDeclaration";
+import { triggerRef, shallowRef, type Ref, provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
+import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType, SingleWordStringConcatenatedFieldType, CurrentAndSignalType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 const
-  closepastemodalsignal = ref(0),
-  currentsignal = ref(0),
-  current = ref(0),
+  currentandsignal = shallowRef<CurrentAndSignalType>({
+    word: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    equalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    notequalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    exclude: {
+      fromto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      },
+      equalto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      }
+    }
+  }),
   holder = ref<StringSearchType>(),
   props = defineProps<{
     concatfieldindex?: string | number | undefined;
@@ -26,10 +52,9 @@ async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
   await addNewInputEntry(
     newinputentry,
     inputtype,
-    current,
+    currentandsignal as ShallowRef<CurrentAndSignalType>,
     holder as Ref<StringSearchType>
   );
-  currentsignal.value++;
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
@@ -42,7 +67,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
           await addNewInputEntry(
             item[0],
             inputtype,
-            current,
+            currentandsignal as ShallowRef<CurrentAndSignalType>,
             holder as Ref<StringSearchType>
           );
           clearTimeout(time[timeIndex]);
@@ -51,8 +76,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
       }
     }
   }
-  closepastemodalsignal.value++;
-  currentsignal.value++;
+  (currentandsignal.value as CurrentAndSignalType).word.closepaste++;
+  triggerRef(currentandsignal);
 }
 
 onBeforeMount(() => {
@@ -131,7 +156,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <Paste
-      :receiveclosepastemodalsignal="closepastemodalsignal"
+      :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).word.closepaste"
       :title="cards[index].info.name"
       :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
       :text-area-height="'height:377px;'"
@@ -159,7 +184,7 @@ onBeforeMount(() => {
       </template>
     </Paste>
     <PastedItemAndNewlyInputedEntryDisplayer
-      :current="[currentsignal, current]"
+      :current="[(currentandsignal as CurrentAndSignalType).word.signal, (currentandsignal as CurrentAndSignalType).word.current]"
       :tree="(holder as StringSearchType)"
       treetype="StringSearchType"
       :display-area-height="'height: 358.9px;'"

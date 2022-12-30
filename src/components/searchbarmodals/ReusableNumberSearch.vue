@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type WatchStopHandle, ref, watch, inject, type Ref, type ShallowRef, computed, onMounted, onBeforeUnmount, } from "vue";
+import { triggerRef, shallowRef, type WatchStopHandle, ref, watch, inject, type Ref, type ShallowRef, computed, onMounted, onBeforeUnmount, } from "vue";
 import type {
   NumberType,
   SingleWordStringType,
@@ -7,18 +7,42 @@ import type {
   NumberSearchType,
   NumberSearchExcludeEqualToType,
   AtNumber,
+  CurrentAndSignalType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import { addNewInputEntry, setTabAndResetOthers } from "../helperfunctions/addnewlypastedandnewinputentry";
 import Paste from "./Paste.vue";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 const
-  closeequaltopastemodalsignal = ref(0),
-  closenotequaltopastemodalsignal = ref(0),
-  equaltocurrentsignal = ref(0),
-  notequaltocurrentsignal = ref(0),
-  equaltocurrent = ref(0),
-  notequaltocurrent = ref(0),
+  currentandsignal = shallowRef<CurrentAndSignalType>({
+    word: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    equalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    notequalto: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+    exclude: {
+      fromto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      },
+      equalto: {
+        signal: 0,
+        current: 0,
+        closepaste: 0,
+      }
+    }
+  }),
   holder = inject("mainnumbersearcherui") as Ref<NumberType['search'] | AtNumber<NumberSearchType>>,
   index = inject("index") as number,
   props = defineProps<{
@@ -47,15 +71,14 @@ async function addLocalNewInputEntry(
   await addNewInputEntry(
     newinputentry,
     inputtype,
-    (inputtype==='EQUAL-TO')? equaltocurrent : notequaltocurrent,
+    currentandsignal as ShallowRef<CurrentAndSignalType>,
     holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>>,
     props.from
   );
-  (inputtype==='EQUAL-TO')? equaltocurrentsignal.value++ : notequaltocurrentsignal.value++;
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO' | 'EQUAL-TO') {
-  let time: NodeJS.Timeout[] = [], timeIndex = 0;
+  let time: NodeJS.Timeout[] = [], timeIndex = 0, ccurrent = ref(-1);
   for(let i=0; i<pasteditems.length; i++) {
     let item = pasteditems[i];
     if (item[1] !== "ERROR") {
@@ -63,8 +86,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
         await addNewInputEntry(
           item[0],
           inputtype,
-          (inputtype==='EQUAL-TO')? equaltocurrent : notequaltocurrent,
-          holder as Ref<NumberType['search']>,
+          currentandsignal as ShallowRef<CurrentAndSignalType>,
+          holder as Ref<NumberType['search'] | AtNumber<NumberSearchType>>,
           props.from
         );
         clearTimeout(time[timeIndex]);
@@ -72,12 +95,12 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
       timeIndex++;
     }
   }
-
-  (inputtype==='NOT-EQUAL-TO')?
-    closenotequaltopastemodalsignal.value++
-    :closeequaltopastemodalsignal.value++
+  (inputtype==='EQUAL-TO')? 
+    (currentandsignal.value as CurrentAndSignalType).equalto.closepaste++
+    : 
+    (currentandsignal.value as CurrentAndSignalType).notequalto.closepaste++
   ;
-  (inputtype==='EQUAL-TO')? equaltocurrentsignal.value++ : notequaltocurrentsignal.value++;
+  triggerRef(currentandsignal);
 }
 
 const equaltoAddNew = computed(() => {
@@ -325,7 +348,7 @@ onBeforeUnmount(() => {
             <Paste
               :breakdescription="(true as boolean)"
               :from="props.from"
-              :receiveclosepastemodalsignal="closeequaltopastemodalsignal"
+              :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).equalto.closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
@@ -355,8 +378,7 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              :current="[equaltocurrentsignal, equaltocurrent]"
-              @update:current="$val => equaltocurrent = $val"
+              :current="[(currentandsignal as CurrentAndSignalType).equalto.signal, (currentandsignal as CurrentAndSignalType).equalto.current]"
               :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 157.9px;'"
@@ -436,7 +458,7 @@ onBeforeUnmount(() => {
             <Paste
               :breakdescription="(true as boolean)"
               :from="props.from"
-              :receiveclosepastemodalsignal="closenotequaltopastemodalsignal"
+              :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).notequalto.closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
@@ -470,8 +492,7 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              :current="[notequaltocurrentsignal, notequaltocurrent]"
-              @update:current="$val => notequaltocurrent = $val"
+              :current="[(currentandsignal as CurrentAndSignalType).notequalto.signal, (currentandsignal as CurrentAndSignalType).notequalto.current]"
               :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 157.9px;'"
