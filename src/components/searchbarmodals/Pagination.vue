@@ -23,7 +23,7 @@ const
 let unwatchcurrent: WatchStopHandle;
 
 onBeforeMount(() => {
-  current.value = props._current[1];
+  current.value = props._current[1] + 1;
   unwatchcurrent = watch(
     () => props._current[0],
     (x) => {

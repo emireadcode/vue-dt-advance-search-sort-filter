@@ -111,7 +111,7 @@ export type CurrentAndSignalType = {
       current: number;
       closepaste: number;
     };
-  }
+  };
 };
 
 export type AtNumber<T> = {

@@ -36,7 +36,7 @@ const
       }
     }
   }),
-  holder = ref<StringSearchType>(),
+  holder = shallowRef<StringSearchType>(),
   props = defineProps<{
     concatfieldindex?: string | number | undefined;
     wordtype: "MULTIPLE" | "SINGLE";
@@ -48,12 +48,16 @@ const
 
 provide("wordtypeandconcatfieldindex", {wordtype: props.wordtype, concatfieldindex: props.concatfieldindex});
 
+function triggerHolder() {
+  triggerRef(holder);
+}
+
 async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
   await addNewInputEntry(
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as Ref<StringSearchType>
+    holder as ShallowRef<StringSearchType>
   );
 }
 
@@ -68,7 +72,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
             item[0],
             inputtype,
             currentandsignal as ShallowRef<CurrentAndSignalType>,
-            holder as Ref<StringSearchType>
+            holder as ShallowRef<StringSearchType>
           );
           clearTimeout(time[timeIndex]);
         }, 10);
@@ -108,6 +112,7 @@ onBeforeMount(() => {
               )
             "
             v-model="(holder as StringSearchType).single"
+            @input="triggerHolder()"
             maxlength="40"
             type="text"
             class="w-100"
@@ -124,6 +129,7 @@ onBeforeMount(() => {
               )
             "
             v-model="(holder as StringSearchType).single"
+            @input="triggerHolder()"
             maxlength="40"
             type="text"
             class="w-100"

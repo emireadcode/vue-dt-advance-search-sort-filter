@@ -57,10 +57,14 @@ const
   }),
   openexclude = ref(false),
   cards = inject("cards") as ShallowRef<NumberType[]>,
-  holder = ref<NumberType['search']>()
+  holder = shallowRef<NumberType['search']>()
 ;
 
 provide("mainnumbersearcherui", holder);
+
+function triggerHolder() {
+  triggerRef(holder);
+}
 
 function resetExclude(action: boolean) {
   if(action) {
@@ -103,7 +107,7 @@ async function addLocalNewInputEntry(
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as Ref<NumberType['search']>
+    holder as ShallowRef<NumberType['search']>
   );
 }
 
@@ -118,7 +122,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
           (inputtype==='EXCLUDE-EQUAL-TO')? item[0] : [splititem[0].trim(), splititem[1].trim()],
           inputtype,
           currentandsignal as ShallowRef<CurrentAndSignalType>,
-          holder as Ref<NumberType['search']>
+          holder as ShallowRef<NumberType['search']>
         );
         clearTimeout(time[timeIndex]);
       }, 10);
@@ -483,7 +487,8 @@ onBeforeMount(() => {
                                         <div class="d-block">
                                           <input
                                             @keydown.space.prevent
-                                            v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom"
+                                            @input="triggerHolder()"
+                                            v-model="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom"
                                             type="text"
                                             class="w-100 text-left"
                                             style="height: 30px;z-index: 1110;"
@@ -503,7 +508,8 @@ onBeforeMount(() => {
                                           <template v-if="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom.trim().length > 0">
                                             <input
                                               aria-disabled="false"
-                                              v-model.trim="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singleto"
+                                              @input="triggerHolder()"
+                                              v-model="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singleto"
                                               @keypress.enter="
                                                 excludeAddNewFromTo?
                                                   addLocalNewInputEntry(
@@ -675,7 +681,8 @@ onBeforeMount(() => {
                                 >
                                   <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
                                     <input
-                                      v-model.trim="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType).single"
+                                      @input="triggerHolder()"
+                                      v-model="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType).single"
                                       type="text"
                                       @keydown.space.prevent
                                       @keypress.enter="

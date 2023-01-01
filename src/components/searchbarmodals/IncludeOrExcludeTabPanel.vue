@@ -41,7 +41,7 @@ const
   props = defineProps<{
     context: string;
   }>(),
-  holder = ref<StringSearchType>(),
+  holder = shallowRef<StringSearchType>(),
   format = ref<'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER'>(),
   wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; },
   index = inject("index") as number,
@@ -54,7 +54,7 @@ if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
       if((cards.value[index] as SingleWordStringType | NumberStringType).fixedlengthofstring !== undefined) {
         provide(
           "mainnumbersearcherui", 
-          ref(JSON.parse(JSON.stringify((cards.value[index] as SingleWordStringType | NumberStringType).search.atnumbersearch)))
+          shallowRef(JSON.parse(JSON.stringify((cards.value[index] as SingleWordStringType | NumberStringType).search.atnumbersearch)))
         )
       }
     }
@@ -66,11 +66,15 @@ else {
       if((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].fixedlengthofstring !== undefined) {
         provide(
           "mainnumbersearcherui", 
-          ref(JSON.parse(JSON.stringify((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search?.atnumbersearch)))
+          shallowRef(JSON.parse(JSON.stringify((cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search?.atnumbersearch)))
         )
       }
     }
   }
+}
+
+function triggerHolder() {
+  triggerRef(holder);
 }
 
 async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
@@ -78,7 +82,7 @@ async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as Ref<StringSearchType>
+    holder as ShallowRef<StringSearchType>
   );
 }
 
@@ -93,7 +97,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
             item[0],
             inputtype,
             currentandsignal as ShallowRef<CurrentAndSignalType>,
-            holder as Ref<StringSearchType>
+            holder as ShallowRef<StringSearchType>
           );
           clearTimeout(time[timeIndex]);
         }, 10);
@@ -146,6 +150,7 @@ onBeforeMount(() => {
                   'WORD'
                 )
               "
+              @input="triggerHolder()"
               v-model="(holder as StringSearchType).single"
               maxlength="40"
               type="text"

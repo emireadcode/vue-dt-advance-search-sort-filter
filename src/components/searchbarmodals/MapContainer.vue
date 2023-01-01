@@ -61,12 +61,12 @@
     });
 
     var vectorSource1 = new VectorSource({
-      url: 'http://localhost:3001/src/components/spatial/australian-states.min.geojson',
+      url: 'http://localhost:3001/src/components/searchbarmodals/spatial/australian-states.min.geojson',
       format: new GeoJSON({ featureProjection: "EPSG:3857" })
     });
 
     var vectorSource2 = new VectorSource({
-      url: 'http://localhost:3001/src/components/spatial/australian-suburbs.geojson',
+      url: 'http://localhost:3001/src/components/searchbarmodals/spatial/australian-suburbs.geojson',
       format: new GeoJSON({ featureProjection: "EPSG:3857" })
     });
 
