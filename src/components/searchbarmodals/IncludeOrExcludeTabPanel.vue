@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { triggerRef, shallowRef, provide, inject, type ShallowRef, ref, onBeforeMount, type Ref, } from "vue";
-import type { CurrentAndSignalType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, SingleWordStringConcatenatedFieldType, StringSearchType, SingleWordStringType, NumberStringType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { CurrentAndSignalInnerType, CurrentAndSignalType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, SingleWordStringConcatenatedFieldType, StringSearchType, SingleWordStringType, NumberStringType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import StartWithContainExactlyEqualToAndEndsWithTabs from "./StartWithContainExactlyEqualToAndEndsWithTabs.vue";
 import Paste from "./Paste.vue";
@@ -14,28 +14,6 @@ const
       signal: 0,
       current: 0,
       closepaste: 0,
-    },
-    equalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-    notequalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-    exclude: {
-      fromto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      },
-      equalto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      }
     }
   }),
   props = defineProps<{
@@ -77,6 +55,10 @@ function triggerHolder() {
   triggerRef(holder);
 }
 
+function triggerCurrentAndSignal() {
+  triggerRef(currentandsignal);
+}
+
 async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
   await addNewInputEntry(
     newinputentry,
@@ -105,7 +87,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
       }
     }
   }
-  (currentandsignal.value as CurrentAndSignalType).word.closepaste++;
+  ((currentandsignal.value as CurrentAndSignalType).word as CurrentAndSignalInnerType).closepaste++;
   triggerRef(currentandsignal);
 }
 
@@ -183,7 +165,7 @@ onBeforeMount(() => {
           </div>
         </div>
         <Paste
-          :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).word.closepaste"
+          :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).closepaste"
           :title="
             format==='STARTS-WITH'?
               'starts with'
@@ -224,11 +206,12 @@ onBeforeMount(() => {
           </template>
         </Paste>
         <PastedItemAndNewlyInputedEntryDisplayer
-          :current="[(currentandsignal as CurrentAndSignalType).word.signal, (currentandsignal as CurrentAndSignalType).word.current]"
+          :current="[((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current]"
           :tree="(holder as StringSearchType)"
           treetype="StringSearchType"
           :display-area-height="'height: 185.9px;'"
           :scrollareaid="cards[index].scroll.areaid+'-search'"
+          @update:current="($val) => {((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal();}"
         ></PastedItemAndNewlyInputedEntryDisplayer>
       </template>
     </div>

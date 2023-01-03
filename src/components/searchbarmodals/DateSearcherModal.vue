@@ -74,13 +74,12 @@ onBeforeMount(() => {
                   <li
                     class="flex-shrink-0 flex-grow-0 align-self-stretch"
                   >
-                    <button 
-                      aria-disabled="true" 
-                      class="text-lowercase tab" 
+                    <div
+                      class="text-lowercase tab m-0" 
                       style="padding:2.5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
                     >
                       {{ cards[index].info.name }}
-                    </button>
+                    </div>
                   </li>
                 </ul>
               </div>

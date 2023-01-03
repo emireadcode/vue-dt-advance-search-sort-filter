@@ -140,10 +140,10 @@ function removeDuplicateAndValidateNumericRangeLine(acceptedArray: string[], min
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === null
       ) {
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
-        if(/^\d+\s*\-\s*\d+$/g.test(item)) {
+        if(/^\d+(\.\d+)?\s*\-\s*\d+(\.\d+)?$/g.test(item)) {
           let splititem = item.split("-");
           if(parseFloat(splititem[0].trim()) < parseFloat(splititem[1].trim())) {
-            if(parseFloat(splititem[0].trim()) >= parseFloat(min) && parseFloat(splititem[1].trim()) <= parseFloat(max)) {
+            if(parseFloat(splititem[0].trim()) > parseFloat(min) && parseFloat(splititem[1].trim()) < parseFloat(max)) {
               let isoverlappingrange = false;
               for(let i=0; i<newArray.length; i++) {
                 if(newArray[i][1] !== 'ERROR') {
@@ -225,7 +225,7 @@ function removeDuplicateAndValidateNumericLineWithoutLimit(acceptedArray: string
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === undefined ||
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === null
       ) {
-        if(/^\s*\d+\s*$/g.test(item)) {
+        if(/^\s*\d+(\.\d+)?\s*$/g.test(item)) {
           (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
           newArray[index] = [item, "GOOD"];
           hassomethingtopaste.value = true;
@@ -315,8 +315,8 @@ function removeDuplicateAndValidateNumericLine(acceptedArray: string[], min?: st
         (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] === null
       ) {
         if(max !== undefined && min !== undefined) {
-          if(/^\s*\d+\s*$/g.test(item)) {
-            if(parseFloat(item) >= parseFloat(min) && parseFloat(item) <= parseFloat(max)) {
+          if(/^\s*\d+(\.\d+)?\s*$/g.test(item)) {
+            if(parseFloat(item) > parseFloat(min) && parseFloat(item) < parseFloat(max)) {
               (duplicateCheckerObject as DuplicateCheckerObjectType)[''+item] = "";
               newArray[index] = [item, "GOOD"];
               hassomethingtopaste.value = true;
@@ -684,7 +684,7 @@ onBeforeMount(() => {
   background-color: rgba(0, 0, 0, 0.5);
 }
 .modal-mask-background-2 {
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(57, 56, 56, 0.99);
 }
 .modal-mask {
   top: 0;

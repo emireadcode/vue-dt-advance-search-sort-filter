@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { triggerRef, shallowRef, type Ref, provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
-import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType, SingleWordStringConcatenatedFieldType, CurrentAndSignalType } from "../types/SupportedDatatypesTypeDeclaration";
+import type { CurrentAndSignalInnerType, NumberStringType, SingleWordStringType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType, SingleWordStringConcatenatedFieldType, CurrentAndSignalType } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
@@ -52,6 +52,10 @@ function triggerHolder() {
   triggerRef(holder);
 }
 
+function triggerCurrentAndSignal() {
+  triggerRef(currentandsignal);
+}
+
 async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
   await addNewInputEntry(
     newinputentry,
@@ -80,7 +84,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
       }
     }
   }
-  (currentandsignal.value as CurrentAndSignalType).word.closepaste++;
+  ((currentandsignal.value as CurrentAndSignalType).word as CurrentAndSignalInnerType).closepaste++;
   triggerRef(currentandsignal);
 }
 
@@ -162,7 +166,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <Paste
-      :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).word.closepaste"
+      :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).closepaste"
       :title="cards[index].info.name"
       :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
       :text-area-height="'height:377px;'"
@@ -190,11 +194,12 @@ onBeforeMount(() => {
       </template>
     </Paste>
     <PastedItemAndNewlyInputedEntryDisplayer
-      :current="[(currentandsignal as CurrentAndSignalType).word.signal, (currentandsignal as CurrentAndSignalType).word.current]"
+      :current="[((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current]"
       :tree="(holder as StringSearchType)"
       treetype="StringSearchType"
       :display-area-height="'height: 358.9px;'"
       :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
+      @update:current="($val) => {((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal();}"
     ></PastedItemAndNewlyInputedEntryDisplayer>
   </div>
 </template>

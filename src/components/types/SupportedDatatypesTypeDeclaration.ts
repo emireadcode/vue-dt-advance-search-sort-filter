@@ -1,5 +1,3 @@
-import type { Ref } from "vue";
-
 import type { RangeSelectionParamsType } from './dd_mm_yy_types';
 
 type StartModifierWildCardType = "@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[";
@@ -83,35 +81,21 @@ export type MultipleWordsStringConcatenatedFieldType = {
   };
 };
 
+export type CurrentAndSignalInnerType = {
+  signal: number;
+  current: number;
+  closepaste: number;
+};
 
 export type CurrentAndSignalType = {
-  word: {
-    signal: number;
-    current: number;
-    closepaste: number;
-  };
-  equalto: {
-    signal: number;
-    current: number;
-    closepaste: number;
-  };
-  notequalto: {
-    signal: number;
-    current: number;
-    closepaste: number;
-  };
-  exclude: {
-    equalto: {
-      signal: number;
-      current: number;
-      closepaste: number;
-    };
-    fromto: {
-      signal: number;
-      current: number;
-      closepaste: number;
-    };
-  };
+  displayer?: CurrentAndSignalInnerType | undefined;
+  word?: CurrentAndSignalInnerType | undefined;
+  equalto?: CurrentAndSignalInnerType | undefined;
+  notequalto?: CurrentAndSignalInnerType | undefined;
+  exclude?: {
+    equalto: CurrentAndSignalInnerType;
+    fromto: CurrentAndSignalInnerType | undefined;
+  }
 };
 
 export type AtNumber<T> = {

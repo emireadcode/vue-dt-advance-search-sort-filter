@@ -15,6 +15,7 @@ import type {
   NumberSearchExcludeEqualToType, 
   NumberType,
   CurrentAndSignalType,
+  CurrentAndSignalInnerType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
@@ -27,21 +28,6 @@ const
     cardsmultiplesearchopenstatus: Ref<Boolean[]>;
   },
   currentandsignal = shallowRef<CurrentAndSignalType>({
-    word: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-    equalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-    notequalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
     exclude: {
       fromto: {
         signal: 0,
@@ -64,6 +50,10 @@ provide("mainnumbersearcherui", holder);
 
 function triggerHolder() {
   triggerRef(holder);
+}
+
+function triggerCurrentAndSignal() {
+  triggerRef(currentandsignal);
 }
 
 function resetExclude(action: boolean) {
@@ -130,9 +120,9 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
     }
   }
   (inputtype==='EXCLUDE-EQUAL-TO')?
-    (currentandsignal.value as CurrentAndSignalType).exclude.equalto.closepaste++
+    ((currentandsignal.value as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).closepaste++
     :
-    (currentandsignal.value as CurrentAndSignalType).exclude.fromto.closepaste++
+    ((currentandsignal.value as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).closepaste++
   ;
   triggerRef(currentandsignal);
 }
@@ -154,7 +144,7 @@ function openExcludeWindow() {
 const excludeAddNewFromTo = computed(() => {
   if (holder.value?.tab === "GREATER-THAN") {
     return (
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <=
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <
         parseFloat(cards.value[index].result.max) &&
       parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) <
         parseFloat(cards.value[index].result.max) &&
@@ -165,9 +155,9 @@ const excludeAddNewFromTo = computed(() => {
     return (
       parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) >
         parseFloat(cards.value[index].result.min) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >=
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >
         parseFloat(cards.value[index].result.min) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <= parseFloat(holder.value?.lessthan as string) &&
+      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) < parseFloat(holder.value?.lessthan as string) &&
       parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto)
     );
   } else {
@@ -182,86 +172,86 @@ const excludeAddNewFromTo = computed(() => {
 const excludeAddNewEqualto = computed(() => {
   if (holder.value?.tab === "GREATER-THAN") {
     return (
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.greaterthan as string) &&
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(cards.value[index].result.max)
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) > parseFloat(holder.value?.greaterthan as string) &&
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) < parseFloat(cards.value[index].result.max)
     );
   } else if (holder.value?.tab === "LESS-THAN") {
     return (
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.lessthan as string) &&
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(cards.value[index].result.min)
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) < parseFloat(holder.value?.lessthan as string) &&
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) > parseFloat(cards.value[index].result.min)
     );
   } else {
     return (
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) >= parseFloat(holder.value?.fromto?.from as string) &&
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) <= parseFloat(holder.value?.fromto?.to as string)
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) > parseFloat(holder.value?.fromto?.from as string) &&
+      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) < parseFloat(holder.value?.fromto?.to as string)
     );
   }
 });
 
 const done = computed(() => {
   return (
-    (parseFloat(holder.value?.greaterthan as string) <= parseFloat(cards.value[index].result.max) &&
+    (parseFloat(holder.value?.greaterthan as string) < parseFloat(cards.value[index].result.max) &&
       parseFloat(holder.value?.greaterthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat(holder.value?.lessthan as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.lessthan as string) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.lessthan as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.lessthan as string) > parseFloat(cards.value[index].result.min)
     ) ||
     (holder.value?.equalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
-    (parseFloat(holder.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.equalto?.single as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.equalto?.single as string) > parseFloat(cards.value[index].result.min)
     ) ||
     (holder.value?.notequalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
-    (parseFloat(holder.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.notequalto?.single as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.notequalto?.single as string) > parseFloat(cards.value[index].result.min)
     ) ||
     (
       parseFloat(holder.value?.fromto?.from as string) < parseFloat(holder.value?.fromto?.to as string) &&
-      parseFloat(holder.value?.fromto?.from as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.fromto?.from as string) >= parseFloat(cards.value[index].result.min) &&
-      parseFloat(holder.value?.fromto?.to as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.fromto?.to as string) >= parseFloat(cards.value[index].result.min)
+      parseFloat(holder.value?.fromto?.from as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.from as string) > parseFloat(cards.value[index].result.min) &&
+      parseFloat(holder.value?.fromto?.to as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.to as string) > parseFloat(cards.value[index].result.min)
     )
   );
 });
 
 const exclude = computed(() => {
   return (
-    (parseFloat(holder.value?.greaterthan as string) <= parseFloat(cards.value[index].result.max) &&
+    (parseFloat(holder.value?.greaterthan as string) < parseFloat(cards.value[index].result.max) &&
       parseFloat(holder.value?.greaterthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat(holder.value?.lessthan as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.lessthan as string) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.lessthan as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.lessthan as string) > parseFloat(cards.value[index].result.min)
     ) ||
     (parseFloat(holder.value?.fromto?.from as string) < parseFloat(holder.value?.fromto?.to as string) &&
-      parseFloat(holder.value?.fromto?.from as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.fromto?.from as string) >= parseFloat(cards.value[index].result.min) &&
-      parseFloat(holder.value?.fromto?.to as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.fromto?.to as string) >= parseFloat(cards.value[index].result.min)
+      parseFloat(holder.value?.fromto?.from as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.from as string) > parseFloat(cards.value[index].result.min) &&
+      parseFloat(holder.value?.fromto?.to as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.to as string) > parseFloat(cards.value[index].result.min)
     )
   );
 });
 
 const clear = computed(() => {
   return (
-    (parseFloat(holder.value?.greaterthan as string) <= parseFloat(cards.value[index].result.max) &&
+    (parseFloat(holder.value?.greaterthan as string) < parseFloat(cards.value[index].result.max) &&
       parseFloat(holder.value?.greaterthan as string) >= parseFloat(cards.value[index].result.min)
     ) ||
-    (parseFloat(holder.value?.lessthan as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.lessthan as string) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.lessthan as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.lessthan as string) > parseFloat(cards.value[index].result.min)
     ) ||
     (holder.value?.equalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
-    (parseFloat(holder.value?.equalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.equalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.equalto?.single as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.equalto?.single as string) > parseFloat(cards.value[index].result.min)
     ) ||
     (holder.value?.notequalto as NumberSearchExcludeEqualToType).pages.length > 0 ||
-    (parseFloat(holder.value?.notequalto?.single as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.notequalto?.single as string) >= parseFloat(cards.value[index].result.min)
+    (parseFloat(holder.value?.notequalto?.single as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.notequalto?.single as string) > parseFloat(cards.value[index].result.min)
     ) ||
     (parseFloat(holder.value?.fromto?.from as string) < parseFloat(holder.value?.fromto?.to as string) &&
-      parseFloat(holder.value?.fromto?.from as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.fromto?.from as string) >= parseFloat(cards.value[index].result.min) &&
-      parseFloat(holder.value?.fromto?.to as string) <= parseFloat(cards.value[index].result.max) &&
-      parseFloat(holder.value?.fromto?.to as string) >= parseFloat(cards.value[index].result.min)
+      parseFloat(holder.value?.fromto?.from as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.from as string) > parseFloat(cards.value[index].result.min) &&
+      parseFloat(holder.value?.fromto?.to as string) < parseFloat(cards.value[index].result.max) &&
+      parseFloat(holder.value?.fromto?.to as string) > parseFloat(cards.value[index].result.min)
     )
   );
 });
@@ -290,13 +280,12 @@ onBeforeMount(() => {
                   <li
                     class="flex-shrink-0 flex-grow-0 align-self-stretch"
                   >
-                    <button 
-                      aria-disabled="true" 
-                      class="text-lowercase tab" 
+                    <div
+                      class="text-lowercase tab m-0" 
                       style="padding:2.5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
                     >
                       {{ cards[index].info.name }}
-                    </button>
+                    </div>
                   </li>
                 </ul>
               </div>
@@ -600,7 +589,7 @@ onBeforeMount(() => {
                                 <Paste
                                   :breakdescription="(true as boolean)"
                                   @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
-                                  :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).exclude.fromto.closepaste"
+                                  :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).closepaste"
                                   title="none overlapping a-b range"
                                   :datatype="'NumberRange'"
                                   :max="((
@@ -642,11 +631,12 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
-                                  :current="[(currentandsignal as CurrentAndSignalType).exclude.fromto.signal, (currentandsignal as CurrentAndSignalType).exclude.fromto.current]"
+                                  :current="[((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current]"
                                   :tree="(holder?.exclude?.fromto as NumberSearchExcludeFromToType)"
                                   treetype="NumberSearchExcludeFromToType"
                                   :display-area-height="'height: 157.9px;'"
                                   :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
+                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
                                 ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
                             </div>
@@ -744,7 +734,7 @@ onBeforeMount(() => {
                                 <Paste
                                   :breakdescription="(true as boolean)"
                                   @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
-                                  :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).exclude.equalto.closepaste"
+                                  :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).closepaste"
                                   title="numbers"
                                   :datatype="cards[index].info.datatype as 'Number'"
                                   :max="((
@@ -786,11 +776,12 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
-                                  :current="[(currentandsignal as CurrentAndSignalType).exclude.equalto.signal, (currentandsignal as CurrentAndSignalType).exclude.equalto.current]"
+                                  :current="[((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current]"
                                   :tree="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                                   treetype="NumberSearchExcludeEqualToType"
                                   :display-area-height="'height: 157.9px;'"
                                   :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
+                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
                                 ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
                             </div>

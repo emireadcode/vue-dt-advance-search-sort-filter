@@ -8,6 +8,7 @@ import type {
   NumberSearchExcludeEqualToType,
   AtNumber,
   CurrentAndSignalType,
+  CurrentAndSignalInnerType
 } from "../types/SupportedDatatypesTypeDeclaration";
 import { addNewInputEntry, setTabAndResetOthers } from "../helperfunctions/addnewlypastedandnewinputentry";
 import Paste from "./Paste.vue";
@@ -15,11 +16,6 @@ import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputed
 
 const
   currentandsignal = shallowRef<CurrentAndSignalType>({
-    word: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
     equalto: {
       signal: 0,
       current: 0,
@@ -30,18 +26,6 @@ const
       current: 0,
       closepaste: 0,
     },
-    exclude: {
-      fromto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      },
-      equalto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      }
-    }
   }),
   holder = inject("mainnumbersearcherui") as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>,
   index = inject("index") as number,
@@ -66,6 +50,10 @@ let
 
 function triggerHolder() {
   triggerRef(holder);
+}
+
+function triggerCurrentAndSignal() {
+  triggerRef(currentandsignal);
 }
 
 async function addLocalNewInputEntry(
@@ -100,9 +88,9 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
     }
   }
   (inputtype==='EQUAL-TO')? 
-    (currentandsignal.value as CurrentAndSignalType).equalto.closepaste++
+    ((currentandsignal.value as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).closepaste++
     : 
-    (currentandsignal.value as CurrentAndSignalType).notequalto.closepaste++
+    ((currentandsignal.value as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).closepaste++
   ;
   triggerRef(currentandsignal);
 }
@@ -355,7 +343,7 @@ onBeforeUnmount(() => {
             <Paste
               :breakdescription="(true as boolean)"
               :from="props.from"
-              :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).equalto.closepaste"
+              :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
@@ -385,11 +373,12 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              :current="[(currentandsignal as CurrentAndSignalType).equalto.signal, (currentandsignal as CurrentAndSignalType).equalto.current]"
+              :current="[((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current]"
               :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 157.9px;'"
               :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
+              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
@@ -466,7 +455,7 @@ onBeforeUnmount(() => {
             <Paste
               :breakdescription="(true as boolean)"
               :from="props.from"
-              :receiveclosepastemodalsignal="(currentandsignal as CurrentAndSignalType).notequalto.closepaste"
+              :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
@@ -500,11 +489,12 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              :current="[(currentandsignal as CurrentAndSignalType).notequalto.signal, (currentandsignal as CurrentAndSignalType).notequalto.current]"
+              :current="[((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current]"
               :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 157.9px;'"
               :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
+              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
