@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { triggerRef, shallowRef, type Ref, provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
-import type { CurrentAndSignalInnerType, NumberStringType, SingleWordStringType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, StringSearchType, SingleWordStringConcatenatedFieldType, CurrentAndSignalType } from "../types/SupportedDatatypesTypeDeclaration";
+import type {
+  CurrentAndSignalInnerType,
+  NumberStringType,
+  SingleWordStringType,
+  MultipleWordsStringType,
+  MultipleWordsStringConcatenatedFieldType,
+  StringSearchType,
+  SingleWordStringConcatenatedFieldType,
+  CurrentAndSignalType,
+  EnteredWhenInAndWhenNotInPageType
+} from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
@@ -12,28 +22,6 @@ const
       signal: 0,
       current: 0,
       closepaste: 0,
-    },
-    equalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-    notequalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-    exclude: {
-      fromto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      },
-      equalto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      }
     }
   }),
   holder = shallowRef<StringSearchType>(),
@@ -57,16 +45,30 @@ function triggerCurrentAndSignal() {
 }
 
 async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
+  let 
+    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
+      enteredwheninpage: false,
+      enteredwhennotinpage: false
+    })
+  ;
   await addNewInputEntry(
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as ShallowRef<StringSearchType>
+    holder as ShallowRef<StringSearchType>,
+    enteredwheninandwhennot
   );
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
-  let time: NodeJS.Timeout[] = [], timeIndex = 0;
+  let 
+    time: NodeJS.Timeout[] = [], 
+    timeIndex = 0,
+    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
+      enteredwheninpage: false,
+      enteredwhennotinpage: false
+    })
+  ;
   for(let i=0; i<pasteditems.length; i++) {
     let item = pasteditems[i];
     if (item[1] !== "ERROR") {
@@ -76,7 +78,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
             item[0],
             inputtype,
             currentandsignal as ShallowRef<CurrentAndSignalType>,
-            holder as ShallowRef<StringSearchType>
+            holder as ShallowRef<StringSearchType>,
+            enteredwheninandwhennot
           );
           clearTimeout(time[timeIndex]);
         }, 10);
@@ -194,12 +197,13 @@ onBeforeMount(() => {
       </template>
     </Paste>
     <PastedItemAndNewlyInputedEntryDisplayer
+      paginationtype="WORD"
       :current="[((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current]"
       :tree="(holder as StringSearchType)"
       treetype="StringSearchType"
       :display-area-height="'height: 358.9px;'"
       :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
-      @update:current="($val) => {((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal();}"
+      @update:current="($val) => {((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal();}"
     ></PastedItemAndNewlyInputedEntryDisplayer>
   </div>
 </template>

@@ -16,6 +16,7 @@ import type {
   NumberType,
   CurrentAndSignalType,
   CurrentAndSignalInnerType,
+  EnteredWhenInAndWhenNotInPageType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
@@ -63,6 +64,7 @@ function resetExclude(action: boolean) {
         single: "",
         loading: false,
         addloading: false,
+        deleting: false,
         shake: [],
         show: [],
         bottom: false,
@@ -74,10 +76,10 @@ function resetExclude(action: boolean) {
       fromto: {
         singlefrom: "",
         singleto: "",
-        fromto: [],
         loading: false,
         addloading: false,
         shake: [],
+        deleting: false,
         show: [],
         bottom: false,
         pages: [],
@@ -93,16 +95,30 @@ async function addLocalNewInputEntry(
   newinputentry: [string, string] | string,
   inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO'
 ) {
+  let 
+    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
+      enteredwheninpage: false,
+      enteredwhennotinpage: false
+    })
+  ;
   await addNewInputEntry(
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as ShallowRef<NumberType['search']>
+    holder as ShallowRef<NumberType['search']>,
+    enteredwheninandwhennot
   );
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
-  let time: NodeJS.Timeout[] = [], timeIndex = 0;
+  let
+    time: NodeJS.Timeout[] = [], 
+    timeIndex = 0,
+    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
+      enteredwheninpage: false,
+      enteredwhennotinpage: false
+    })
+  ;
   for(let i=0; i<pasteditems.length; i++) {
     let item = pasteditems[i];
     if (item[1] !== "ERROR") {
@@ -112,7 +128,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
           (inputtype==='EXCLUDE-EQUAL-TO')? item[0] : [splititem[0].trim(), splititem[1].trim()],
           inputtype,
           currentandsignal as ShallowRef<CurrentAndSignalType>,
-          holder as ShallowRef<NumberType['search']>
+          holder as ShallowRef<NumberType['search']>,
+          enteredwheninandwhennot
         );
         clearTimeout(time[timeIndex]);
       }, 10);
@@ -271,9 +288,9 @@ onBeforeMount(() => {
       <div class="modal-mask h-100 w-100 modal-mask-background">
         <div class="modal-wrapper text-center">
           <div class="modal-container d-block">
-            <div class="d-block" style="height:585px;">
+            <div class="d-block" style="height: 36.855rem;">
               <div
-                style="background-color: #fff; padding: 5px 5px 0 5px;white-space: nowrap;"
+                style="background-color: #fff;padding:  0.63rem  0.315rem 0  0.315rem;white-space: nowrap;"
                 class="shadow-sm d-block"
               >
                 <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
@@ -282,7 +299,7 @@ onBeforeMount(() => {
                   >
                     <div
                       class="text-lowercase tab m-0" 
-                      style="padding:2.5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
+                      style="padding:0.315rem 1.89rem;font-size:1em;background-color:#F0E68C;border-top-right-radius: 0.504rem;border-top-left-radius: 0.504rem;"
                     >
                       {{ cards[index].info.name }}
                     </div>
@@ -292,7 +309,7 @@ onBeforeMount(() => {
               <div class="d-block position-relative">
                 <div
                   class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                  style="padding: 8px 0"
+                  style="padding: 0.504rem 0"
                 >
                   <div class="flex-w-50">
                     <span
@@ -317,7 +334,7 @@ onBeforeMount(() => {
                     <div class="d-block">
                       <div
                         class="shadow-sm d-block text-center"
-                        style="background-color: blue;padding: 0 10px;"
+                        style="background-color: blue;padding: 0 0.63rem;"
                       >
                         <a
                           class="underline-none cursor-pointer align-middle"
@@ -327,13 +344,13 @@ onBeforeMount(() => {
                           <img
                             src="/src/assets/icons/close.png"
                             class="align-middle"
-                            style="width: 35px; height: 35px"
+                            style="width: 2.205rem; height: 2.205rem"
                           />
                         </a>
                       </div>
                       <div
                         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                        style="padding: 10px 0"
+                        style="padding:  0.63rem 0"
                       >
                         <div class="flex-w-50">
                           <span
@@ -371,20 +388,20 @@ onBeforeMount(() => {
                       >
                         <div
                           class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
-                          style="padding: 5px 10px"
+                          style="padding:  0.315rem  0.63rem"
                         >
                           <div
                             class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
                           >
                             <img
                               src="/src/assets/icons/greater-than.png"
-                              style="width: 25px; height: 25px"
+                              style="width: 1.575rem; height: 1.575rem"
                               class="align-middle"
                             />
                           </div>
                           <div
                             class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                            style="padding: 5px 0 1px 5px"
+                            style="padding:  0.315rem 0 0.063rem  0.315rem"
                           >
                             {{ holder?.greaterthan }}
                           </div>
@@ -397,20 +414,20 @@ onBeforeMount(() => {
                       >
                         <div
                           class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
-                          style="padding: 5px 10px"
+                          style="padding:  0.315rem  0.63rem"
                         >
                           <div
                             class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
                           >
                             <img
                               src="/src/assets/icons/less-than.png"
-                              style="width: 25px; height: 25px"
+                              style="width: 1.575rem; height: 1.575rem"
                               class="align-middle"
                             />
                           </div>
                           <div
                             class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                            style="padding: 5px 0 1px 5px"
+                            style="padding:  0.315rem 0 0.053rem  0.315rem"
                           >
                             {{ holder?.lessthan }}
                           </div>
@@ -419,35 +436,35 @@ onBeforeMount(() => {
                       <template v-else>
                         <div
                           class="d-block shadow-sm text-center"
-                          style="padding: 5px 10px"
+                          style="padding:  0.315rem  0.63rem"
                         >
                           <img
                             src="/src/assets/icons/range.png"
-                            style="width: 25px; height: 25px"
+                            style="width: 1.575rem; height: 1.575rem"
                             class="align-middle"
                           />
                         </div>
                       </template>
                       <div
                         class="d-block text-center"
-                        style="padding: 10px 0 5px 0"
+                        style="padding:  0.63rem 0  0.315rem 0"
                       >
                         <span
                           class="d-inline-block letter-spacing font-bold font-0-dot-70-rem"
                         >Exclude By</span>
                       </div>
-                      <div class="d-block" style="padding: 5px">
+                      <div class="d-block" style="padding:  0.315rem">
                         <div class="d-block">
                           <div
                             class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
                           >
                             <div
                               class="flex-w-60"
-                              style="padding-right: 5px"
+                              style="padding-right: 0.315rem"
                             >
                               <div
                                 class="d-block text-center shadow-sm"
-                                style="padding: 5px 0"
+                                style="padding:  0.315rem 0"
                               >
                                 <span
                                   class="d-inline-block letter-spacing font-0-dot-80-rem"
@@ -455,7 +472,7 @@ onBeforeMount(() => {
                               </div>
                               <div
                                 class="d-block shadow-sm"
-                                style="padding: 10px 5px 5px"
+                                style="padding:  0.63rem  0.315rem  0.315rem"
                               >
                                 <div
                                   class="w-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
@@ -469,7 +486,7 @@ onBeforeMount(() => {
                                       >
                                         <div
                                           class="d-block"
-                                          style="padding-bottom: 5px"
+                                          style="padding-bottom:  0.315rem"
                                         >
                                           <label>From</label>
                                         </div>
@@ -480,7 +497,7 @@ onBeforeMount(() => {
                                             v-model="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom"
                                             type="text"
                                             class="w-100 text-left"
-                                            style="height: 30px;z-index: 1110;"
+                                            style="height: 1.89rem;z-index: 1110;"
                                           />
                                         </div>
                                       </div>
@@ -489,7 +506,7 @@ onBeforeMount(() => {
                                       >
                                         <div
                                           class="d-block"
-                                          style="padding-bottom: 5px"
+                                          style="padding-bottom:  0.315rem"
                                         >
                                           <label>To</label>
                                         </div>
@@ -514,7 +531,7 @@ onBeforeMount(() => {
                                               @keydown.space.prevent
                                               type="text"
                                               class="w-100 text-left"
-                                              style="height: 30px;z-index: 1110;"
+                                              style="height: 1.89rem;z-index: 1110;"
                                             />
                                           </template>
                                           <template v-else>
@@ -523,7 +540,7 @@ onBeforeMount(() => {
                                               aria-disabled="true"
                                               type="text"
                                               class="w-100 text-left"
-                                              style="height: 30px;z-index: 1110;"
+                                              style="height: 1.89rem;z-index: 1110;"
                                             />
                                           </template>
                                         </div>
@@ -535,11 +552,11 @@ onBeforeMount(() => {
                                   >
                                     <div
                                       class="d-block"
-                                      style="padding-bottom: 5px"
+                                      style="padding-bottom:  0.315rem"
                                     >
                                       <label>&nbsp;</label>
                                     </div>
-                                    <div class="d-block" style="outline: 1px solid rgba(0, 0, 0, 0.2)">
+                                    <div class="d-block" style="outline: 0.063rem solid rgba(0, 0, 0, 0.2)">
                                       <button
                                         :style="
                                         excludeAddNewFromTo
@@ -579,7 +596,7 @@ onBeforeMount(() => {
                                             ''
                                         "
                                         class="btn w-100 shadow-sm font-0-dot-85-rem text-center"
-                                        style="height:30px; padding:0 2px;"
+                                        style="height:1.89rem; padding:0 0.126rem;"
                                       >
                                         <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
                                       </button>
@@ -607,7 +624,7 @@ onBeforeMount(() => {
                                       ? holder?.greaterthan
                                       : holder?.fromto?.from
                                   ) as string)"
-                                  :text-area-height="'height:180px;'"
+                                  :text-area-height="'height: 11.34rem;'"
                                 >
                                   <template v-slot:outcomeidentifier>
                                     <div
@@ -616,14 +633,14 @@ onBeforeMount(() => {
                                       <div class="flex-fill text-center">
                                         <div
                                           class="d-inline-block align-middle"
-                                          style="background-color: #fff; width: 15px; height: 15px"
+                                          style="background-color: #fff; width: 0.945rem; height: 0.945rem"
                                         ></div>
                                         Pasted Lines
                                       </div>
                                       <div class="flex-fill text-center">
                                         <div
                                           class="d-inline-block align-middle"
-                                          style="background-color: red; width: 15px; height: 15px"
+                                          style="background-color: red; width: 0.945rem; height: 0.945rem"
                                         ></div>
                                         Invalid Numbers
                                       </div>
@@ -631,22 +648,23 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
+                                  paginationtype="EXCLUDE-FROM-TO"
                                   :current="[((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current]"
                                   :tree="(holder?.exclude?.fromto as NumberSearchExcludeFromToType)"
                                   treetype="NumberSearchExcludeFromToType"
-                                  :display-area-height="'height: 157.9px;'"
+                                  :display-area-height="'height: 9.9477rem;'"
                                   :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
-                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
+                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
                                 ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
                             </div>
                             <div
                               class="flex-w-40"
-                              style="padding-left:5px;"
+                              style="padding-left: 0.315rem;"
                             >
                               <div
                                 class="d-block text-center shadow-sm"
-                                style="padding: 5px 0"
+                                style="padding: 0.315rem 0"
                               >
                                 <span
                                   class="d-inline-block letter-spacing font-0-dot-80-rem"
@@ -654,22 +672,22 @@ onBeforeMount(() => {
                               </div>
                               <div
                                 class="d-block shadow-sm"
-                                style="padding: 10px 5px 8px 5px"
+                                style="padding:  0.63rem  0.315rem  0.315rem;"
                               >
                                 <div
                                   class="d-block"
-                                  style="padding-bottom: 5px"
+                                  style="padding-bottom: 0.315rem"
                                 >
                                   <img
                                     src="/src/assets/icons/equal-to.png"
                                     class="align-middle"
-                                    style="width: 24px; height: 24px"
+                                    style="width: 1.512rem; height: 1.512rem"
                                   />
                                 </div>
                                 <div
                                   class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
                                 >
-                                  <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
+                                  <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right: 0.126rem;">
                                     <input
                                       @input="triggerHolder()"
                                       v-model="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType).single"
@@ -685,12 +703,12 @@ onBeforeMount(() => {
                                           ''
                                       "
                                       class="w-100 text-left"
-                                      style="height: 30px;z-index: 1110;"
+                                      style="height: 1.89rem;z-index: 1110;"
                                     />
                                   </div>
                                   <div
                                     class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
-                                    style="outline: 1px solid rgba(0, 0, 0, 0.2)"
+                                    style="outline: 0.063rem solid rgba(0, 0, 0, 0.2)"
                                   >
                                     <button
                                       @click="
@@ -715,7 +733,7 @@ onBeforeMount(() => {
                                         excludeAddNewEqualto? 'cursor-pointer' : ''
                                       ]"
                                       class="btn w-100 shadow-sm font-0-dot-85-rem"
-                                      style="height:30px; padding:0 2px;"
+                                      style="height:1.89rem; padding:0 0.126rem;"
                                       :style="
                                         excludeAddNewEqualto
                                           ? 'background-color: #F0E68C;'
@@ -751,7 +769,7 @@ onBeforeMount(() => {
                                       ? holder?.greaterthan
                                       : holder?.fromto?.from
                                   ) as string)"
-                                  :text-area-height="'height:180px;'"
+                                  :text-area-height="'height: 11.34rem;'"
                                   :descriptionfontsize="'font-size: 0.7rem;'"
                                 >
                                   <template v-slot:outcomeidentifier>
@@ -761,14 +779,14 @@ onBeforeMount(() => {
                                       <div class="flex-fill text-center">
                                         <div
                                           class="d-inline-block align-middle"
-                                          style="background-color: #fff; width: 15px; height: 15px"
+                                          style="background-color: #fff; width: 0.945rem; height: 0.945rem"
                                         ></div>
                                         Pasted Lines
                                       </div>
                                       <div class="flex-fill text-center">
                                         <div
                                           class="d-inline-block align-middle"
-                                          style="background-color: red; width: 15px; height: 15px"
+                                          style="background-color: red; width: 0.945rem; height: 0.945rem"
                                         ></div>
                                         Invalid Numbers
                                       </div>
@@ -776,12 +794,13 @@ onBeforeMount(() => {
                                   </template>
                                 </Paste>
                                 <PastedItemAndNewlyInputedEntryDisplayer
+                                  paginationtype="EXCLUDE-EQUAL-TO"
                                   :current="[((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current]"
                                   :tree="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                                   treetype="NumberSearchExcludeEqualToType"
-                                  :display-area-height="'height: 157.9px;'"
+                                  :display-area-height="'height: 9.9477rem;'"
                                   :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
-                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
+                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
                                 ></PastedItemAndNewlyInputedEntryDisplayer>
                               </div>
                             </div>
@@ -795,9 +814,9 @@ onBeforeMount(() => {
             </div>
             <div
               class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-              style="padding: 10px 10px 12px 10px;"
+              style="padding:  0.63rem  0.63rem 0.756rem  0.63rem;"
             >
-              <div class="flex-w-100-over-3" style="padding-right:7.5px;">
+              <div class="flex-w-100-over-3" style="padding-right: 0.4725rem;">
                 <button
                   :style="
                     done
@@ -806,17 +825,17 @@ onBeforeMount(() => {
                   "
                   :disabled="done ? false : true"
                   class="btn w-100 shadow-sm font-family"
-                  style="padding:6px;font-size:1rem;border-radius: 12px"
+                  style="padding:0.378rem;font-size:1rem;border-radius: 0.756rem"
                 >
                   Done
                 </button>
               </div>
-              <div class="flex-w-100-over-3" style="padding-right:2.5px;">
+              <div class="flex-w-100-over-3" style="padding-right: 0.1575rem;">
                 <button
                   @click="openExcludeWindow()"
                   @keypress.enter="openExcludeWindow()"
                   class="btn w-100 shadow-sm font-family"
-                  style="padding:6px;font-size:1rem;border-radius: 12px"
+                  style="padding:0.378rem;font-size:1rem;border-radius: 0.756rem"
                   :style="
                     exclude
                       ? 'background-color: #2196F3;color:#fff;'
@@ -827,7 +846,7 @@ onBeforeMount(() => {
                   Exclude
                 </button>
               </div>
-              <div class="flex-w-100-over-3" style="padding-left:5px;">
+              <div class="flex-w-100-over-3" style="padding-left: 0.315rem;">
                 <button
                   :disabled="clear ? false : true"
                   :style="
@@ -836,7 +855,7 @@ onBeforeMount(() => {
                       : 'background-color:#eee;'
                   "
                   class="btn w-100 shadow-sm font-family"
-                  style="padding:6px;font-size:1rem;border-radius: 12px"
+                  style="padding: 0.378rem;font-size:1rem;border-radius: 0.756rem"
                 >
                   Clear
                 </button>
@@ -864,12 +883,12 @@ onBeforeMount(() => {
   vertical-align: middle;
 }
 .modal-container {
-  margin: 0px auto;
+  margin: 0 auto;
   background-color: #f8f8f8;
-  border-radius: 2px;
+  border-radius: 0.126rem;
   transition: all 0.3s ease;
   font-family: Helvetica, Arial, sans-serif;
-  width: 550px;
+  width: 34.65rem;
 }
 .modal-enter,
 .modal-leave-active {

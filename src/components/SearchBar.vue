@@ -45,40 +45,43 @@ let
         <div
           class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center h-100"
         >
-          <div class="flex-fill p-0 m-0 h-100">
-            <div
-              class="position-relative flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center h-100"
+          <div class="flex-fill p-0 m-0 h-100" style="padding: 0 1px;">
+            <input
+              :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+              type="text"
+              class="w-100 align-middle h-100"
+            />
+          </div>
+          <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 1px solid gray;">
+            <button
+              @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
+              @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
+              :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+              class="s-search-btn h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
             >
-              <div class="flex-fill m-0 h-100" style="padding: 0 1px;">
-                <input
-                  :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-                  type="text"
-                  class="w-100 align-middle h-100"
-                />
-              </div>
-              <div class="flex-shrink-0 flex-grow-0 p-0 m-0 h-100">
-                <button
-                  @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-                  @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-                  :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-                  class="s-search-btn h-100 m-0 cursor-pointer font-bold letter-spacing flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
-                  style="font-size: 0.9rem;"
-                >
-                  <img src="/src/assets/icons/search.png" style="width:15px;height:15px;" />
-                </button>
-              </div>
-            </div>
+              <img src="/src/assets/icons/search.png" style="width:20px;height:20px;" />
+            </button>
           </div>
           <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 1px solid gray;">
             <button
               title="Multiple"
-              class="h-100 m-0 p-0 w-100 font-bold m-search-modal-opener-btn cursor-pointer" 
-              style="font-size: 1.2rem;"
+              class="h-100 m-0 w-100 m-search-modal-opener-btn cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100" 
               @click="() => { accessibility.cardschildrentabindex.value[index] = true; accessibility.cardsmultiplesearchopenstatus.value[index]=true; }"
               @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; accessibility.cardsmultiplesearchopenstatus.value[index]=true; }"
               :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
             >
-              M
+              <img src="/src/assets/icons/m.png" style="width:20px;height:20px;" />
+            </button>
+          </div>
+          <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 1px solid gray;">
+            <button
+              @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
+              @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
+              :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+              class="s-search-btn h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
+              style="font-size: 0.9rem;"
+            >
+              <img src="/src/assets/icons/place.png" style="width:20px;height:20px;" />
             </button>
           </div>
         </div>

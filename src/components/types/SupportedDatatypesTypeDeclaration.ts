@@ -56,6 +56,7 @@ export interface YearType extends IdentityType {
 export type StringSearchType = {
   single: string;
   pages: string[][];
+  deleting: boolean;
   bottom: boolean;
   loading: boolean;
   addloading: boolean;
@@ -96,6 +97,11 @@ export type CurrentAndSignalType = {
     equalto: CurrentAndSignalInnerType;
     fromto: CurrentAndSignalInnerType | undefined;
   }
+};
+
+export type EnteredWhenInAndWhenNotInPageType = {
+  enteredwheninpage: boolean;
+  enteredwhennotinpage: boolean;
 };
 
 export type AtNumber<T> = {
@@ -288,7 +294,6 @@ export type NumberSearchType = {
 
 export type NumberSearchExcludeFromToType = {
   singlefrom: string;
-  fromto: [string,string][];
   singleto: string;
   shake: boolean[];
   loading: boolean;
@@ -296,6 +301,7 @@ export type NumberSearchExcludeFromToType = {
   show: boolean[];
   bottom: boolean;
   pages: [string, string][][];
+  deleting: boolean;
   addeditemsref: HTMLDivElement[] | [];
   inneraddeditemsref: HTMLDivElement[] | [];
   endoflistitemref: HTMLLIElement | undefined;
@@ -309,6 +315,7 @@ export type NumberSearchExcludeEqualToType = {
   show: boolean[];
   bottom: boolean;
   pages: string[][];
+  deleting: boolean;
   addeditemsref: HTMLDivElement[] | [];
   inneraddeditemsref: HTMLDivElement[] | [];
   endoflistitemref: HTMLLIElement | undefined;

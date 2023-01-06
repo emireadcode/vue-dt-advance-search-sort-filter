@@ -7,9 +7,6 @@ import type {
   StringSearchType,
 } from '../types/SupportedDatatypesTypeDeclaration';
 import {
-  repaginatePage
-} from "../helperfunctions/addnewlypastedandnewinputentry";
-import {
   watch,
   triggerRef,
   type WatchStopHandle,
@@ -18,10 +15,14 @@ import {
   shallowRef,
   type ShallowRef,
 } from "vue";
+import {
+  deletePastedOrNewInputEntry
+} from '../helperfunctions/addnewlypastedandnewinputentry';
 import Pagination from "./Pagination.vue";
 
 const
   props = defineProps<{
+    paginationtype: 'WORD' | 'RESULT-DISPLAYER-VERTICAL' | 'RESULT-DISPLAYER-HORIZONTAL' | 'EQUAL-TO' | 'NOT-EQUAL-TO' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO';
     current: [number, number],
     treetype: 'StringSearchType' | 'NumberSearchExcludeFromToType' | 'NumberSearchExcludeEqualToType';
     displayAreaHeight: string;
@@ -42,112 +43,35 @@ const
 ;
 
 let 
-  somethingdeletedbutnotrepaginatedyet = false,
   unwatchcurrent: WatchStopHandle
 ;
 
-async function updateCurrentAndEmitCurrent(val: number) { 
+function updateCurrentAndEmitCurrent(val: number) { 
   (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = val; 
   triggerRef(currentandsignal);
   emits('update:current', val);
-  if(somethingdeletedbutnotrepaginatedyet) {
-    let done = await repaginatePage(
-      currentandsignal,
-      holder as ShallowRef<NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType>,
-      (
-        props.treetype === 'NumberSearchExcludeFromToType'?
-          'DISPLAYER-EXCLUDE-FROM-TO'
-          :
-          'DISPLAYER-EQUAL-TO-NOT-EQUAL-TO-OR-EXCLUDE-EQUAL-TO'
-      )
-    );
-    if(done) {
-      somethingdeletedbutnotrepaginatedyet = false;
-      let time: NodeJS.Timeout;
-      time = setTimeout(() => {
-        if(((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages.length - 1) >= 0 && ((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages.length - 1) <= (currentandsignal.value.displayer as CurrentAndSignalInnerType).current) {
-          (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = (holder.value as NumberSearchExcludeEqualToType).pages.length - 1;
-          (currentandsignal.value.displayer as CurrentAndSignalInnerType).signal++;
-          triggerRef(currentandsignal);
-          emits('update:current', (currentandsignal.value.displayer as CurrentAndSignalInnerType).current);
-        }
-        clearTimeout(time);
-      }, 120);
-    }
-  }
 }
 
 async function localDeleteSaved(dindex: number, inputtype: 'DISPLAYER-EXCLUDE-FROM-TO' | 'DISPLAYER-EQUAL-TO-NOT-EQUAL-TO-OR-EXCLUDE-EQUAL-TO' | 'WORD') {
-  somethingdeletedbutnotrepaginatedyet = true;
-  if(((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages.length - 1) >= 0 && ((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages.length - 1) === (currentandsignal.value.displayer as CurrentAndSignalInnerType).current) {
-    somethingdeletedbutnotrepaginatedyet = false;
-  }
-  if(inputtype === 'DISPLAYER-EQUAL-TO-NOT-EQUAL-TO-OR-EXCLUDE-EQUAL-TO' || inputtype === 'DISPLAYER-EXCLUDE-FROM-TO') {
-    delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current][dindex];
-    if(inputtype === 'DISPLAYER-EQUAL-TO-NOT-EQUAL-TO-OR-EXCLUDE-EQUAL-TO') {
-      (holder.value as NumberSearchExcludeEqualToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current] = [
-        ...(holder.value as NumberSearchExcludeEqualToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current].filter((item: string | undefined | null) => (item !== undefined && item !== null))
-      ];
-    }
-    else {
-      (holder.value as NumberSearchExcludeFromToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current] = [
-        ...(holder.value as NumberSearchExcludeFromToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current].filter((item: [string, string] | undefined | null) => (item !== undefined && item !== null))
-      ];
-    }
-    delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).addeditemsref[dindex];
-    (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).addeditemsref = [
-      ...(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).addeditemsref.filter((item: HTMLDivElement | undefined | null) => (item !== undefined && item !== null))
-    ];
-    delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).inneraddeditemsref[dindex];
-    (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).inneraddeditemsref = [
-      ...(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).inneraddeditemsref.filter((item: HTMLDivElement | undefined | null) => (item !== undefined && item !== null))
-    ];
-    delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).shake[dindex];
-    (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).shake = [
-      ...(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).shake.filter((item: boolean | undefined | null) => (item !== undefined && item !== null))
-    ];
-    delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).show[dindex];
-    (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).show = [
-      ...(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).show.filter((item: boolean | undefined | null) => (item !== undefined && item !== null))
-    ];
-
-    triggerRef(holder);
-    
-    if((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current].length === 0) {
-      let done = await repaginatePage(
-        currentandsignal,
-        holder as ShallowRef<NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType>,
-        inputtype
-      );
-      if(done) {
-        somethingdeletedbutnotrepaginatedyet = false;
-        let time: NodeJS.Timeout;
-        time = setTimeout(() => {
-          if(((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages.length - 1) >= 0 && ((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType).pages.length - 1) <= (currentandsignal.value.displayer as CurrentAndSignalInnerType).current) {
-            (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = (holder.value as NumberSearchExcludeEqualToType).pages.length - 1;
-            (currentandsignal.value.displayer as CurrentAndSignalInnerType).signal++;
-            triggerRef(currentandsignal);
-          }
-          clearTimeout(time);
-        }, 120);
-      }
-    }
-  }
-  else {
-
-  }
+  deletePastedOrNewInputEntry(
+    dindex,
+    currentandsignal,
+    holder as ShallowRef<StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType>,
+    inputtype
+  );
 }
 
 onBeforeMount(() => {
-  somethingdeletedbutnotrepaginatedyet = false;
   holder.value = props.tree;
   triggerRef(holder);
   (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = props.current[1];
+  triggerRef(currentandsignal);
   unwatchcurrent = watch(
     () => props.current[0],
     (x) => {
       (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = props.current[1];
       (currentandsignal.value.displayer as CurrentAndSignalInnerType).signal = x;
+      triggerRef(currentandsignal);
     }
   );
 });
@@ -160,7 +84,15 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="d-block">
-    <Pagination :_current="[(currentandsignal.displayer as CurrentAndSignalInnerType).signal,(currentandsignal.displayer as CurrentAndSignalInnerType).current]" :length="(holder as StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).pages.length" @update:current="$val => updateCurrentAndEmitCurrent($val)"></Pagination>
+    <Pagination
+      :paginationtype="props.paginationtype"
+      :_current="[
+        (currentandsignal.displayer as CurrentAndSignalInnerType).signal,
+        (currentandsignal.displayer as CurrentAndSignalInnerType).current
+      ]"
+      :length="(holder as StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).pages.length"
+      @update:current="($val: number) => updateCurrentAndEmitCurrent($val)"
+    ></Pagination>
     <div
       :id="(currentandsignal.displayer as CurrentAndSignalInnerType).current === 0 ? scrollareaid : ''"
       class="m-0 p-0 d-block overflow-y-auto overflow-x-hidden"

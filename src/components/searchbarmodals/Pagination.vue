@@ -10,44 +10,103 @@ import {
 const 
   current = ref(0),
   props = defineProps<{
+    paginationtype: 'WORD' | 'RESULT-DISPLAYER-VERTICAL' | 'RESULT-DISPLAYER-HORIZONTAL' | 'EQUAL-TO' | 'NOT-EQUAL-TO' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO';
     length: number;
     _current: [number, number];
+    
   }>(),
   emits = defineEmits<{
     (e: "update:current", action: number): void
   }>(),
-  limit = 10,
   inputpagenumberref = ref()
 ;
 
 let unwatchcurrent: WatchStopHandle;
 
-onBeforeMount(() => {
-  current.value = props._current[1] + 1;
-  unwatchcurrent = watch(
-    () => props._current[0],
-    (x) => {
-      current.value = props._current[1] + 1;
-    }
-  )
-});
-
-onBeforeUnmount(() => {
-  unwatchcurrent();
-});
-
 function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
   if (previousornext === "NEXT") {
-    if (current.value >= 1 && current.value < props.length) {
+    if(current.value < props.length) {
       current.value++;
-      if (inputpagenumberref.value) {
-        if (props.length > 10 && props.length < limit) {
-          if (current.value >= 5 && current.value <= props.length - 4) {
-            inputpagenumberref.value.value = current.value;
+      if(props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL') {
+        if(props.length > 9 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 4 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
           }
-        } else {
-          if (props.length >= limit) {
-            if (current.value >= 5 && current.value <= props.length - 1) {
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO') {
+        if(props.length > 6 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EXCLUDE-EQUAL-TO') {
+        if(props.length > 5 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EXCLUDE-FROM-TO') {
+        if(props.length > 8 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 4 && current.value <= props.length - 3) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
               inputpagenumberref.value.value = current.value;
             }
           }
@@ -58,14 +117,86 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
   } else if (previousornext === "PREVIOUS") {
     if (current.value > 1) {
       current.value--;
-      if (inputpagenumberref.value) {
-        if (props.length > 10 && props.length < limit) {
-          if (current.value >= 5 && current.value <= props.length - 4) {
-            inputpagenumberref.value.value = current.value;
+      if(props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL') {
+        if(props.length > 9 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 4 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
           }
-        } else {
-          if (props.length >= limit) {
-            if (current.value >= 5 && current.value <= props.length - 1) {
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO') {
+        if(props.length > 6 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EXCLUDE-EQUAL-TO') {
+        if(props.length > 5 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EXCLUDE-FROM-TO') {
+        if(props.length > 8 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 4 && current.value <= props.length - 3) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
               inputpagenumberref.value.value = current.value;
             }
           }
@@ -80,258 +211,988 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
 }
 
 function setCurrent(pageindex: number) {
-  current.value = pageindex; 
+  current.value = pageindex;
   emits('update:current', current.value === 0? 0 : current.value-1);
 }
+
+onBeforeMount(() => {
+  current.value = props._current[1] + 1;
+  unwatchcurrent = watch(
+    () => props._current[0],
+    (x) => {
+      current.value = props._current[1] + 1;
+      if(props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL') {
+        if(props.length > 9 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 4 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO') {
+        if(props.length > 6 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EXCLUDE-EQUAL-TO') {
+        if(props.length > 5 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length - 2) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+      else if(props.paginationtype === 'EXCLUDE-FROM-TO') {
+        if(props.length > 8 && props.length <= 99) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 4 && current.value <= props.length - 3) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else if(props.length > 99 && props.length <= 99999) {
+          if (inputpagenumberref.value) {
+            if(current.value >= 3 && current.value <= props.length - 1) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+        else {
+          if (inputpagenumberref.value) {
+            if(current.value >= 2 && current.value <= props.length) {
+              inputpagenumberref.value.value = current.value;
+            }
+          }
+        }
+      }
+    }
+  )
+});
+
+onBeforeUnmount(() => {
+  unwatchcurrent();
+});
 
 </script>
 
 
 <template>  
-  <div class="d-block">
+  <div class="d-block h-100">
     <ul
-      class="m-0 p-0 flex-box flex-direction-row flex-nowrap list-style-none justify-content-center align-items-center w-100"
+      class="h-100 m-0 p-0 flex-box flex-direction-row flex-nowrap list-style-none justify-content-center align-items-center w-100"
     >
-      <li
-        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-        style="padding: 5px 3px 5px 0px; width: 10%"
-      >
-        <button
-          class="btn shadow-sm w-100 text-center"
-          style="font-size: 0.8rem; padding: 5.2px 0"
+      <template v-if="length<=1">
+        <li
+          style="padding: 0px 3px 0px 0; width:10%;height:26px;"
+          class="flex-grow-0 flex-shrink-0 text-center"
         >
-          <img
-            src="/src/assets/icons/expand.png"
-            class="align-middle"
-            style="width: 15px; height: 15px;"
-          />
-        </button>
-      </li>
-      <li class="flex-fill align-self-stretch" :style="length > 1? 'width: 80%' : 'width: 90%'">
+          <button
+            :disabled="length > 1? false : true"
+            @keypress.enter="previousOrNextClicked('PREVIOUS')"
+            @click="previousOrNextClicked('PREVIOUS')"
+            class="btn shadow-sm w-100 text-center p-0 m-0"
+          >
+            <img
+              src="/src/assets/icons/previous.png"
+              class="align-middle"
+              style="width: 13px; height: 13px"
+            />
+          </button>
+        </li>
+      </template>
+      <li
+        class="flex-fill text-center" style="height:26px;"
+      >
         <template v-if="length > 1">
           <ul
-            class="m-0 p-0 flex-box flex-direction-row flex-nowrap list-style-none justify-content-center align-items-center w-100"
+            class="h-100 m-0 p-0 flex-box flex-direction-row flex-nowrap list-style-none justify-content-center align-items-center w-100"
           >
             <li
-              style="padding: 5px 3px"
-              class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
+              style="padding: 0px 3px 0px 0;height:26px;"
+              class="flex-grow-0 flex-shrink-0 text-center"
               :style="
-                length < 11
-                  ? 'width:' + 100 / (length + 2) + '%'
-                  : 'width:' + 100 / 11 + '%'
+                (props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL')?
+                (
+                  length<=9? 'width:' + (100 / (length + 2)) + '%;' : 'width: 9.090909091%;'
+                )
+                :
+                ''
               "
             >
               <button
+                :disabled="length > 1? false : true"
                 @keypress.enter="previousOrNextClicked('PREVIOUS')"
                 @click="previousOrNextClicked('PREVIOUS')"
-                class="btn shadow-sm w-100 text-center"
-                style="padding: 2.7px 0"
+                class="btn shadow-sm w-100 text-center p-0 m-0"
               >
                 <img
                   src="/src/assets/icons/previous.png"
                   class="align-middle"
-                  style="width: 15px; height: 15px"
+                  style="width: 13px; height: 13px"
                 />
               </button>
             </li>
-            <template v-if="length <= 10">
-              <li
-                style="padding: 5px 3px"
-                class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                v-for="pageindex in length"
-                :key="pageindex + '-pagination'"
-                :style="
-                  length < 11
-                    ? 'width:' + 100 / (length + 2) + '%'
-                    : 'width:' + 100 / 11 + '%'
-                "
-              >
-                <button
-                  class="btn shadow-sm w-100 text-center"
-                  style="font-size: 0.8rem; padding: 5.2px 0px"
-                  :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
-                  @keypress.enter="setCurrent(pageindex)"
-                  @click="setCurrent(pageindex)"
+            <template v-if="props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL'">
+              <template v-if="length <= 9">
+                <li
+                  class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                  v-for="pageindex in length"
+                  :key="pageindex + '-pagination'"
+                  :style="'width:' + (100 / (length + 2)) + '%;'"
+                  style="padding: 0 3px;"
                 >
-                  {{ pageindex }}
-                </button>
-              </li>
-            </template>
-            <template v-else-if="length > 10 && length < limit">
-              <template v-for="pageindex in length">
-                <template v-if="pageindex < 5">
-                  <li
-                    style="padding: 5px 3px; width: 8.333333333%"
-                    class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                    :key="pageindex + '-pagination'"
+                  <button
+                    class="shadow-sm text-center btn h-100 w-100 m-0"
+                    style="font-size: 0.8rem;"
+                    :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                    @keypress.enter="setCurrent(pageindex)"
+                    @click="setCurrent(pageindex)"
                   >
-                    <button
-                      class="btn shadow-sm w-100 text-center"
-                      style="font-size: 0.8rem; padding: 5.2px 0px"
-                      :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
-                      @keypress.enter="setCurrent(pageindex)"
-                      @click="setCurrent(pageindex)"
-                    >
-                      {{ pageindex }}
-                    </button>
-                  </li>
+                    {{ pageindex }}
+                  </button>
+                </li>
+              </template>
+              <template v-else>
+                <template v-if="length > 9 && length <= 99">
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 4">
+                      <li
+                        style="width: 9.090909091%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 4">
+                      <li
+                        style="width: 18.181818182%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 4 && current <= length - 2
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="4"
+                          :max="length - 2"
+                          maxlength="2"
+                          size="3"
+                          value="4"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 2 > length">
+                        <li
+                          style="width: 18.181818182%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
                 </template>
-                <template v-else-if="pageindex === 5">
-                  <li
-                    style="padding: 5px 3px; width: 16.666666667%"
-                    class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                    :key="pageindex + '-pagination'"
-                  >
-                    <input
-                      :ref="(el) => (inputpagenumberref = el)"
-                      type="number"
-                      class="shadow-sm w-100 text-center"
-                      style="font-size: 0.8rem; padding: 5.2px 0px"
-                      :style="
-                        current >= 5 && current <= length - 4
-                          ? 'background-color: #F0E68C;'
-                          : ''
-                      "
-                      min="5"
-                      :max="length - 4"
-                      maxlength="3"
-                      size="4"
-                      value="5"
-                      @keypress.enter="previousOrNextClicked('INPUT')"
-                    />
-                  </li>
+                <template v-else-if="length > 99 && length <= 99999">
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 3">
+                      <li
+                        style="width: 9.090909091%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 3">
+                      <li
+                        style="width: 31.818181818%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 3 && current <= length - 1
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="3"
+                          :max="length - 1"
+                          maxlength="5"
+                          size="6"
+                          value="3"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 1 > length">
+                        <li
+                          style="width: 31.818181818%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
                 </template>
                 <template v-else>
-                  <template v-if="pageindex + 4 > length">
-                    <li
-                      style="padding: 5px 3px; width: 8.333333333%"
-                      class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                      :key="pageindex + '-pagination'"
-                    >
-                      <button
-                        class="btn shadow-sm w-100 text-center"
-                        style="font-size: 0.8rem; padding: 5.2px 0px"
-                        :style="
-                          current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
-                        "
-                        @keypress.enter="setCurrent(pageindex)"
-                        @click="setCurrent(pageindex)"
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 2">
+                      <li
+                        style="width: 9.090909091%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
                       >
-                        {{ pageindex }}
-                      </button>
-                    </li>
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 2">
+                      <li
+                        style="width: 36.363636364%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 2 && current <= length - 1
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="2"
+                          :max="length - 1"
+                          maxlength="13"
+                          size="14"
+                          value="2"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 1 > length">
+                        <li
+                          style="width: 36.363636364%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
+                </template>
+              </template>
+            </template>
+            <template v-else-if="props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO'">
+              <template v-if="length <= 6">
+                <li
+                  class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                  v-for="pageindex in length"
+                  :key="pageindex + '-pagination'"
+                  :style="'width:' + (100 / (length + 2)) + '%;'"
+                  style="padding: 0 3px;"
+                >
+                  <button
+                    class="shadow-sm text-center btn h-100 w-100 m-0"
+                    style="font-size: 0.8rem;"
+                    :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                    @keypress.enter="setCurrent(pageindex)"
+                    @click="setCurrent(pageindex)"
+                  >
+                    {{ pageindex }}
+                  </button>
+                </li>
+              </template>
+              <template v-else>
+                <template v-if="length > 6 && length <= 99">
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 3">
+                      <li
+                        style="width: 16.6667%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 3">
+                      <li
+                        style="width: 33.334%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 3 && current <= length - 2
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="3"
+                          :max="length - 2"
+                          maxlength="2"
+                          size="3"
+                          value="3"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 2 > length">
+                        <li
+                          style="width: 16.667%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
+                </template>
+                <template v-else-if="length > 99 && length <= 99999">
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 2">
+                      <li
+                        style="width: 16.667%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 2">
+                      <li
+                        style="width: 50.001%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 2 && current <= length - 1
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="2"
+                          :max="length - 1"
+                          maxlength="5"
+                          size="6"
+                          value="2"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 1 > length">
+                        <li
+                          style="width: 33.334%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
+                </template>
+                <template v-else>
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 2">
+                      <li
+                        style="width: 16.667%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 2">
+                      <li
+                        style="width: 83.335%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 2 && current <= length
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="2"
+                          :max="length"
+                          maxlength="13"
+                          size="14"
+                          value="2"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                  </template>
+                </template>
+              </template>
+            </template>
+            <template v-else-if="props.paginationtype === 'EXCLUDE-FROM-TO'">
+              <template v-if="length <= 8">
+                <li
+                  class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                  v-for="pageindex in length"
+                  :key="pageindex + '-pagination'"
+                  :style="'width:' + (100 / (length + 2)) + '%;'"
+                  style="padding: 0 3px;"
+                >
+                  <button
+                    class="shadow-sm text-center btn h-100 w-100 m-0"
+                    style="font-size: 0.8rem;"
+                    :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                    @keypress.enter="setCurrent(pageindex)"
+                    @click="setCurrent(pageindex)"
+                  >
+                    {{ pageindex }}
+                  </button>
+                </li>
+              </template>
+              <template v-else>
+                <template v-if="length > 8 && length <= 99">
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 4">
+                      <li
+                        style="width: 12.5%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 4">
+                      <li
+                        style="width: 25%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 4 && current <= length - 3
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="4"
+                          :max="length - 3"
+                          maxlength="2"
+                          size="3"
+                          value="4"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 3 > length">
+                        <li
+                          style="width: 12.5%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
+                </template>
+                <template v-else-if="length > 99 && length <= 99999">
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 3">
+                      <li
+                        style="width: 12.5%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 3">
+                      <li
+                        style="width: 37.5%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 3 && current <= length - 1
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="3"
+                          :max="length - 1"
+                          maxlength="5"
+                          size="6"
+                          value="2"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 1 > length">
+                        <li
+                          style="width: 37.5%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
+                </template>
+                <template v-else>
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 2">
+                      <li
+                        style="width: 12.5%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 2">
+                      <li
+                        style="width: 87.5%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 2 && current <= length
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="2"
+                          :max="length"
+                          maxlength="13"
+                          size="14"
+                          value="2"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
                   </template>
                 </template>
               </template>
             </template>
             <template v-else>
-              <template v-for="pageindex in length">
-                <template v-if="pageindex < 5">
-                  <li
-                    style="padding: 5px 3px; width: 8.333333333%"
-                    class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                    :key="pageindex + '-pagination'"
+              <template v-if="length <= 5">
+                <li
+                  class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                  v-for="pageindex in length"
+                  :key="pageindex + '-pagination'"
+                  :style="'width:' + (100 / (length + 2)) + '%;'"
+                  style="padding: 0 3px;"
+                >
+                  <button
+                    class="shadow-sm text-center btn h-100 w-100 m-0"
+                    style="font-size: 0.8rem;"
+                    :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                    @keypress.enter="setCurrent(pageindex)"
+                    @click="setCurrent(pageindex)"
                   >
-                    <button
-                      class="btn shadow-sm w-100 text-center"
-                      style="font-size: 0.8rem; padding: 5.2px 0px"
-                      :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
-                      @keypress.enter="setCurrent(pageindex)"
-                      @click="setCurrent(pageindex)"
-                    >
-                      {{ pageindex }}
-                    </button>
-                  </li>
-                </template>
-                <template v-else-if="pageindex === 5">
-                  <li
-                    style="padding: 5px 3px; width: 24.limitlimit%"
-                    class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                    :key="pageindex + '-pagination'"
-                  >
-                    <input
-                      :ref="(el) => (inputpagenumberref = el)"
-                      type="number"
-                      class="shadow-sm w-100 text-center"
-                      style="font-size: 0.8rem; padding: 5.2px 0px"
-                      :style="
-                        current >= 5 && current <= length - 1
-                          ? 'background-color: #F0E68C;'
-                          : ''
-                      "
-                      min="5"
-                      :max="length - 1"
-                      maxlength="5"
-                      size="6"
-                      value="5"
-                      @keypress.enter="previousOrNextClicked('INPUT')"
-                    />
-                  </li>
+                    {{ pageindex }}
+                  </button>
+                </li>
+              </template>
+              <template v-else>
+                <template v-if="length > 5 && length <= 99">
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 2">
+                      <li
+                        style="width: 20%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 2">
+                      <li
+                        style="width: 40%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 2 && current <= length - 2
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="2"
+                          :max="length - 2"
+                          maxlength="2"
+                          size="3"
+                          value="2"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
+                    <template v-else>
+                      <template v-if="pageindex + 2 > length">
+                        <li
+                          style="width: 20%;padding: 0 3px;"
+                          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                          :key="pageindex + '-pagination'"
+                        >
+                          <button
+                            class="shadow-sm text-center btn h-100 w-100 m-0"
+                            style="font-size: 0.8rem;"
+                            :style="
+                              current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
+                            "
+                            @keypress.enter="setCurrent(pageindex)"
+                            @click="setCurrent(pageindex)"
+                          >
+                            {{ pageindex }}
+                          </button>
+                        </li>
+                      </template>
+                    </template>
+                  </template>
                 </template>
                 <template v-else>
-                  <template v-if="pageindex + 1 > length">
-                    <li
-                      style="padding: 5px 3px; width: 24.limitlimit%"
-                      class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-                      :key="pageindex + '-pagination'"
-                    >
-                      <button
-                        class="btn shadow-sm w-100 text-center"
-                        style="font-size: 0.8rem; padding: 5.2px 0px"
-                        :style="
-                          current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''
-                        "
-                        @keypress.enter="setCurrent(pageindex)"
-                        @click="setCurrent(pageindex)"
+                  <template v-for="pageindex in length">
+                    <template v-if="pageindex < 2">
+                      <li
+                        style="width: 20%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
                       >
-                        {{ pageindex }}
-                      </button>
-                    </li>
+                        <button
+                          class="shadow-sm text-center btn h-100 w-100 m-0"
+                          style="font-size: 0.8rem;"
+                          :style="current > 0 && current === pageindex ? 'background-color: #F0E68C;' : ''"
+                          @keypress.enter="setCurrent(pageindex)"
+                          @click="setCurrent(pageindex)"
+                        >
+                          {{ pageindex }}
+                        </button>
+                      </li>
+                    </template>
+                    <template v-else-if="pageindex === 2">
+                      <li
+                        style="width: 80%;padding: 0 3px;"
+                        class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
+                        :key="pageindex + '-pagination'"
+                      >
+                        <input
+                          :ref="(el) => (inputpagenumberref = el)"
+                          type="number"
+                          class="shadow-sm w-100 text-center h-100"
+                          style="font-size: 0.8rem;"
+                          :style="
+                            current >= 2 && current <= length
+                              ? 'background-color: #F0E68C;'
+                              : ''
+                          "
+                          min="2"
+                          :max="length"
+                          maxlength="13"
+                          size="14"
+                          value="2"
+                          @change="previousOrNextClicked('INPUT')"
+                          @keypress.enter="previousOrNextClicked('INPUT')"
+                        />
+                      </li>
+                    </template>
                   </template>
                 </template>
               </template>
             </template>
             <li
-              style="padding: 5px 3px"
-              class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
+              style="padding: 0px 0px 0px 3px;height:26px;"
+              class="flex-grow-0 flex-shrink-0 text-center"
               :style="
-                length < 11
-                  ? 'width:' + 100 / (length + 2) + '%'
-                  : 'width:' + 100 / 11 + '%'
+                (props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL')?
+                (
+                  length<=9? 'width:' + (100 / (length + 2)) + '%;' : 'width: 9.090909091%;'
+                )
+                :
+                ''
               "
             >
               <button
+                :disabled="length > 1? false : true"
                 @keypress.enter="previousOrNextClicked('NEXT')"
                 @click="previousOrNextClicked('NEXT')"
-                class="btn shadow-sm w-100 text-center"
-                style="padding: 2.7px 0"
+                class="btn shadow-sm w-100 text-center p-0 m-0"
               >
                 <img
                   src="/src/assets/icons/next.png"
                   class="align-middle"
-                  style="width: 15px; height: 15px"
+                  style="width: 13px; height: 13px"
                 />
               </button>
             </li>
           </ul>
         </template>
       </li>
-      <template v-if="length > 1">
+      <template v-if="length<=1">
         <li
-          class="flex-grow-0 flex-shrink-0 align-self-stretch text-center"
-          style="padding: 5px 0px 5px 3px; width: 10%"
+          style="padding: 0px 0px 0px 3px; width:10%;height:26px;"
+          class="flex-grow-0 flex-shrink-0 text-center"
         >
           <button
-            class="btn shadow-sm w-100 text-center"
-            style="font-size: 0.8rem; padding: 5.2px 0"
-            :style="current === 0 && length > 1 ? 'background-color: #F0E68C;' : ''"
-            @keypress.enter="setCurrent(0)"
-            @click="setCurrent(0)"
+            :disabled="length > 1? false : true"
+            @keypress.enter="previousOrNextClicked('NEXT')"
+            @click="previousOrNextClicked('NEXT')"
+            class="btn shadow-sm w-100 text-center p-0 m-0"
           >
             <img
-              src="/src/assets/icons/all.png"
+              src="/src/assets/icons/next.png"
               class="align-middle"
-              style="width: 15px; height: 15px"
+              style="width: 13px; height: 13px"
             />
           </button>
         </li>

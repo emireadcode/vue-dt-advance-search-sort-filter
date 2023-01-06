@@ -29,6 +29,7 @@ function searchStringDefaultObject() {
   return {
     single: "",
     pages: [],
+    deleting: false,
     bottom: false,
     shake: [],
     show: [],
@@ -96,6 +97,7 @@ function formConcatenatedSearch(
                 equalto: {
                   single: "",
                   pages: [],
+                  deleting: false,
                   bottom: false,
                   shake: [],
                   show: [],
@@ -108,6 +110,7 @@ function formConcatenatedSearch(
                 notequalto: {
                   single: "",
                   pages: [],
+                  deleting: false,
                   bottom: false,
                   shake: [],
                   show: [],
@@ -340,6 +343,7 @@ function getNumberTypeObject(item: CardInnerType) {
       equalto: {
         single: "",
         pages: [],
+        deleting: false,
         shake: [],
         bottom: false,
         show: [],
@@ -352,6 +356,7 @@ function getNumberTypeObject(item: CardInnerType) {
       notequalto: {
         single: "",
         pages: [],
+        deleting: false,
         bottom: false,
         shake: [],
         show: [],
@@ -368,11 +373,11 @@ function getNumberTypeObject(item: CardInnerType) {
       exclude: {
         fromto: {
           singlefrom: "",
-          fromto: [],
-          bottom: false,
           singleto: "",
+          bottom: false,
           shake: [],
           pages: [],
+          deleting: false,
           addloading: false,
           loading: false,
           addeditemsref: [],
@@ -383,6 +388,7 @@ function getNumberTypeObject(item: CardInnerType) {
         equalto: {
           single: "",
           pages: [],
+          deleting: false,
           shake: [],
           bottom: false,
           show: [],
@@ -582,6 +588,7 @@ function getNumberStringTypeObject(item: CardInnerType & {
           equalto: {
             single: "",
             pages: [],
+            deleting: false,
             bottom: false,
             shake: [],
             show: [],
@@ -594,6 +601,7 @@ function getNumberStringTypeObject(item: CardInnerType & {
           notequalto: {
             single: "",
             pages: [],
+            deleting: false,
             bottom: false,
             shake: [],
             show: [],
@@ -662,6 +670,7 @@ function getSingleWordStringTypeObject(item: CardInnerType & {
           equalto: {
             single: "",
             pages: [],
+            deleting: false,
             bottom: false,
             shake: [],
             show: [],
@@ -674,6 +683,7 @@ function getSingleWordStringTypeObject(item: CardInnerType & {
           notequalto: {
             single: "",
             pages: [],
+            deleting: false,
             bottom: false,
             shake: [],
             show: [],

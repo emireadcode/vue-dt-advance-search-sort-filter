@@ -8,7 +8,8 @@ import type {
   NumberSearchExcludeEqualToType,
   AtNumber,
   CurrentAndSignalType,
-  CurrentAndSignalInnerType
+  CurrentAndSignalInnerType,
+  EnteredWhenInAndWhenNotInPageType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import { addNewInputEntry, setTabAndResetOthers } from "../helperfunctions/addnewlypastedandnewinputentry";
 import Paste from "./Paste.vue";
@@ -60,17 +61,31 @@ async function addLocalNewInputEntry(
   newinputentry: string,
   inputtype: 'EQUAL-TO' | 'NOT-EQUAL-TO'
 ) {
+  let 
+    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
+      enteredwheninpage: false,
+      enteredwhennotinpage: false
+    })
+  ;
   await addNewInputEntry(
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
     holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>,
+    enteredwheninandwhennot,
     props.from
   );
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO' | 'EQUAL-TO') {
-  let time: NodeJS.Timeout[] = [], timeIndex = 0, ccurrent = ref(-1);
+  let 
+    time: NodeJS.Timeout[] = [], 
+    timeIndex = 0,
+    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
+      enteredwheninpage: false,
+      enteredwhennotinpage: false
+    })
+  ;
   for(let i=0; i<pasteditems.length; i++) {
     let item = pasteditems[i];
     if (item[1] !== "ERROR") {
@@ -80,6 +95,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
           inputtype,
           currentandsignal as ShallowRef<CurrentAndSignalType>,
           holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>,
+          enteredwheninandwhennot,
           props.from
         );
         clearTimeout(time[timeIndex]);
@@ -217,18 +233,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="d-block" style="z-index: 8992;padding: 0 2px">
-    <div class="d-block" style="padding: 0 0 15px 0">
+  <div class="d-block" style="z-index: 8992;padding: 0 0.126rem">
+    <div class="d-block" style="padding: 0 0 0.945rem 0">
       <div
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
       >
-        <div class="flex-w-50" style="padding-right: 5px">
-          <div class="d-block shadow-sm" style="padding: 5px">
-            <div class="d-block" style="padding-bottom: 5px">
+        <div class="flex-w-50" style="padding-right: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem">
+            <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/greater-than.png"
                 class="align-middle"
-                style="width: 24px; height: 24px"
+                style="width: 1.512rem; height: 1.512rem"
               />
             </div>
             <div class="d-block">
@@ -238,18 +254,18 @@ onBeforeUnmount(() => {
                 v-model="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).greaterthan"
                 type="text"
                 class="w-100 text-left"
-                style="height: 30px"
+                style="height: 1.89rem"
               />
             </div>
           </div>
         </div>
-        <div class="flex-w-50" style="padding-left: 5px">
-          <div class="d-block shadow-sm" style="padding: 5px">
-            <div class="d-block" style="padding-bottom: 5px">
+        <div class="flex-w-50" style="padding-left: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem">
+            <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/less-than.png"
                 class="align-middle"
-                style="width: 24px; height: 24px"
+                style="width: 1.512rem; height: 1.512rem"
               />
             </div>
             <div class="d-block">
@@ -259,30 +275,30 @@ onBeforeUnmount(() => {
                 v-model="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).lessthan"
                 type="text"
                 class="w-100 text-left"
-                style="height: 30px"
+                style="height: 1.89rem"
               />
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="d-block" style="padding: 0 0 15px 0">
+    <div class="d-block" style="padding: 0 0 0.945rem 0">
       <div
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
       >
-        <div class="flex-w-50" style="padding-right: 5px">
-          <div class="d-block shadow-sm" style="padding: 5px">
-            <div class="d-block" style="padding-bottom: 5px">
+        <div class="flex-w-50" style="padding-right: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem">
+            <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/equal-to.png"
                 class="align-middle"
-                style="width: 24px; height: 24px"
+                style="width: 1.512rem; height: 1.512rem"
               />
             </div>
             <div
               class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
             >
-              <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
+              <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:0.126rem;">
                 <input
                   @keydown.space.prevent
                   @keypress.enter="
@@ -298,12 +314,12 @@ onBeforeUnmount(() => {
                   v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-left"
-                  style="height: 30px; z-index: 1110"
+                  style="height: 1.89rem; z-index: 1110"
                 />
               </div>
               <div
                 class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
-                style="background-color: #eee; outline: 1px solid rgba(0, 0, 0, 0.2)"
+                style="background-color: #eee; outline: 0.063rem solid rgba(0, 0, 0, 0.2)"
               >
                 <button
                   :disabled="equaltoAddNew ? false : true"
@@ -334,7 +350,7 @@ onBeforeUnmount(() => {
                     ? 'background-color: #F0E68C;'
                     : 'background-color:#eee;'
                   "
-                  style="height:30px; padding:0 2px;"
+                  style="height:1.89rem; padding:0 0.126rem;"
                 >
                   <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
                 </button>
@@ -348,7 +364,7 @@ onBeforeUnmount(() => {
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              :text-area-height="'height:180px;'"
+              :text-area-height="'height:11.34rem;'"
               @return:newlypasteditems="$val => { addPastedItems($val, 'EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
@@ -358,14 +374,14 @@ onBeforeUnmount(() => {
                   <div class="flex-fill text-center">
                     <div
                       class="d-inline-block align-middle shadow-sm"
-                      style="background-color: #fff; width: 15px; height: 15px"
+                      style="background-color: #fff; width: 0.945rem; height: 0.945rem"
                     ></div>
                     Valid
                   </div>
                   <div class="flex-fill text-center">
                     <div
                       class="d-inline-block align-middle shadow-sm"
-                      style="background-color: red; width: 15px; height: 15px"
+                      style="background-color: red; width: 0.945rem; height: 0.945rem"
                     ></div>
                     Invalid
                   </div>
@@ -373,28 +389,29 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
+              paginationtype="NOT-EQUAL-TO"
               :current="[((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current]"
               :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto"
               treetype="NumberSearchExcludeEqualToType"
-              :display-area-height="'height: 157.9px;'"
+              :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
-              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
+              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
-        <div class="flex-w-50" style="padding-left: 5px">
-          <div class="d-block shadow-sm" style="padding: 5px">
-            <div class="d-block" style="padding-bottom: 5px">
+        <div class="flex-w-50" style="padding-left: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem">
+            <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/not-equal-to.png"
                 class="align-middle"
-                style="width:24px;height:24px;"
+                style="width:1.512rem;height:1.512rem;"
               />
             </div>
             <div
               class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
             >
-              <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:2px;">
+              <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right:0.126rem;">
                 <input
                   @keydown.space.prevent
                   @keypress.enter="
@@ -410,12 +427,12 @@ onBeforeUnmount(() => {
                   v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-left"
-                  style="height: 30px; z-index: 1110"
+                  style="height: 1.89rem; z-index: 1110"
                 />
               </div>
               <div
                 class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
-                style="background-color: #eee; outline: 1px solid rgba(0, 0, 0, 0.2)"
+                style="background-color: #eee; outline: 0.063rem solid rgba(0, 0, 0, 0.2)"
               >
                 <button
                   :disabled="notequaltoAddNew ? false : true"
@@ -446,7 +463,7 @@ onBeforeUnmount(() => {
                     ? 'background-color: #F0E68C;'
                     : 'background-color:#eee;'
                   "
-                  style="height:30px; padding:0 2px;"
+                  style="height:1.89rem; padding:0 0.126rem;"
                 >
                   <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
                 </button>
@@ -460,7 +477,7 @@ onBeforeUnmount(() => {
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              :text-area-height="'height:180px;'"
+              :text-area-height="'height:11.34rem;'"
               @return:newlypasteditems="$val => { addPastedItems($val, 'NOT-EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
@@ -471,41 +488,42 @@ onBeforeUnmount(() => {
                     <div class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center">
                       <div
                         class="flex-grow-0 flex-shrink-0 shadow-sm"
-                        style="background-color: #fff; width: 18px; height: 18px"
+                        style="background-color: #fff; width: 1.134rem; height: 1.134rem"
                       ></div>
-                      <div class="font-family flex-grow-0 flex-shrink-0" style="padding-left:3px;">Valid</div>
+                      <div class="font-family flex-grow-0 flex-shrink-0" style="padding-left:0.189rem;">Valid</div>
                     </div>
                   </div>
                   <div class="flex-fill text-center">
                     <div class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center">
                       <div
                         class="flex-grow-0 flex-shrink-0 shadow-sm"
-                        style="background-color: red; width: 18px; height: 18px"
+                        style="background-color: red; width: 1.134rem; height: 1.134rem"
                       ></div>
-                      <div class="font-family flex-grow-0 flex-shrink-0" style="padding-left:3px;">Invalid</div>
+                      <div class="font-family flex-grow-0 flex-shrink-0" style="padding-left:0.189rem;">Invalid</div>
                     </div>
                   </div>
                 </div>
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
+              paginationtype="EQUAL-TO"
               :current="[((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current]"
               :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto"
               treetype="NumberSearchExcludeEqualToType"
-              :display-area-height="'height: 157.9px;'"
+              :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
-              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current = $val; ((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).signal++; triggerCurrentAndSignal(); }"
+              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
       </div>
     </div>
     <div 
-      style="padding: 5px;"
+      style="padding: 0.315rem;"
       class="shadow-sm flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
     >
       <div class="flex-grow-1 flex-shrink-1">
-        <div class="d-block" style="padding-bottom: 5px">
+        <div class="d-block" style="padding-bottom: 0.315rem">
           <label>From</label>
         </div>
         <div class="d-block">
@@ -515,12 +533,12 @@ onBeforeUnmount(() => {
             v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).fromto as NumberSearchType['fromto']).from"
             type="text"
             class="w-100 text-left"
-            style="height: 30px"
+            style="height: 1.89rem"
           />
         </div>
       </div>
       <div class="flex-grow-1 flex-shrink-1">
-        <div class="d-block" style="padding-bottom: 5px">
+        <div class="d-block" style="padding-bottom: 0.315rem">
           <label>To</label>
         </div>
         <div class="d-block">
@@ -530,7 +548,7 @@ onBeforeUnmount(() => {
             v-model.trim="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).fromto as NumberSearchType['fromto']).to"
             type="text"
             class="w-100 text-left"
-            style="height: 30px"
+            style="height: 1.89rem"
           />
         </div>
       </div>
