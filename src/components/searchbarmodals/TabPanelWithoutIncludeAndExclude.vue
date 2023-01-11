@@ -93,7 +93,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
 
 onBeforeMount(() => {
   (concatfieldindex === undefined)?
-    holder.value = JSON.parse(JSON.stringify(cards.value[index].search as StringSearchType)) as StringSearchType
+    holder.value = JSON.parse(JSON.stringify(cards.value[index].search.multiple as StringSearchType)) as StringSearchType
     :
     holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search as StringSearchType)) as StringSearchType
   ;

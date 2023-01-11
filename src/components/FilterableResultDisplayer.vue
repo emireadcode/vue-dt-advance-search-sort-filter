@@ -1,29 +1,32 @@
 <script setup lang="ts">
-import { shallowRef, inject, triggerRef, nextTick, type ShallowRef, type Ref } from "vue";
+import { shallowRef, inject, triggerRef, nextTick, type ShallowRef, onBeforeMount } from "vue";
 import type { KeyToNameType, PrimitiveType, CurrentAndSignalType, CurrentAndSignalInnerType } from "./types/SupportedDatatypesTypeDeclaration";
 import Pagination from "./searchbarmodals/Pagination.vue";
+import type { AccessibilityType } from "./types/accessibility";
 
-let
-  accessibility = inject("accessibility") as {
-    cardschildrentabindex: Ref<Boolean[]>;
-    cardsfilteritemtabindex: Ref<Boolean[]>;
-  },
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
+const 
+  currentandsignal = shallowRef<CurrentAndSignalType>({
+    displayer: {
+      signal: 0,
+      current: 0,
+      closepaste: 0,
+    },
+  }),
+  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
+  holder = inject("cards") as ShallowRef<PrimitiveType[]>,
+  cards = shallowRef<PrimitiveType[]>(),
   index = inject("index") as number
 ;
 
-const currentandsignal = shallowRef<CurrentAndSignalType>({
-  displayer: {
-    signal: 0,
-    current: 0,
-    closepaste: 0,
-  },
-});
+onBeforeMount(() => {
+  (cards.value as PrimitiveType[]) = JSON.parse(JSON.stringify(holder.value));
+  triggerRef(cards);
+})
 
 function handleTabPress(e: KeyboardEvent) {
   nextTick(() => {
     if (e.shiftKey) {
-      document.getElementById(cards.value[index].scroll.areaid)?.focus();
+      document.getElementById((cards.value as PrimitiveType[])[index].scroll.areaid)?.focus();
       e.preventDefault();
       e.stopPropagation();
     }
@@ -36,51 +39,53 @@ function updateCurrent(val: number) {
 }
 
 function selectAllOrNot() {
-  cards.value[index].result.all = !cards.value[index].result.all;
+  (cards.value as PrimitiveType[])[index].result.all = !(cards.value as PrimitiveType[])[index].result.all;
   triggerRef(cards);
 
   nextTick(() => {
-    cards.value[index].result.data.forEach((item) => {
-      if (cards.value[index].result.all) {
+    (cards.value as PrimitiveType[])[index].result.data.forEach((item) => {
+      if ((cards.value as PrimitiveType[])[index].result.all) {
         if (!item.checked) {
-          item.checked = cards.value[index].result.all;
-          cards.value[index].result.totalselection++;
+          item.checked = (cards.value as PrimitiveType[])[index].result.all;
+          (cards.value as PrimitiveType[])[index].result.totalselection++;
         }
       } else {
         if (item.checked) {
-          item.checked = cards.value[index].result.all;
-          cards.value[index].result.totalselection--;
+          item.checked = (cards.value as PrimitiveType[])[index].result.all;
+          (cards.value as PrimitiveType[])[index].result.totalselection--;
         }
       }
     });
     triggerRef(cards);
 
-    if(accessibility.cardsfilteritemtabindex.value[index] === false) {
-      accessibility.cardsfilteritemtabindex.value[index] = true;
+    if((accessibility.value.cardsfilteritemtabindex as boolean[])[index] === false) {
+      (accessibility.value.cardsfilteritemtabindex as boolean[])[index] = true;
+      accessibility.value.updateAccessibility();
     }
   });
 }
 
 function handleSelection(i: number) {
-  cards.value[index].result.data[i].checked = !cards.value[index].result.data[i].checked;
+  (cards.value as PrimitiveType[])[index].result.data[i].checked = !(cards.value as PrimitiveType[])[index].result.data[i].checked;
   triggerRef(cards);
 
   nextTick(() => {
-    if (cards.value[index].result.data[i].checked) {
-      cards.value[index].result.totalselection++;
-      if (cards.value[index].result.totalselection === cards.value[index].result.data.length) {
-        cards.value[index].result.all = true;
+    if ((cards.value as PrimitiveType[])[index].result.data[i].checked) {
+      (cards.value as PrimitiveType[])[index].result.totalselection++;
+      if ((cards.value as PrimitiveType[])[index].result.totalselection === (cards.value as PrimitiveType[])[index].result.data.length) {
+        (cards.value as PrimitiveType[])[index].result.all = true;
       } else {
-        cards.value[index].result.all = false;
+        (cards.value as PrimitiveType[])[index].result.all = false;
       }
     } else {
-      cards.value[index].result.totalselection--;
-      cards.value[index].result.all = false;
+      (cards.value as PrimitiveType[])[index].result.totalselection--;
+      (cards.value as PrimitiveType[])[index].result.all = false;
     }
     triggerRef(cards);
 
-    if(accessibility.cardsfilteritemtabindex.value[index] === false) {
-      accessibility.cardsfilteritemtabindex.value[index] = true;
+    if((accessibility.value.cardsfilteritemtabindex as boolean[])[index] === false) {
+      (accessibility.value.cardsfilteritemtabindex as boolean[])[index] = true;
+      accessibility.value.updateAccessibility();
     }
   });
 }
@@ -89,58 +94,58 @@ function handleSelection(i: number) {
 <template>
   <div class="d-block">
     <div class="d-block shadow-sm" style="z-index:8000;">
-      <div class="m-0 p-0 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100" style="height:30px;background-color: #E8E8E8;outline: 0.063rem solid gray;">
-        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="border: 0.063rem solid gray;">
+      <div class="m-0 p-0 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100" style="height:30px;">
+        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 0.063rem solid gray;">
           <button
-            @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-            class="h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
+            @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
+            class="shadow-sm h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
             style="padding:2.5px 0;border:none;"
           >
-            <img src="/src/assets/icons/horizontal.png" style="width:25px;height:25px;" class="align-middle" />
+            <img src="/src/assets/icons/horizontal.png" style="width:20px;height:20px;" class="align-middle" />
           </button>
         </div>
-        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="border: 0.063rem solid gray;">
+        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 0.063rem solid gray;">
           <button
-            @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+            @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
             class="h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
             style="padding:2.5px 0;border:none;"
           >
-            <img src="/src/assets/icons/vertical.png" style="width:25px;height:25px;" class="align-middle" />
+            <img src="/src/assets/icons/vertical.png" style="width:20px;height:20px;" class="align-middle" />
           </button>
         </div>
         <div class="flex-fill align-self-stretch m-0 p-0">
         </div>
-        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="border: 0.063rem solid gray;">
+        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 0.063rem solid gray;">
           <button
-            @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+            @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
             class="h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
             style="padding:2.5px 0;border:none;"
           >
-            <img src="/src/assets/icons/down-arrow.png" style="width:25px;height:25px;" class="align-middle" />
+            <img src="/src/assets/icons/down-arrow.png" style="width:17px;height:17px;" class="align-middle" />
           </button>
         </div>
-        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="border: 0.063rem solid gray;">
+        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 0.063rem solid gray;">
           <button
-            @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+            @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
             class="h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
             style="padding:2.5px 0;border:none;"
           >
-            <img src="/src/assets/icons/up-arrow.png" style="width:25px;height:25px;" class="align-middle" />
+            <img src="/src/assets/icons/up-arrow.png" style="width:17px;height:17px;" class="align-middle" />
           </button>
         </div>
-        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="border: 0.063rem solid gray;">
+        <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 0.063rem solid gray;">
           <button
-            @click="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; }"
-            :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+            @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+            :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
             class="s-search-btn h-100 m-0 cursor-pointer flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
             style="font-size: 0.9rem;border:none;"
           >
@@ -151,23 +156,23 @@ function handleSelection(i: number) {
       <div style="padding: 0 5px; height:45px;border: 1px solid #E8E8E8;" class="m-0 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100">
         <div class="flex-shrink-0 flex-grow-0">
           <input
-            :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+            :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
             @change="selectAllOrNot()"
             class="align-middle shadow-sm"
             type="checkbox"
             style="width: 15px; height:15px"
-            :checked="cards[index].result.all ? true : false"
+            :checked="(cards as PrimitiveType[])[index].result.all ? true : false"
           />
         </div>
         <div class="flex-fill" style="padding-left: 10px;">
-          <template v-if="parseInt(''+((cards[index].result.data.length) / 100)) > 1">
+          <template v-if="parseInt(''+(((cards as PrimitiveType[])[index].result.data.length) / 100)) > 1">
             <Pagination
               paginationtype="RESULT-DISPLAYER-VERTICAL"
               :_current="[
                 (currentandsignal.displayer as CurrentAndSignalInnerType).signal,
                 (currentandsignal.displayer as CurrentAndSignalInnerType).current
               ]"
-              :length="parseInt(''+((cards[index].result.data.length) / 100))"
+              :length="parseInt(''+(((cards as PrimitiveType[])[index].result.data.length) / 100))"
               @update:current="($val: number) => updateCurrent($val)"
             ></Pagination>
           </template>
@@ -176,27 +181,27 @@ function handleSelection(i: number) {
     </div>
     <div class="d-block position-relative" style="padding-top:1px;">
       <div
-        :id="cards[index].scroll.areaid"
+        :id="(cards as PrimitiveType[])[index].scroll.areaid"
         class="d-block overflow-y-auto overflow-x-hidden shadow-sm listbox"
         style="height: 16.625rem"
-        @focus="accessibility.cardsfilteritemtabindex.value[index] = false"
-        :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-        @keyup.enter="accessibility.cardsfilteritemtabindex.value[index] = true"
-        @click="accessibility.cardsfilteritemtabindex.value[index] = true"
+        @focus="() => { (accessibility.cardsfilteritemtabindex as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+        :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
+        @keyup.enter="() => { (accessibility.cardsfilteritemtabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
+        @click="() => { (accessibility.cardsfilteritemtabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
       >
         <ul class="d-block list-style-none m-0" style="padding: 5px 0px">
           <li
             class="w-100"
-            v-for="(data, dindex) in cards[index].result.data"
-            :key="cards[index].scroll.areaid + '-jjj-' + dindex"
+            v-for="(data, dindex) in (cards as PrimitiveType[])[index].result.data"
+            :key="(cards as PrimitiveType[])[index].scroll.areaid + '-jjj-' + dindex"
           >
             <template
               v-if="
-                cards[index].info.datatype === 'Date' ||
-                cards[index].info.datatype === 'DateTime' ||
-                cards[index].info.datatype === 'Number' ||
-                cards[index].info.datatype === 'Time' ||
-                cards[index].info.datatype === 'Year'
+                (cards as PrimitiveType[])[index].info.datatype === 'Date' ||
+                (cards as PrimitiveType[])[index].info.datatype === 'DateTime' ||
+                (cards as PrimitiveType[])[index].info.datatype === 'Number' ||
+                (cards as PrimitiveType[])[index].info.datatype === 'Time' ||
+                (cards as PrimitiveType[])[index].info.datatype === 'Year'
               "
             >
               <div
@@ -205,13 +210,13 @@ function handleSelection(i: number) {
               >
                 <div class="flex-shrink-0 flex-grow-0">
                   <input
-                    :tabindex="accessibility.cardsfilteritemtabindex.value[index]? 0 : -1"
+                    :tabindex="(accessibility.cardsfilteritemtabindex as boolean[])[index]? 0 : -1"
                     @change="handleSelection(dindex)"
                     :checked="data.checked"
-                    :id="cards[index].scroll.areaid + 'jjj' + dindex"
+                    :id="(cards as PrimitiveType[])[index].scroll.areaid + 'jjj' + dindex"
                     class="align-middle shadow-sm"
                     type="checkbox"
-                    :name="cards[index].scroll.areaid"
+                    :name="(cards as PrimitiveType[])[index].scroll.areaid"
                     style="width: 15px; height: 15px"
                   />
                 </div>
@@ -225,10 +230,10 @@ function handleSelection(i: number) {
                         <label
                           tabindex="-1"
                           style="padding: 8px"
-                          :for="cards[index].scroll.areaid + 'jjj' + dindex"
+                          :for="(cards as PrimitiveType[])[index].scroll.areaid + 'jjj' + dindex"
                           class="d-block align-middle letter-spacing font-0-dot-875-rem h-100"
                         >
-                          <template v-if="cards[index].info.datatype === 'DateTime'">
+                          <template v-if="(cards as PrimitiveType[])[index].info.datatype === 'DateTime'">
                             <div
                               class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
                             >
@@ -249,10 +254,10 @@ function handleSelection(i: number) {
                         <label
                           tabindex="-1"
                           style="padding: 8px"
-                          :for="cards[index].scroll.areaid + 'jjj' + dindex"
+                          :for="(cards as PrimitiveType[])[index].scroll.areaid + 'jjj' + dindex"
                           class="d-block align-middle letter-spacing font-0-dot-875-rem h-100"
                         >
-                          NO {{ cards[index].info.name }}
+                          NO {{ (cards as PrimitiveType[])[index].info.name }}
                         </label>
                       </template>
                     </div>
@@ -267,13 +272,13 @@ function handleSelection(i: number) {
               >
                 <div class="flex-shrink-0 flex-grow-0">
                   <input
-                    :tabindex="accessibility.cardsfilteritemtabindex.value[index]? 0 : -1"
+                    :tabindex="(accessibility.cardsfilteritemtabindex as boolean[])[index]? 0 : -1"
                     @change="handleSelection(dindex)"
                     :checked="data.checked"
-                    :id="cards[index].scroll.areaid + 'jjj' + dindex"
+                    :id="(cards as PrimitiveType[])[index].scroll.areaid + 'jjj' + dindex"
                     class="align-middle shadow-sm"
                     type="checkbox"
-                    :name="cards[index].scroll.areaid"
+                    :name="(cards as PrimitiveType[])[index].scroll.areaid"
                     style="width: 15px; height: 15px"
                   />
                 </div>
@@ -287,11 +292,11 @@ function handleSelection(i: number) {
                         <label
                           tabindex="-1"
                           style="padding: 8px"
-                          :for="cards[index].scroll.areaid + 'jjj' + dindex"
+                          :for="(cards as PrimitiveType[])[index].scroll.areaid + 'jjj' + dindex"
                           class="d-block align-middle letter-spacing font-0-dot-875-rem h-100"
                           >{{
-                            cards[index].info.datatype === "KeyToName"
-                              ? (cards[index] as KeyToNameType).keytonamemapping[data.row]
+                            (cards as PrimitiveType[])[index].info.datatype === "KeyToName"
+                              ? ((cards as PrimitiveType[])[index] as KeyToNameType).keytonamemapping[data.row]
                               : data.row
                           }}</label
                         >
@@ -300,10 +305,10 @@ function handleSelection(i: number) {
                         <label
                           tabindex="-1"
                           style="padding: 8px"
-                          :for="cards[index].scroll.areaid + 'jjj' + dindex"
+                          :for="(cards as PrimitiveType[])[index].scroll.areaid + 'jjj' + dindex"
                           class="d-block align-middle letter-spacing font-0-dot-875-rem h-100"
                         >
-                          NO {{ cards[index].info.name }}
+                          NO {{ (cards as PrimitiveType[])[index].info.name }}
                         </label>
                       </template>
                     </div>
@@ -321,14 +326,14 @@ function handleSelection(i: number) {
       >
         <div class="flex-w-50 m-0 align-self-stretch" style="padding: 0 3px 0 0">
           <button
-            :class="[cards[index].result.totalselection === 0 ? 'cursor-disabled' : 'cursor-pointer']"
-            :style="cards[index].result.totalselection === 0 ? 'color:grey;opacity:0.6;' : 'color:black;opacity:1;'"
-            :aria-disabled="cards[index].result.totalselection === 0 ? true : false"
+            :class="[(cards as PrimitiveType[])[index].result.totalselection === 0 ? 'cursor-disabled' : 'cursor-pointer']"
+            :style="(cards as PrimitiveType[])[index].result.totalselection === 0 ? 'color:grey;opacity:0.6;' : 'color:black;opacity:1;'"
+            :aria-disabled="(cards as PrimitiveType[])[index].result.totalselection === 0 ? true : false"
             class="btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center shadow-sm"
             style="border-radius: 10px; padding: 0.08rem 0"
-            :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+            :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
             @keydown.tab="handleTabPress($event)"
-            @blur="accessibility.cardsfilteritemtabindex.value[index] = false"
+            @blur="() => { (accessibility.cardsfilteritemtabindex as boolean[])[index] = false; accessibility.updateAccessibility(); }"
           >
             <img
               src="/src/assets/icons/filter.png"

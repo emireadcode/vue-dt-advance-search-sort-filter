@@ -26,13 +26,13 @@ function updateAttributeButtonTabClicked(bindex?: number | undefined) {
 
 function setTabDefaultSelection() {
   if(!cards.value[index].concatenated) {
-    cards.value[index].search.tabclicked = true;
+    (cards.value[index].search.multiple as StringSearchType).tabclicked = true;
     if(cards.value[index].disableincludeandexclude !== undefined 
       && 
       !cards.value[index].disableincludeandexclude
     ) {
-      (cards.value[index].search.include as StringSearchType).tabclicked = true;
-      (cards.value[index].search.exclude as StringSearchType).tabclicked = false;
+      (cards.value[index].search.multiple?.include as StringSearchType).tabclicked = true;
+      (cards.value[index].search.multiple?.exclude as StringSearchType).tabclicked = false;
     }
   }
   else {

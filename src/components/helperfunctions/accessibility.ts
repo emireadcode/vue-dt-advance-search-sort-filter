@@ -1,27 +1,32 @@
-import type { Ref } from "vue";
+import type { AccessibilityType } from './../types/accessibility';
+import type { ShallowRef  } from 'vue';
 
-export function enableAllCardsTabIndex(cardtabindex: Ref<Boolean[]>) {
-  cardtabindex.value.forEach((_item, index) => {
-    cardtabindex.value[index] = true;
+export function enableAllCardsTabIndex(accessibility: ShallowRef<AccessibilityType>) {
+  (accessibility.value.cardstabindex as boolean[]).forEach((_item, index) => {
+    (accessibility.value.cardstabindex as boolean[])[index] = true;
   });
+  accessibility.value.updateAccessibility();
 }
 
-export function disableAllCardsChildrenTabIndex(cardchildrentabindex: Ref<Boolean[]>) {
-  cardchildrentabindex.value.forEach((_item, index) => {
-    cardchildrentabindex.value[index] = false;
+export function disableAllCardsChildrenTabIndex(accessibility: ShallowRef<AccessibilityType>) {
+  (accessibility.value.cardschildrentabindex as boolean[]).forEach((_item, index) => {
+    (accessibility.value.cardschildrentabindex as boolean[])[index] = false;
   });
+  accessibility.value.updateAccessibility();
 }
 
-export function disableAllCardsFilterItemTabIndex(filteritemtabindex: Ref<Boolean[]>) {
-  filteritemtabindex.value.forEach((_item, index) => {
-    filteritemtabindex.value[index] = false;
+export function disableAllCardsFilterItemTabIndex(accessibility: ShallowRef<AccessibilityType>) {
+  (accessibility.value.cardsfilteritemtabindex as boolean[]).forEach((_item, index) => {
+    (accessibility.value.cardsfilteritemtabindex as boolean[])[index] = false;
   });
+  accessibility.value.updateAccessibility();
 }
 
-export function disableOtherCardsChildrenTabIndex(curindex: number, cardchildrentabindex: Ref<Boolean[]>) {
-  cardchildrentabindex.value.forEach((_item, index) => {
+export function disableOtherCardsChildrenTabIndex(curindex: number, accessibility: ShallowRef<AccessibilityType>) {
+  (accessibility.value.cardschildrentabindex as boolean[]).forEach((_item, index) => {
     if(curindex !== index) {
-      cardchildrentabindex.value[index] = false;
+      (accessibility.value.cardschildrentabindex as boolean[])[index] = false;
     }
   });
+  accessibility.value.updateAccessibility();
 }

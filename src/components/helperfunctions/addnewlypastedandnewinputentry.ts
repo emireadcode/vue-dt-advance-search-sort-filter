@@ -21,7 +21,7 @@ function scrollToElement(el: HTMLDivElement | HTMLLIElement) {
 
 export async function repaginateExcludeEqualtoPage(
   currentandsignal:  ShallowRef<CurrentAndSignalType>,
-  holder: ShallowRef<NumberType['search']>
+  holder: ShallowRef<NumberType['search']['multiple']>
 ) {
   let
   allinflatarray = [],
@@ -33,32 +33,32 @@ export async function repaginateExcludeEqualtoPage(
   ;
   for(
     let i=0;
-    i<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length;
+    i<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length;
     i++
   ) {
     let 
-      jsize = ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length
+      jsize = ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length
     ;
     if(jsize === 0) {
-      ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.splice(i, 1);
+      ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.splice(i, 1);
     }
-    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages = [
-      ...((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.filter((item: string[] | undefined | null) => (item !== undefined && item !== null))
+    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages = [
+      ...((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.filter((item: string[] | undefined | null) => (item !== undefined && item !== null))
     ];
     triggerRef(holder);
   }
   allinflatarray = storeAllInExcludeEqualToPagesIntoAFlatArray(
-    holder as ShallowRef<NumberType['search']>
+    holder as ShallowRef<NumberType['search']['multiple']>
   ) as string[];
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages = [];
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref = [];
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref = [];
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).endoflistitemref = undefined;
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addloading = false;
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).loading = false;
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show = [];
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake = [];
-  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).bottom = false;
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages = [];
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref = [];
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref = [];
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).endoflistitemref = undefined;
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addloading = false;
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).loading = false;
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show = [];
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake = [];
+  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).bottom = false;
   triggerRef(holder);
   allinflatarray.forEach(async (item) => {
     await addNewInputEntry(
@@ -77,7 +77,7 @@ export async function repaginateExcludeEqualtoPage(
 async function isAlreadyInPageArray(
   currentandsignal: ShallowRef<CurrentAndSignalType>,
   newinputentry: string | [string, string],
-  holder: ShallowRef<NumberType['search'] | AtNumber<NumberSearchType> | StringSearchType>,
+  holder: ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType> | StringSearchType>,
   direction: 'DIRECT' | 'INDIRECT-CHECK-WHETHER-NEWINPUTENTRY-WITHIN-RANGE-OF-EXCLUDE-FROMTO' | 'INDIRECT-CHECK-WHETHER-RANGE-NEWINPUTENTRY-COVERS-EXCLUDE-EQUALTO',
   inputtype?: 'WORD' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO' | 'NOT-EQUAL-TO' | 'EQUAL-TO' | undefined,
   from?: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL" | undefined
@@ -91,15 +91,27 @@ async function isAlreadyInPageArray(
         (holder.value as StringSearchType).pages.length
         : (
           inputtype==='EQUAL-TO'?
-          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages.length
+          (
+            (
+              (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+              holder.value as NumberType['search']['multiple'] : 
+              (holder.value as AtNumber<NumberSearchType>).search
+            )?.equalto as NumberSearchExcludeEqualToType
+          ).pages.length
           : (
             inputtype==='NOT-EQUAL-TO'?
-            (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages.length
+            (
+              (
+                (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                holder.value as NumberType['search']['multiple'] : 
+                (holder.value as AtNumber<NumberSearchType>).search
+              )?.notequalto as NumberSearchExcludeEqualToType
+            ).pages.length
             : (
               inputtype=='EXCLUDE-EQUAL-TO'?
-              ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length
               :
-              ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages.length
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length
             )
           )
         )
@@ -113,15 +125,27 @@ async function isAlreadyInPageArray(
           (holder.value as StringSearchType).pages[i].length
           : (
             inputtype==='EQUAL-TO'?
-            (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages[i].length
+            (
+              (
+                (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                holder.value as NumberType['search']['multiple'] : 
+                (holder.value as AtNumber<NumberSearchType>).search
+              )?.equalto as NumberSearchExcludeEqualToType
+            ).pages[i].length
             : (
               inputtype==='NOT-EQUAL-TO'?
-              (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages[i].length
+              (
+                (
+                  (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                  holder.value as NumberType['search']['multiple'] : 
+                  (holder.value as AtNumber<NumberSearchType>).search
+                )?.notequalto as NumberSearchExcludeEqualToType
+              ).pages[i].length
               : (
                 inputtype=='EXCLUDE-EQUAL-TO'?
-                ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length
                 :
-                ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i].length
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i].length
               )
             )
           )
@@ -131,17 +155,29 @@ async function isAlreadyInPageArray(
         if(inputtype==='WORD' || inputtype==='EQUAL-TO' || inputtype==='NOT-EQUAL-TO' || inputtype==='EXCLUDE-EQUAL-TO') {
           if(newinputentry === (
             inputtype==='WORD'?
-              (holder.value as StringSearchType).pages[i][j]
+            (holder.value as StringSearchType).pages[i][j]
+            : (
+              inputtype==='EQUAL-TO'?
+              (
+                (
+                  (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                  holder.value as NumberType['search']['multiple'] : 
+                  (holder.value as AtNumber<NumberSearchType>).search
+                )?.equalto as NumberSearchExcludeEqualToType
+              ).pages[i][j]
               : (
-                inputtype==='EQUAL-TO'?
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages[i][j]
-                  : (
-                    inputtype==='NOT-EQUAL-TO'?
-                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages[i][j]
-                      : 
-                      ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]
-                  )
+                inputtype==='NOT-EQUAL-TO'?
+                (
+                  (
+                    (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                    holder.value as NumberType['search']['multiple'] : 
+                    (holder.value as AtNumber<NumberSearchType>).search
+                  )?.notequalto as NumberSearchExcludeEqualToType
+                ).pages[i][j]
+                : 
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]
               )
+            )
           )) {
             pageindex = i;
             pos = j;
@@ -153,31 +189,34 @@ async function isAlreadyInPageArray(
           if(
             (
               (
-                parseFloat(newinputentry[0]) >= parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
+                parseFloat(newinputentry[0]) >= parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
                 &&
                 (
-                  parseFloat(newinputentry[0]) < parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
+                  parseFloat(newinputentry[0]) < parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
                   &&
-                  parseFloat(newinputentry[1]) >= parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
+                  parseFloat(newinputentry[1]) >= parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
                 )
               )
               ||
               (
-                parseFloat(newinputentry[0]) >= parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
+                parseFloat(newinputentry[0]) >= parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
                 &&
-                parseFloat(newinputentry[1]) <= parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
+                parseFloat(newinputentry[1]) <= parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
               )
               ||
               (
-                parseFloat(newinputentry[0]) <= parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
+                parseFloat(newinputentry[0]) <= parseFloat(
+                  (
+                    (holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType
+                  ).pages[i][j][0]
+                )
                 &&
                 (
-
                   parseFloat(newinputentry[1]) >= parseFloat(
                     (
                       (
-                        holder.value as NumberType['search']
-                      ).exclude?.fromto as NumberSearchExcludeFromToType
+                        holder.value as NumberType['search']['multiple']
+                      )?.exclude?.fromto as NumberSearchExcludeFromToType
                     ).pages[i][j][1]
                   )
                   ||
@@ -185,16 +224,16 @@ async function isAlreadyInPageArray(
                     parseFloat(newinputentry[1]) <= parseFloat(
                       (
                         (
-                          holder.value as NumberType['search']
-                        ).exclude?.fromto as NumberSearchExcludeFromToType
+                          holder.value as NumberType['search']['multiple']
+                        )?.exclude?.fromto as NumberSearchExcludeFromToType
                       ).pages[i][j][1]
                     )
                     &&
                     parseFloat(newinputentry[1]) >= parseFloat(
                       (
                         (
-                          holder.value as NumberType['search']
-                        ).exclude?.fromto as NumberSearchExcludeFromToType
+                          holder.value as NumberType['search']['multiple']
+                        )?.exclude?.fromto as NumberSearchExcludeFromToType
                       ).pages[i][j][0]
                     )
                   )
@@ -202,9 +241,17 @@ async function isAlreadyInPageArray(
               )
             )
             ||
-            parseFloat(newinputentry[1]) === parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
+            parseFloat(newinputentry[1]) === parseFloat(
+              (
+                (holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType
+              ).pages[i][j][0]
+            )
             ||
-            parseFloat(newinputentry[0]) === parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
+            parseFloat(newinputentry[0]) === parseFloat(
+              (
+                (holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType
+              ).pages[i][j][1]
+            )
           ) {
             pageindex = i;
             pos = j;
@@ -220,18 +267,18 @@ async function isAlreadyInPageArray(
     if(typeof newinputentry === 'string') {
       for(
         let i=0;
-        i<((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages.length;
+        i<((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length;
         i++
       ) {
         for(
           let j=0;
-          j<((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i].length;
+          j<((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i].length;
           j++
         ) {
           if(
-            parseFloat(newinputentry) >= parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
+            parseFloat(newinputentry) >= parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0])
             &&
-            parseFloat(newinputentry) <= parseFloat(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
+            parseFloat(newinputentry) <= parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][1])
           ) {
             pageindex = i;
             pos = j;
@@ -241,12 +288,12 @@ async function isAlreadyInPageArray(
               (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = i;
               (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).signal++;
               triggerRef(currentandsignal);
-              if(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[pos] as HTMLDivElement) {
-                scrollToElement(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[pos] as HTMLDivElement);
-                (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.backgroundColor = "red";
-                (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.color = "#fff";
-                ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).show[pos] = true;
-                ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake[pos] = true;
+              if(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[pos] as HTMLDivElement) {
+                scrollToElement(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[pos] as HTMLDivElement);
+                (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.backgroundColor = "red";
+                (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.color = "#fff";
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).show[pos] = true;
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake[pos] = true;
                 triggerRef(holder);
               }
               clearTimeout(time3);
@@ -254,17 +301,17 @@ async function isAlreadyInPageArray(
            
             let time1: NodeJS.Timeout;
             time1 = setTimeout(() => {
-              ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake[pos] = true;
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake[pos] = true;
               triggerRef(holder);
               clearTimeout(time1);
             }, 800);
             let time2: NodeJS.Timeout;
             time2 = setTimeout(() => {
-              if(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement) {
-                if(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos].style.backgroundColor !== '#fff') {
-                  (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.backgroundColor = "#fff";
-                  (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.color = "black";
-                  ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake[pos] = false;
+              if(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement) {
+                if(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos].style.backgroundColor !== '#fff') {
+                  (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.backgroundColor = "#fff";
+                  (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.color = "black";
+                  ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake[pos] = false;
                   triggerRef(holder);
                 }
               }
@@ -297,18 +344,18 @@ async function isAlreadyInPageArray(
         ;
         for(
           let i=0;
-          i<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length;
+          i<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length;
           i++
         ) {
           for(
             let j=0;
-            j<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length;
+            j<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length;
             j++
           ) {
             if(
-              parseFloat(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) >= parseFloat(newinputentry[0])
+              parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) >= parseFloat(newinputentry[0])
               &&
-              parseFloat(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) <= parseFloat(newinputentry[1])
+              parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) <= parseFloat(newinputentry[1])
             ) {
               pageindex = i;
               pos = j;
@@ -317,30 +364,30 @@ async function isAlreadyInPageArray(
                 (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = i;
                 (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).signal++;
                 triggerRef(currentandsignal);
-                if(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j] as HTMLDivElement) {
-                  scrollToElement(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j] as HTMLDivElement);
-                  (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.backgroundColor="red";
-                  (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.color="#fff";
-                  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show[j] = true;
-                  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = true;
+                if(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j] as HTMLDivElement) {
+                  scrollToElement(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j] as HTMLDivElement);
+                  (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.backgroundColor="red";
+                  (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.color="#fff";
+                  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show[j] = true;
+                  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = true;
                   triggerRef(holder);
                 }
                 clearTimeout(time3[time3Index]);
               }, 400);
               time3Index++;
               time1[time1Index] = setTimeout(() => {
-                ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = true;
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = true;
                 triggerRef(holder);
                 clearTimeout(time1[time1Index]);
               }, 900);
               time1Index++;
               time2[time2Index] = setTimeout(() => {
-                if(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement) {
-                  if((((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.backgroundColor !== "#fff") {
-                    (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.backgroundColor = "#fff";
-                    (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.color = "black";
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = false;
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show[j] = false;
+                if(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement) {
+                  if((((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.backgroundColor !== "#fff") {
+                    (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.backgroundColor = "#fff";
+                    (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.color = "black";
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = false;
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show[j] = false;
                     triggerRef(holder);
                   }
                 }
@@ -348,7 +395,7 @@ async function isAlreadyInPageArray(
               }, 910);
               time2Index++;
               time7[time7Index] = setTimeout(() => {
-                ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = false;
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[j] = false;
                 triggerRef(holder);
                 clearTimeout(time7[time7Index]);
               }, 915);
@@ -357,31 +404,31 @@ async function isAlreadyInPageArray(
           }
         }
         time4 = setTimeout(() => {
-          for(let i=0; i<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length; i++) {
-            for(let j=0; j<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length; j++) {          
+          for(let i=0; i<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length; i++) {
+            for(let j=0; j<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length; j++) {          
               if(
-                parseFloat(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) >= parseFloat(newinputentry[0])
+                parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) >= parseFloat(newinputentry[0])
                 &&
-                parseFloat(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) <= parseFloat(newinputentry[1])
+                parseFloat(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]) <= parseFloat(newinputentry[1])
               ) {
-                if(i in Object.keys(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages)) {
+                if(i in Object.keys(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages)) {
                   if(
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j] !== null
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j] !== null
                     &&
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j] !== undefined
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j] !== undefined
                   ) {
-                    delete ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j];
-                    delete ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[j];
-                    delete ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j];
-                    delete ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j];
-                    delete ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show[j];
+                    delete ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j];
+                    delete ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[j];
+                    delete ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j];
+                    delete ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j];
+                    delete ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show[j];
                     triggerRef(holder);
                     somethingdeleted = true;
                   }
                 }
                 else {
                   i = -1;
-                  j = ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length - 1;
+                  j = ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length - 1;
                 }
               }
             }
@@ -391,28 +438,28 @@ async function isAlreadyInPageArray(
         time5 = setTimeout(() => {
           for(
             let i=0; 
-            i<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length; 
+            i<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length; 
             i++
           ) {
             for(
               let j=0; 
-              j<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length; 
+              j<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length; 
               j++
             ) {
-              ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i] = [
-                ...((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].filter((item) => (item !== undefined && item !== null))
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i] = [
+                ...((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].filter((item) => (item !== undefined && item !== null))
               ];
-              ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake = [
-                ...((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake.filter((item) => (item !== undefined && item !== null))
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake = [
+                ...((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake.filter((item) => (item !== undefined && item !== null))
               ];
-              ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref = [
-                ...((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref.filter((item) => (item !== undefined && item !== null))
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref = [
+                ...((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref.filter((item) => (item !== undefined && item !== null))
               ];
-              ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref = [
-                ...((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref.filter((item) => (item !== undefined && item !== null))
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref = [
+                ...((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref.filter((item) => (item !== undefined && item !== null))
               ];
-              ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show = [
-                ...((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show.filter((item) => (item !== undefined && item !== null))
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show = [
+                ...((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show.filter((item) => (item !== undefined && item !== null))
               ];
               triggerRef(holder);
             }
@@ -423,7 +470,7 @@ async function isAlreadyInPageArray(
           if(somethingdeleted) {
             if(await repaginateExcludeEqualtoPage(
               currentandsignal,
-              holder as ShallowRef<NumberType['search']>
+              holder as ShallowRef<NumberType['search']['multiple']>
             )) {
               let inpagepageindexandpos = await isAlreadyInPageArray(
                 currentandsignal,
@@ -447,20 +494,20 @@ async function isAlreadyInPageArray(
 }
 
 function storeAllInExcludeEqualToPagesIntoAFlatArray(
-  holder: ShallowRef<NumberType['search']>
+  holder: ShallowRef<NumberType['search']['multiple']>
 ) {
   let allinflatarray = [];
   for(
     let i=0;
-    i<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length;
+    i<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length;
     i++
   ) {
     for(
       let j=0;
-      j<((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length;
+      j<((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i].length;
       j++
     ) {
-      allinflatarray.push(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]);
+      allinflatarray.push(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]);
     }
   }
   
@@ -471,7 +518,7 @@ export async function addNewInputEntry(
   newinputentry: string | [string, string],
   inputtype: 'WORD' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO' | 'NOT-EQUAL-TO' | 'EQUAL-TO',
   currentandsignal: ShallowRef<CurrentAndSignalType>,
-  holder: ShallowRef<NumberType['search'] | AtNumber<NumberSearchType> | StringSearchType>,
+  holder: ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType> | StringSearchType>,
   enteredwheninandwhennot: ShallowRef<EnteredWhenInAndWhenNotInPageType>,
   from?: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL" | undefined
 ) {
@@ -587,41 +634,41 @@ export async function addNewInputEntry(
               if(!inpagepageindexandpos.inpage) {
                 enteredwheninandwhennot.value.enteredwhennotinpage = true;
                 triggerRef(enteredwheninandwhennot);
-                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).addloading = true;
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).addloading = true;
                 triggerRef(holder);
                 let time1: NodeJS.Timeout;
                 time1 = setTimeout(() => {
-                  scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).endoflistitemref as HTMLLIElement);
+                  scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).endoflistitemref as HTMLLIElement);
                   clearTimeout(time1);
                 }, 110);
                 let time2: NodeJS.Timeout;
                 time2 = setTimeout(async () => {
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).addloading = false;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).addloading = false;
                   triggerRef(holder);
-                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages.length > 0) {
-                    if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages.length - 1].length < numberlimit) {
-                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages.length - 1].push(newinputentry); 
+                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length > 0) {
+                    if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1].length < numberlimit) {
+                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1].push(newinputentry); 
                     }
                     else {
-                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages = [
-                        ...(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages,
+                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages = [
+                        ...(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages,
                         [newinputentry]
                       ];
                     }
                   }
                   else {
-                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages = [
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages = [
                       [newinputentry]
                     ];
                   }
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).show.push(true);
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).shake.push(false);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).show.push(true);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).shake.push(false);
                   triggerRef(holder);
                   clearTimeout(time2);
                 }, 100);
                 let time3: NodeJS.Timeout;
                 time3 = setTimeout(() => {
-                  (currentandsignal.value.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+                  (currentandsignal.value.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
                   (currentandsignal.value.equalto as CurrentAndSignalInnerType).signal++;
                   triggerRef(currentandsignal);
                   clearTimeout(time3);
@@ -640,29 +687,29 @@ export async function addNewInputEntry(
                 }, 400);
                 let time7: NodeJS.Timeout;
                 time7 = setTimeout(() => {
-                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement) {
-                    scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement);
-                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "red";
-                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "#fff";
-                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).show[inpagepageindexandpos.pos] = true;
-                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
+                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement) {
+                    scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement);
+                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "red";
+                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "#fff";
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).show[inpagepageindexandpos.pos] = true;
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
                     triggerRef(holder);
                   }
                   clearTimeout(time7);
                 }, 500);
                 let time1: NodeJS.Timeout;
                 time1 = setTimeout(() => {
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
                   triggerRef(holder);
                   clearTimeout(time1);
                 }, 800);
                 let time2: NodeJS.Timeout;
                 time2 = setTimeout(() => {
-                  if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement)) {
-                    if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
-                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "#fff";
-                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "black";
-                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
+                  if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement)) {
+                    if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
+                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "#fff";
+                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "black";
+                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
                       triggerRef(holder);
                     }
                   }
@@ -670,12 +717,12 @@ export async function addNewInputEntry(
                 }, 910);
                 let time4: NodeJS.Timeout;
                 time4 = setTimeout(() => {
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
                   triggerRef(holder);
                   clearTimeout(time4);
                 }, 915);
               }
-              (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).single = '';
+              (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).single = '';
               triggerRef(holder);
             }
           }
@@ -696,41 +743,41 @@ export async function addNewInputEntry(
               if(!inpagepageindexandpos.inpage) {
                 enteredwheninandwhennot.value.enteredwhennotinpage = true;
                 triggerRef(enteredwheninandwhennot);
-                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).addloading = true;
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).addloading = true;
                 triggerRef(holder);
                 let time1: NodeJS.Timeout;
                 time1 = setTimeout(() => {
-                  scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).endoflistitemref as HTMLLIElement);
+                  scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).endoflistitemref as HTMLLIElement);
                   clearTimeout(time1);
                 }, 110);
                 let time2: NodeJS.Timeout;
                 time2 = setTimeout(async () => {
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).addloading = false;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).addloading = false;
                   triggerRef(holder);
-                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages.length > 0) {
-                    if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages.length - 1].length < numberlimit) {
-                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages.length - 1].push(newinputentry);
+                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length > 0) {
+                    if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1].length < numberlimit) {
+                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages[(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1].push(newinputentry);
                     }
                     else {
-                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages = [
-                        ...(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages,
+                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages = [
+                        ...(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages,
                         [newinputentry]
                       ];
                     }
                   }
                   else {
-                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages = [
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages = [
                       [newinputentry]
                     ];
                   }
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).show.push(true);
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).shake.push(false);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).show.push(true);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).shake.push(false);
                   triggerRef(holder);
                   clearTimeout(time2);
                 }, 100);
                 let time3: NodeJS.Timeout;
                 time3 = setTimeout(() => {
-                  (currentandsignal.value.notequalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
+                  (currentandsignal.value.notequalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
                   (currentandsignal.value.notequalto as CurrentAndSignalInnerType).signal++;
                   triggerRef(currentandsignal);
                   clearTimeout(time3);
@@ -749,29 +796,29 @@ export async function addNewInputEntry(
                 }, 400);
                 let time7: NodeJS.Timeout;
                 time7 = setTimeout(() => {
-                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement) {
-                    scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement);
-                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "red";
-                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "#fff";
-                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).show[inpagepageindexandpos.pos] = true;
-                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
+                  if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement) {
+                    scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos.pos] as HTMLDivElement);
+                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "red";
+                    ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "#fff";
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).show[inpagepageindexandpos.pos] = true;
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
                     triggerRef(holder);
                   }
                   clearTimeout(time7);
                 }, 500);
                 let time1: NodeJS.Timeout;
                 time1 = setTimeout(() => {
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = true;
                   triggerRef(holder);
                   clearTimeout(time1);
                 }, 800);
                 let time2: NodeJS.Timeout;
                 time2 = setTimeout(() => {
-                  if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement)) {
-                    if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
-                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "#fff";
-                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "black";
-                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
+                  if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement)) {
+                    if(((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
+                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.backgroundColor = "#fff";
+                      ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos.pos] as HTMLDivElement).style.color = "black";
+                      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
                       triggerRef(holder);
                     }
                   }
@@ -779,12 +826,12 @@ export async function addNewInputEntry(
                 }, 910);
                 let time4: NodeJS.Timeout;
                 time4 = setTimeout(() => {
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos.pos] = false;
                   triggerRef(holder);
                   clearTimeout(time4);
                 }, 915);
               }
-              (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).single = '';
+              (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).single = '';
               triggerRef(holder);
             }
           }
@@ -806,41 +853,41 @@ export async function addNewInputEntry(
                 if(!inpagepageindexandpos2.inpage) {
                   enteredwheninandwhennot.value.enteredwhennotinpage = true;
                   triggerRef(enteredwheninandwhennot);
-                  ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addloading = true;
+                  ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addloading = true;
                   triggerRef(holder);
                   let time1: NodeJS.Timeout;
                   time1 = setTimeout(() => {
-                    scrollToElement(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).endoflistitemref as HTMLLIElement);
+                    scrollToElement(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).endoflistitemref as HTMLLIElement);
                     clearTimeout(time1);
                   }, 110);
                   let time2: NodeJS.Timeout;
                   time2 = setTimeout(async () => {
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addloading = false;
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addloading = false;
                     triggerRef(holder);
-                    if(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length > 0) {
-                      if(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1].length < numberlimit) {
-                        ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages[((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1].push(newinputentry); 
+                    if(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length > 0) {
+                      if(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1].length < numberlimit) {
+                        ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1].push(newinputentry); 
                       }
                       else {
-                        ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages = [
-                          ...((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages,
+                        ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages = [
+                          ...((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages,
                           [newinputentry]
                         ];
                       }
                     }
                     else {
-                      ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages = [
+                      ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages = [
                         [newinputentry]
                       ];
                     }
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show.push(true);
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake.push(false);
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show.push(true);
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake.push(false);
                     triggerRef(holder);
                     clearTimeout(time2);
                   }, 100);
                   let time3: NodeJS.Timeout;
                   time3 = setTimeout(() => {
-                    (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+                    (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
                     (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).signal++;
                     triggerRef(currentandsignal);
                     clearTimeout(time3);
@@ -859,29 +906,29 @@ export async function addNewInputEntry(
                   }, 400);
                   let time7: NodeJS.Timeout;
                   time7 = setTimeout(() => {
-                    if(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement) {
-                      scrollToElement(((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement);
-                      (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "red";
-                      (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "#fff";
-                      ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).show[inpagepageindexandpos2.pos] = true;
-                      ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = true;
+                    if(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement) {
+                      scrollToElement(((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement);
+                      (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "red";
+                      (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "#fff";
+                      ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).show[inpagepageindexandpos2.pos] = true;
+                      ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = true;
                       triggerRef(holder);
                     }
                     clearTimeout(time7);
                   }, 500);
                   let time1: NodeJS.Timeout;
                   time1 = setTimeout(() => {
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = true;
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = true;
                     triggerRef(holder);
                     clearTimeout(time1);
                   }, 800);
                   let time2: NodeJS.Timeout;
                   time2 = setTimeout(() => {
-                    if((((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement)) {
-                      if((((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
-                        (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "#fff";
-                        (((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "black";
-                        ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = false;
+                    if((((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement)) {
+                      if((((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
+                        (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "#fff";
+                        (((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "black";
+                        ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = false;
                         triggerRef(holder);
                       }
                     }
@@ -889,13 +936,13 @@ export async function addNewInputEntry(
                   }, 910);
                   let time4: NodeJS.Timeout;
                   time4 = setTimeout(() => {
-                    ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = false;
+                    ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).shake[inpagepageindexandpos2.pos] = false;
                     triggerRef(holder);
                     clearTimeout(time4);
                   }, 915);
                 }
               }
-              ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).single = '';
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).single = '';
               triggerRef(holder);
             }
           }
@@ -924,47 +971,47 @@ export async function addNewInputEntry(
         if(!inpagepageindexandpos2.inpage) {
           enteredwheninandwhennot.value.enteredwhennotinpage = true;
           triggerRef(enteredwheninandwhennot);
-          ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).addloading = true;
+          ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).addloading = true;
           triggerRef(holder);
           let time1: NodeJS.Timeout;
           time1 = setTimeout(() => {
-            scrollToElement(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).endoflistitemref as HTMLLIElement);
+            scrollToElement(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).endoflistitemref as HTMLLIElement);
             clearTimeout(time1);
           }, 110);
           let time2: NodeJS.Timeout;
           time2 = setTimeout(async () => {
-            ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).addloading = false;
+            ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).addloading = false;
             triggerRef(holder);
-            if(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages.length > 0) {
-              if(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1].length < numberlimit) {
-                ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages[((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1].push(newinputentry); 
+            if(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length > 0) {
+              if(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1].length < numberlimit) {
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages[((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1].push(newinputentry); 
               }
               else {
-                ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages = [
-                  ...((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages,
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages = [
+                  ...((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages,
                   [newinputentry]
                 ];
               }
             }
             else {
-              ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages = [
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages = [
                 [newinputentry]
               ];
             }
-            ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).show.push(true);
-            ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake.push(false);
+            ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).show.push(true);
+            ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake.push(false);
             triggerRef(holder);
             clearTimeout(time2);
           }, 100);
           let time3: NodeJS.Timeout;
           time3 = setTimeout(() => {
-            (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
+            (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
             (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).signal++;
             triggerRef(currentandsignal);
             clearTimeout(time3);
           }, 120);
-          ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).singlefrom = '';
-          ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).singleto = '';
+          ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom = '';
+          ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).singleto = '';
           triggerRef(holder);
         }
         else {
@@ -980,29 +1027,29 @@ export async function addNewInputEntry(
           }, 400);
           let time7: NodeJS.Timeout;
           time7 = setTimeout(() => {
-            if(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement) {
-              scrollToElement(((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement);
-              (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "red";
-              (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "#fff";
-              ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).show[inpagepageindexandpos2.pos] = true;
-              ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = true;
+            if(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement) {
+              scrollToElement(((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement);
+              (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "red";
+              (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "#fff";
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).show[inpagepageindexandpos2.pos] = true;
+              ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = true;
               triggerRef(holder);
             }
             clearTimeout(time7);
           }, 500);
           let time1: NodeJS.Timeout;
           time1 = setTimeout(() => {
-            ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = true;
+            ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = true;
             triggerRef(holder);
             clearTimeout(time1);
           }, 800);
           let time2: NodeJS.Timeout;
           time2 = setTimeout(() => {
-            if((((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement)) {
-              if((((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
-                (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "#fff";
-                (((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "black";
-                ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = false;
+            if((((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement)) {
+              if((((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor !== '#fff') {
+                (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.backgroundColor = "#fff";
+                (((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[inpagepageindexandpos2.pos] as HTMLDivElement).style.color = "black";
+                ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = false;
                 triggerRef(holder);
               }
             }
@@ -1010,7 +1057,7 @@ export async function addNewInputEntry(
           }, 910);
           let time4: NodeJS.Timeout;
           time4 = setTimeout(() => {
-            ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = false;
+            ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).shake[inpagepageindexandpos2.pos] = false;
             triggerRef(holder);
             clearTimeout(time4);
           }, 915);
@@ -1025,19 +1072,19 @@ export async function addNewInputEntry(
           (currentandsignal.value.word as CurrentAndSignalInnerType).signal++;
         }
         else if(inputtype==='EQUAL-TO') {
-          (currentandsignal.value.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+          (currentandsignal.value.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
           (currentandsignal.value.equalto as CurrentAndSignalInnerType).signal++;
         }
         else if(inputtype==='NOT-EQUAL-TO') {
-          (currentandsignal.value.notequalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
+          (currentandsignal.value.notequalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
           (currentandsignal.value.notequalto as CurrentAndSignalInnerType).signal++;
         }
         else if(inputtype=='EXCLUDE-EQUAL-TO') {
-          (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']).exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+          (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']['multiple'])?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
           (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).signal++;
         }
         else {
-          (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']).exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
+          (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = ((holder.value as NumberType['search']['multiple'])?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
           (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).signal++;
         }
         triggerRef(currentandsignal);
@@ -1181,70 +1228,70 @@ export function deletePastedOrNewInputEntry(
 
 export function setTabAndResetOthers(
   tab: "GREATER-THAN" | "LESS-THAN" | "EQUAL-TO" | "NOT-EQUAL-TO" | "FROM-TO",
-  holder: ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>,
+  holder: ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
   from?: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL" | undefined
 ) {
   if (tab === "GREATER-THAN") {
-    if(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).greaterthan.trim().length > 0) {
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).lessthan = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.from = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.to = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages = [];
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages = [];
+    if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.greaterthan as string).trim().length > 0) {
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).lessthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.from = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.to = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages = [];
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages = [];
     }
   } else if (tab === "LESS-THAN") {
-    if(((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).lessthan.trim().length > 0) {
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).greaterthan = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.from = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.to = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages = [];
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages = [];
+    if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.lessthan as string).trim().length > 0) {
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).greaterthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.from = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.to = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages = [];
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages = [];
     }
   } else if (tab === "EQUAL-TO") {
     if(
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).single.trim().length > 0
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).single.trim().length > 0
       ||
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages.length > 0
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length > 0
     ) {
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).greaterthan = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).lessthan = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.from = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.to = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages = [];
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).greaterthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).lessthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.from = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.to = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages = [];
     }
   } else if (tab === "NOT-EQUAL-TO") {
     if(
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).single.trim().length > 0
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).single.trim().length > 0
       ||
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages.length > 0
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length > 0
     ) {
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).greaterthan = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).lessthan = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.from = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.to = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages = [];
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).greaterthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).lessthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.from = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.to = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages = [];
     }
   } else {
     if(
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.from.trim().length > 0
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.from.trim().length > 0
       ||
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).fromto.to.trim().length > 0
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.to.trim().length > 0
     ) {
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).greaterthan = "";
-      ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).lessthan = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).single = "";
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).equalto as NumberSearchExcludeEqualToType).pages = [];
-      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).notequalto as NumberSearchExcludeEqualToType).pages = [];
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).greaterthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).lessthan = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).single = "";
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages = [];
+      (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages = [];
     }
   }
   
-  ((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? (holder.value as NumberType['search']) : ((holder.value as AtNumber<NumberSearchType>).search as AtNumber<NumberSearchType>['search'])).tab = tab;
+  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search) as NumberSearchType).tab = tab;
   triggerRef(holder);
 }

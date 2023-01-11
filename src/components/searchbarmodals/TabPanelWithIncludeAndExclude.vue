@@ -46,7 +46,7 @@ provide("wordtypeandconcatfieldindex", {wordtype: props.wordtype, concatfieldind
     <IncludeOrExcludeTabs></IncludeOrExcludeTabs>
     <div class="d-block">
       <template v-if="concatfieldindex === undefined">
-        <template v-if="(cards[index].search.include as StringSearchType).tabclicked">
+        <template v-if="(cards[index].search.multiple?.include as StringSearchType).tabclicked">
           <IncludeOrExcludeTabPanel context="DESCRIBE-INCLUDE"></IncludeOrExcludeTabPanel>
         </template>
         <template v-else>

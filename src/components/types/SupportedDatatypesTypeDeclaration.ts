@@ -43,12 +43,7 @@ export interface IdentityType {
 }  
   
 export interface YearType extends IdentityType {
-  search: {
-    tab: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO";
-    greaterthan: string;
-    lessthan: string;
-    multiple_or_single?: number[];
-    range: number[];
+  search: DateInnerType['days_months_years']['years'] & {
     trueorfalse: boolean;
   };
 }
@@ -154,27 +149,37 @@ export type SingleWordConcatenatedType = {
 export interface MultipleWordsStringType extends IdentityType {
   concatenated?: MultipleWordsStringConcatenatedFieldType | undefined;
   disableincludeandexclude?: boolean | undefined;
-  search: StringSearchType & {
-    include?: StringSearchType | undefined;
-    exclude?: StringSearchType | undefined;
-    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+  search: {
+    searchtype: 'SINGLE' | 'MULTIPLE';
+    searchedornot: boolean;
+    single?: string | undefined;
+    multiple?: StringSearchType & {
+      include?: StringSearchType | undefined;
+      exclude?: StringSearchType | undefined;
+      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+    } | undefined;
     trueorfalse: boolean;
   };
-  searchFrom?: "DOM" | "SERVER";
+  searchFrom: "DOM" | "SERVER";
 }
   
 export interface SingleWordStringType extends IdentityType {
   concatenated?: SingleWordStringConcatenatedFieldType | undefined;
   disableincludeandexclude?: boolean | undefined;
-  search: StringSearchType & {
-    include?: StringSearchType | undefined;
-    exclude?: StringSearchType | undefined;
-    includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
-    atnumbersearch?: AtNumber<NumberSearchType> | undefined;
+  search: {
+    searchtype: 'SINGLE' | 'MULTIPLE';
+    searchedornot: boolean;
+    single?: string | undefined;
+    multiple?: StringSearchType & {
+      include?: StringSearchType | undefined;
+      exclude?: StringSearchType | undefined;
+      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
+      atnumbersearch?: AtNumber<NumberSearchType> | undefined;
+    } | undefined;
     trueorfalse: boolean;
   };
   fixedlengthofstring?: number | undefined;
-  searchFrom?: "DOM" | "SERVER";
+  searchFrom: "DOM" | "SERVER";
 }
 
 export interface NumberStringType extends SingleWordStringType {}
@@ -242,6 +247,8 @@ export type DateInnerType = {
         };
         years: {
           format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN";
+          greaterthan?: string | undefined;
+          lessthan?: string | undefined;
           years: {
             [key: string | number]: {
               selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
@@ -256,8 +263,8 @@ export interface TimeType extends IdentityType {
     from_to_time: string[]; //[from, to] always in range
     trueorfalse: boolean;
   };
-  searchFrom?: "DOM" | "SERVER";
-  timeFormat: TimeFormat["timeFormat"] | {};
+  searchFrom: "DOM" | "SERVER";
+  timeFormat: TimeFormat["timeFormat"];
 }
   
 export interface DateType extends IdentityType {
@@ -265,19 +272,12 @@ export interface DateType extends IdentityType {
     trueorfalse: boolean;
   };
   dateFormat: DateFormat["dateFormat"];
-  searchFrom?: "DOM" | "SERVER";
+  searchFrom: "DOM" | "SERVER";
   isoweek: boolean;
 }
-  
-export interface DateTimeType extends IdentityType {
-  search: DateInnerType & {
-    from_to_time: string[]; //[from, to] always in range
-    trueorfalse: boolean;
-  };
-  searchFrom?: "DOM" | "SERVER";
-  timeFormat: TimeFormat["timeFormat"] | {};
-  dateFormat: DateFormat["dateFormat"];
-  isoweek: boolean;
+
+export interface DateTimeType extends IdentityType, TimeType, DateType {
+  search: DateType['search'] & TimeType['search'];
 }
 
 export type NumberSearchType = {
@@ -322,20 +322,25 @@ export type NumberSearchExcludeEqualToType = {
 };
 
 export interface NumberType extends IdentityType {
-  search: NumberSearchType & {
+  search: {
     trueorfalse: boolean;
-    exclude?:
-      | {
-          fromto?:
-            | NumberSearchExcludeFromToType
-            | undefined;
-          equalto?:
-            | NumberSearchExcludeEqualToType
-            | undefined;
-        }
-      | undefined;
+    searchtype: 'SINGLE' | 'MULTIPLE';
+    searchedornot: boolean;
+    single?: string | undefined;
+    multiple?: NumberSearchType & {
+      exclude?:
+        | {
+            fromto?:
+              | NumberSearchExcludeFromToType
+              | undefined;
+            equalto?:
+              | NumberSearchExcludeEqualToType
+              | undefined;
+          }
+        | undefined;
+    } | undefined;
   };
-  searchFrom?: "DOM" | "SERVER";
+  searchFrom: "DOM" | "SERVER";
 }
   
 export type CardInnerType = {
@@ -390,14 +395,14 @@ export type DistinctRecordType = {
   
 export type PrimitiveType =
   | YearType
-  | NumberType
-  | MultipleWordsStringType
-  | KeyToNameType
   | DateType
   | DateTimeType
   | TimeType
+  | NumberType
+  | MultipleWordsStringType
   | SingleWordStringType
-  | NumberStringType;
+  | NumberStringType
+  | KeyToNameType;
   
 export type DateFormat = {
   dateFormat:
@@ -552,10 +557,10 @@ export type DateFormat = {
   
 export type TimeFormat = {
   timeFormat:
-    | "24-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO"
-    | "24-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO"
-    | "12-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO"
-    | "12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO"
-    | "24-HOUR-CLOCK-WITH-SECONDS"
-    | "12-HOUR-CLOCK-WITH-SECONDS";
+    | "24-HCWOSWLZ"
+    | "24-HCWOSWOLZ"
+    | "12-HCWOSWLZ"
+    | "12-HCWOSWOLZ"
+    | "24-HCWS"
+    | "12-HCWS";
 };

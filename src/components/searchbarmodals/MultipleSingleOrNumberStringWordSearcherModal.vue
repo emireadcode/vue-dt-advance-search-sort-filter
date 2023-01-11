@@ -4,16 +4,12 @@ import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, S
 import TabPanelWithIncludeAndExclude from "./TabPanelWithIncludeAndExclude.vue";
 import TabPanelWithoutIncludeAndExclude from "./TabPanelWithoutIncludeAndExclude.vue";
 import SingleOrMultipleWordsStringAttributeInfoNameTabs from "./SingleOrMultipleWordsStringAttributeInfoNameTabs.vue";
+import type { AccessibilityType } from "../types/accessibility";
 
 const
   cards = inject("cards") as ShallowRef<(NumberStringType | SingleWordStringType | MultipleWordsStringType)[]>,
-  index = inject("index") as number
-;
-
-let
-  accessibility = inject("accessibility") as {
-    cardsmultiplesearchopenstatus: Ref<Boolean[]>;
-  }
+  index = inject("index") as number,
+  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>
 ;
 
 </script>
@@ -33,7 +29,7 @@ let
               ></SingleOrMultipleWordsStringAttributeInfoNameTabs>
               <div class="d-block m-0 overflow-hidden" style="padding: 0 10px;">
                 <template v-if="!cards[index].concatenated">
-                  <template v-if="cards[index].search.tabclicked">
+                  <template v-if="cards[index].search.multiple?.tabclicked">
                     <template v-if="cards[index].disableincludeandexclude!==undefined && cards[index].disableincludeandexclude===false">
                       <TabPanelWithIncludeAndExclude 
                         :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
@@ -76,8 +72,8 @@ let
             >
               <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
                 <button
-                  @keypress.enter="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
-                  @click="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
+                  @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                  @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
                 >
@@ -89,8 +85,8 @@ let
                 style="padding-right: 2.5px;"
               >
                 <button
-                  @keypress.enter="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
-                  @click="accessibility.cardsmultiplesearchopenstatus.value[index] = false"
+                  @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                  @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
                 >

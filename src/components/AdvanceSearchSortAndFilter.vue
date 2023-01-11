@@ -58,7 +58,7 @@ onBeforeMount(() => {
     <template v-if="open">
       <Teleport to="body">
         <AdvanceSearchSortAndFilterModal
-          @modal:close="($val) => (open = $val)"
+          @modal:close="$val => (open = $val)"
           :cards="cards"
         ></AdvanceSearchSortAndFilterModal>
       </Teleport>

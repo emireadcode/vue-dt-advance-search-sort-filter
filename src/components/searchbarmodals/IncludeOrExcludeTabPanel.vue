@@ -50,7 +50,7 @@ if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
       if((cards.value[index] as SingleWordStringType | NumberStringType).fixedlengthofstring !== undefined) {
         provide(
           "mainnumbersearcherui", 
-          shallowRef(JSON.parse(JSON.stringify((cards.value[index] as SingleWordStringType | NumberStringType).search.atnumbersearch)))
+          shallowRef(JSON.parse(JSON.stringify((cards.value[index] as SingleWordStringType | NumberStringType).search.multiple?.atnumbersearch)))
         )
       }
     }
@@ -126,8 +126,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
 
 onBeforeMount(() => {
   if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
-    holder.value = JSON.parse(JSON.stringify(cards.value[index].search as StringSearchType)) as StringSearchType;
-    format.value = cards.value[index].search.includeorexcludeformat;
+    holder.value = JSON.parse(JSON.stringify(cards.value[index].search.multiple as StringSearchType)) as StringSearchType;
+    format.value = cards.value[index].search.multiple?.includeorexcludeformat;
   }
   else {
     if(props.context === 'DESCRIBE-INCLUDE') {

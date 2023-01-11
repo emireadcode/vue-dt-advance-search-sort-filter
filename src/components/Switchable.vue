@@ -1,74 +1,58 @@
 <script setup lang="ts">
-import { inject, type ShallowRef, triggerRef, nextTick, ref, type Ref } from "vue";
+import { shallowRef, inject, type ShallowRef, triggerRef, nextTick, ref, type Ref } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
-import { useBooleanDebouncedRef } from "./composable/useBooleanDebouncedRef";
 import {
   disableOtherCardsChildrenTabIndex
 } from "./helperfunctions/accessibility";
+import type { AccessibilityType } from "./types/accessibility";
+
+type SwitchableType = {
+  done: boolean;
+  sliderRef: HTMLDivElement | null;
+  trueLabelRef: HTMLAnchorElement | null;
+  falseLabelRef: HTMLAnchorElement | null;
+  focusStatus: boolean;
+  shiftTabStatus: boolean;
+  trueorfalse: boolean;
+  handleShiftTab: (e: KeyboardEvent) => void;
+  updateTrueOrFalse: (e: KeyboardEvent | MouseEvent) => void;
+  updateSwitchableObject: () => void;
+};
 
 const
+  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
   props = defineProps<{
     truelabel: string;
     falselabel: string;
   }>(),
   index = inject("index") as number,
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>
+  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
+  switchableobject = shallowRef<SwitchableType>({
+    done: false,
+    sliderRef: null,
+    trueLabelRef: null,
+    falseLabelRef: null,
+    focusStatus: false,
+    shiftTabStatus: false,
+    trueorfalse: false,
+    handleShiftTab: (e: KeyboardEvent) => {},
+    updateTrueOrFalse: (e: KeyboardEvent | MouseEvent) => {},
+    updateSwitchableObject: () => {},
+  })
 ;
 
-let
-  done = ref(false),
-  accessibility = inject("accessibility") as {
-    cardstabindex: Ref<Boolean[]>;
-    cardschildrentabindex: Ref<Boolean[]>;
-  },
-  sliderRef = ref<HTMLDivElement>(),
-  trueLabelRef = ref<HTMLAnchorElement>(),
-  falseLabelRef = ref<HTMLAnchorElement>(),
-  focusStatus = ref<Boolean>(),
-  shiftTabStatus = ref<Boolean>(),
-  trueorfalse = useBooleanDebouncedRef(cards.value[index].search.trueorfalse)
-;
-
-function updateTrueOrFalse(e: KeyboardEvent | MouseEvent) {
-  if(done.value === false) {
-    done.value = true;
-    let time: NodeJS.Timeout;
-    time = setTimeout(() => {
-      if(trueorfalse.value) {
-        cards.value[index].search.trueorfalse = false;
-      }
-      else {
-        cards.value[index].search.trueorfalse = true;
-      }
-
-      triggerRef(cards);
-        
-      accessibility.cardschildrentabindex.value[index] = true;
-      disableOtherCardsChildrenTabIndex(index, accessibility.cardschildrentabindex);
-        
-      (sliderRef.value as HTMLDivElement).focus();
-
-      if(e instanceof KeyboardEvent) {
-        document.getElementById(cards.value[index].scroll.areaid + '-switch')?.click();
-        e.preventDefault();
-      }
-      
-      done.value = false;
-
-      clearTimeout(time);
-      
-    }, 50);
-  }
-}
-
-function handleShiftTab(e: KeyboardEvent) {
-  shiftTabStatus.value = true;
+switchableobject.value.handleShiftTab = (e: KeyboardEvent) => {
+  switchableobject.value.shiftTabStatus = true;
+  switchableobject.value.updateSwitchableObject();
   nextTick(() => {
     if (e.shiftKey) {
-      sliderRef.value?.blur();
-      trueLabelRef.value?.focus();
-      if(focusStatus.value) {
-        (sliderRef.value as HTMLDivElement).blur();
+      switchableobject.value.sliderRef?.blur();
+      switchableobject.value.updateSwitchableObject();
+      switchableobject.value.trueLabelRef?.focus();
+      switchableobject.value.updateSwitchableObject();
+      if(switchableobject.value.focusStatus) {
+        (switchableobject.value.sliderRef as HTMLDivElement).blur();
+        switchableobject.value.updateSwitchableObject();
         nextTick(() => {
           document.getElementById('mix-btn-'+cards.value[index].info.attribute)?.focus();
         });
@@ -77,17 +61,59 @@ function handleShiftTab(e: KeyboardEvent) {
       e.stopPropagation();
     }
   });
-}
+};
+
+switchableobject.value.updateTrueOrFalse = (e: KeyboardEvent | MouseEvent) => {
+  if(switchableobject.value.done === false) {
+    switchableobject.value.done = true;
+    switchableobject.value.updateSwitchableObject();
+    let time: NodeJS.Timeout;
+    time = setTimeout(() => {
+      if(switchableobject.value.trueorfalse) {
+        cards.value[index].search.trueorfalse = false;
+      }
+      else {
+        cards.value[index].search.trueorfalse = true;
+      }
+
+      triggerRef(cards);
+        
+      (accessibility.value.cardschildrentabindex as boolean[])[index] = true;
+      disableOtherCardsChildrenTabIndex(index, accessibility);
+        
+      (switchableobject.value.sliderRef as HTMLDivElement).focus();
+      switchableobject.value.updateSwitchableObject();
+
+      if(e instanceof KeyboardEvent) {
+        document.getElementById(cards.value[index].scroll.areaid + '-switch')?.click();
+        e.preventDefault();
+      }
+      
+      switchableobject.value.done = false;
+      switchableobject.value.updateSwitchableObject();
+
+      clearTimeout(time);
+      
+    }, 50);
+  }
+};
+
+switchableobject.value.updateSwitchableObject = () => {
+  triggerRef(switchableobject);
+};
+
+switchableobject.value.trueorfalse = cards.value[index].search.trueorfalse;
+triggerRef(switchableobject);
 
 </script>
 
 <template>
   <label
     role="switch"
-    :aria-checked="(trueorfalse as boolean)"
+    :aria-checked="(switchableobject.trueorfalse as boolean)"
     :for="cards[index].scroll.areaid + '-switch'"
-    @click.stop="updateTrueOrFalse($event)"
-    @keypress.enter.stop="updateTrueOrFalse($event)"
+    @click.stop="switchableobject.updateTrueOrFalse($event)"
+    @keypress.enter.stop="switchableobject.updateTrueOrFalse($event)"
     class="d-inline-block w-100 h-100 position-relative"
     style="background-color: #eee;"
   >
@@ -97,24 +123,24 @@ function handleShiftTab(e: KeyboardEvent) {
     >
       <div class="flex-w-50 bold align-self-stretch h-100">
         <a
-          :ref="(el) => trueLabelRef = el as HTMLAnchorElement"
+          :ref="(el) => switchableobject.trueLabelRef = el as HTMLAnchorElement"
           class="d-block underline-none text-center cursor-pointer switch-btn h-100"
-          :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+          :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
           aria-pressed="true"
           aria-label="relatively"
-          @focus="() => { (trueorfalse? focusStatus=true : focusStatus=false); focusStatus? (sliderRef as HTMLDivElement).focus() : (sliderRef as HTMLDivElement).blur(); shiftTabStatus = false; }"
+          @focus="() => { (switchableobject.trueorfalse? switchableobject.focusStatus=true : switchableobject.focusStatus=false); switchableobject.focusStatus? (switchableobject.sliderRef as HTMLDivElement).focus() : (switchableobject.sliderRef as HTMLDivElement).blur(); switchableobject.shiftTabStatus = false; switchableobject.updateSwitchableObject(); }"
         >
           {{ truelabel }}
         </a>
       </div>
       <div class="flex-w-50 bold align-self-stretch h-100">
         <a
-          :ref="(el) => falseLabelRef = el as HTMLAnchorElement"
+          :ref="(el) => { switchableobject.falseLabelRef = el as HTMLAnchorElement; }"
           class="d-block underline-none text-center cursor-pointer switch-btn h-100"
-          :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
+          :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
           aria-pressed="true"
           aria-label="unrelatively"
-          @focus="() => { (trueorfalse? focusStatus=false : focusStatus=true); focusStatus? (sliderRef as HTMLDivElement).focus() : (sliderRef as HTMLDivElement).blur(); shiftTabStatus = false; }"
+          @focus="() => { (switchableobject.trueorfalse? switchableobject.focusStatus=false : switchableobject.focusStatus=true); switchableobject.focusStatus? (switchableobject.sliderRef as HTMLDivElement).focus() : (switchableobject.sliderRef as HTMLDivElement).blur(); switchableobject.shiftTabStatus = false; switchableobject.updateSwitchableObject(); }"
         >
           {{ falselabel }}
         </a>
@@ -126,21 +152,22 @@ function handleShiftTab(e: KeyboardEvent) {
       @click.stop=""
       @keypress.enter.stop=""
       type="checkbox"
-      v-model="(trueorfalse as boolean)"
+      @input="() => { switchableobject.trueorfalse = !switchableobject.trueorfalse; switchableobject.updateSwitchableObject(); }"
+      :value="(switchableobject.trueorfalse as boolean)"
     />
     <div
-      @keydown.tab="handleShiftTab($event)"
-      :ref="el => sliderRef = el as HTMLDivElement"
-      :tabindex="accessibility.cardschildrentabindex.value[index] && focusStatus? 0 : -1"
+      @keydown.tab="switchableobject.handleShiftTab($event)"
+      :ref="el => { switchableobject.sliderRef = el as HTMLDivElement; }"
+      :tabindex="(accessibility.cardschildrentabindex as boolean[])[index] && switchableobject.focusStatus? 0 : -1"
       class="d-block align-middle position-absolute m-0 t-0 h-100 slider"
-      @blur="trueorfalse && shiftTabStatus? (falseLabelRef as HTMLAnchorElement).focus() : (falseLabelRef as HTMLAnchorElement).blur()"
+      @blur="() => { switchableobject.trueorfalse && switchableobject.shiftTabStatus? (switchableobject.falseLabelRef as HTMLAnchorElement).focus() : (switchableobject.falseLabelRef as HTMLAnchorElement).blur(); switchableobject.updateSwitchableObject(); }"
     >
       <a 
         class="d-block underline-none text-center cursor-pointer h-100 switch-btn"
         tabindex="-1"
-        :aria-label="trueorfalse ? 'Selected relatively ' : 'Selected unrelatively '"
+        :aria-label="switchableobject.trueorfalse ? 'Selected relatively ' : 'Selected unrelatively '"
       >{{
-        trueorfalse ? truelabel : falselabel
+        switchableobject.trueorfalse ? truelabel : falselabel
       }}</a>
     </div>
   </label>

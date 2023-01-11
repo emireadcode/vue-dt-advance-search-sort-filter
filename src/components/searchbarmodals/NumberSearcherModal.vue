@@ -17,17 +17,17 @@ import type {
   CurrentAndSignalType,
   CurrentAndSignalInnerType,
   EnteredWhenInAndWhenNotInPageType,
+  NumberSearchType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import ReusableNumberSearch from "./ReusableNumberSearch.vue";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
+import type { AccessibilityType } from "../types/accessibility";
 
 const
   index = inject("index") as number,
-  accessibility = inject("accessibility") as {
-    cardsmultiplesearchopenstatus: Ref<Boolean[]>;
-  },
+  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
   currentandsignal = shallowRef<CurrentAndSignalType>({
     exclude: {
       fromto: {
@@ -44,7 +44,7 @@ const
   }),
   openexclude = ref(false),
   cards = inject("cards") as ShallowRef<NumberType[]>,
-  holder = shallowRef<NumberType['search']>()
+  holder = shallowRef<NumberType['search']['multiple']>()
 ;
 
 provide("mainnumbersearcherui", holder);
@@ -59,7 +59,12 @@ function triggerCurrentAndSignal() {
 
 function resetExclude(action: boolean) {
   if(action) {
-    (holder.value as NumberType['search']).exclude = {
+    (holder.value as  (NumberSearchType & {
+      exclude?: {
+        fromto?: NumberSearchExcludeFromToType | undefined;
+        equalto?: NumberSearchExcludeEqualToType | undefined;
+      } | undefined;
+    })).exclude = {
       equalto : {
         single: "",
         loading: false,
@@ -105,7 +110,7 @@ async function addLocalNewInputEntry(
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as ShallowRef<NumberType['search']>,
+    holder as ShallowRef<NumberType['search']['multiple']>,
     enteredwheninandwhennot
   );
 }
@@ -128,7 +133,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
           (inputtype==='EXCLUDE-EQUAL-TO')? item[0] : [splititem[0].trim(), splititem[1].trim()],
           inputtype,
           currentandsignal as ShallowRef<CurrentAndSignalType>,
-          holder as ShallowRef<NumberType['search']>,
+          holder as ShallowRef<NumberType['search']['multiple']>,
           enteredwheninandwhennot
         );
         clearTimeout(time[timeIndex]);
@@ -274,7 +279,7 @@ const clear = computed(() => {
 });
 
 onBeforeMount(() => {
-  holder.value = JSON.parse(JSON.stringify(cards.value[index].search)) as NumberType['search'];
+  holder.value = JSON.parse(JSON.stringify(cards.value[index].search.multiple)) as NumberType['search']['multiple'];
 });
 
 </script>

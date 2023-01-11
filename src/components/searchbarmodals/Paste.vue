@@ -527,7 +527,7 @@ onBeforeMount(() => {
         </div>
         <Teleport to="body">
           <div v-if="pasteexpanded" class="d-block position-relative">
-            <transition name="modal">
+            <Transition name="modal">
               <div
                 class="position-fixed h-100 w-100 overflow-auto user-select-none"
                 style="z-index: 1800"
@@ -645,12 +645,12 @@ onBeforeMount(() => {
                   </div>
                 </div>
               </div>
-            </transition>
+            </Transition>
           </div>
         </Teleport>
       </template>
       <template v-if="datatype === 'Date'">
-        <div class="d-block text-center" style="padding: 11.3px 0">
+        <div class="d-block text-center" style="padding: 15.3px 0">
           <button
             class="btn shadow-sm w-100 font-family"
             style="border-radius: 50px; padding: 12px; font-size: 1.2rem; background-color: #f0e68c;"

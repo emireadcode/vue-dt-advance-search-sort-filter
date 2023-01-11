@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { provide, type ShallowRef, ref, onBeforeMount, onMounted } from "vue";
+import { shallowRef, provide, type ShallowRef, ref, onBeforeMount, onMounted, triggerRef } from "vue";
 import {
   enableAllCardsTabIndex,
   disableAllCardsChildrenTabIndex,
@@ -7,6 +7,7 @@ import {
   disableOtherCardsChildrenTabIndex
 } from "./helperfunctions/accessibility";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
+import type { AccessibilityType } from "./types/accessibility";
 import RefreshUndoRedoCloseButton from "./RefreshUndoRedoCloseButton.vue";
 import Card from "./Card.vue";
 
@@ -14,55 +15,55 @@ const
   props = defineProps<{
     cards: ShallowRef<PrimitiveType[]>;
   }>(),
-  cards = props.cards
+  emits = defineEmits<{
+    (e: "modal:close", action: boolean): void;
+  }>(),
+  cards = props.cards,
+  accessibility = shallowRef<AccessibilityType>({
+    cardscontainerref: null,
+    refreshundoredoclosetabindex: false,
+    cardsref: [],
+    cardstabindex: [],
+    cardschildrentabindex: [],
+    cardsmultiplesearchopenstatus: [],
+    cardsfilteritemtabindex: [],
+    updateAccessibility: () => {}
+  })
 ;
 
-let
-  cardscontainerref = ref<HTMLDivElement>(),
-  refreshundoredoclosecontainerref = ref<HTMLDivElement>(),
-  refreshundoredoclosetabindex = ref<Boolean>(),
-  cardsref = ref<HTMLDivElement[]>([]),
-  cardstabindex = ref<Boolean[]>([]),
-  cardschildrentabindex = ref<Boolean[]>([]),
-  cardsmultiplesearchopenstatus = ref<Boolean[]>([]),
-  cardsfilteritemtabindex = ref<Boolean[]>([])
-;
+accessibility.value.updateAccessibility = () => {
+  triggerRef(accessibility);
+};
+triggerRef(accessibility);
 
 provide("cards", cards);
 
-provide("accessibility", {
-  cardscontainerref,
-  refreshundoredoclosetabindex,
-  cardsref,
-  cardstabindex,
-  cardschildrentabindex,
-  cardsmultiplesearchopenstatus,
-  cardsfilteritemtabindex,
-});
+provide("accessibility", accessibility);
 
 function enableAllCardsTabIndexAndDisableAllCardsChildrenAndFilterItemTabIndex() {
-  enableAllCardsTabIndex(cardstabindex);
-  disableAllCardsChildrenTabIndex(cardschildrentabindex);
-  disableAllCardsFilterItemTabIndex(cardsfilteritemtabindex);
+  enableAllCardsTabIndex(accessibility);
+  disableAllCardsChildrenTabIndex(accessibility);
+  disableAllCardsFilterItemTabIndex(accessibility);
 }
 
 function enableACardChildrenTabIndexAndDisableOtherCardsChildrenTabIndex(index: number) {
-  cardschildrentabindex.value[index] = true;
-  disableOtherCardsChildrenTabIndex(index, cardschildrentabindex);
+  (accessibility.value.cardschildrentabindex as boolean[])[index] = true;
+  disableOtherCardsChildrenTabIndex(index, accessibility);
 }
 
 onMounted(() => {
-  (refreshundoredoclosecontainerref.value as HTMLDivElement).focus();
+  (accessibility.value.refreshundoredoclosecontainerref as HTMLDivElement).focus();
 });
 
 onBeforeMount(() => {
-  refreshundoredoclosetabindex.value = true;
+  accessibility.value.refreshundoredoclosetabindex = true;
   cards.value?.forEach((_item, index) => {
-    cardstabindex.value[index] = false;
-    cardschildrentabindex.value[index] = false;
-    cardsmultiplesearchopenstatus.value[index] = false;
-    cardsfilteritemtabindex.value[index] = false;
+    (accessibility.value.cardstabindex as boolean[])[index] = false;
+    (accessibility.value.cardschildrentabindex as boolean[])[index] = false;
+    (accessibility.value.cardsmultiplesearchopenstatus as boolean[])[index] = false;
+    (accessibility.value.cardsfilteritemtabindex as boolean[])[index] = false;
   });
+  accessibility.value.updateAccessibility();
 });
 
 </script>
@@ -77,9 +78,9 @@ onBeforeMount(() => {
         >
           <div
             tabindex="-1"
-            :ref="(el) => refreshundoredoclosecontainerref = el as HTMLDivElement"
+            :ref="(el) => accessibility.refreshundoredoclosecontainerref = el as HTMLDivElement"
             class="flex-box flex-direction-row w-100 h-100 flex-nowrap justify-content-center align-items-center p-0 m-0"
-            @click.self="() => { refreshundoredoclosecontainerref?.focus(); refreshundoredoclosetabindex = true; }"
+            @click.self="() => { accessibility.refreshundoredoclosecontainerref?.focus(); accessibility.refreshundoredoclosetabindex = true; accessibility.updateAccessibility(); }"
           >
             <div class="flex-w-25 align-self-stretch border text-center p-1">
               <RefreshUndoRedoCloseButton btn-img-name="refresh.png" btn-title="Refresh"></RefreshUndoRedoCloseButton> 
@@ -91,7 +92,7 @@ onBeforeMount(() => {
               <RefreshUndoRedoCloseButton btn-img-name="redo.png" btn-title="Redo"></RefreshUndoRedoCloseButton> 
             </div>
             <div class="flex-w-25 align-self-stretch border text-center p-1">
-              <RefreshUndoRedoCloseButton btn-img-name="close.png" btn-title="Close"></RefreshUndoRedoCloseButton> 
+              <RefreshUndoRedoCloseButton @modal:close="$val => emits('modal:close', $val)" btn-img-name="close.png" btn-title="Close"></RefreshUndoRedoCloseButton> 
             </div>
           </div>
         </div>
@@ -103,9 +104,9 @@ onBeforeMount(() => {
       >
         <div
           tabindex="-1"
-          :ref="(el) => cardscontainerref = el as HTMLDivElement"
+          :ref="(el) => accessibility.cardscontainerref = el as HTMLDivElement"
           @click.self="() => { 
-            (cardscontainerref as HTMLDivElement).focus();
+            (accessibility.cardscontainerref as HTMLDivElement).focus();
             enableAllCardsTabIndexAndDisableAllCardsChildrenAndFilterItemTabIndex();
           }"
           class="d-block m-0 overflow-y-auto overflow-x-hidden h-100"
@@ -114,7 +115,7 @@ onBeforeMount(() => {
           <div
             tabindex="-1"
             @click.self="() => {
-              (cardscontainerref as HTMLDivElement).focus();
+              (accessibility.cardscontainerref as HTMLDivElement).focus();
               enableAllCardsTabIndexAndDisableAllCardsChildrenAndFilterItemTabIndex();
             }"
             class="d-block"
@@ -123,7 +124,7 @@ onBeforeMount(() => {
             <ul
               tabindex="-1"
               @click.self="() => {
-                (cardscontainerref as HTMLDivElement).focus();
+                (accessibility.cardscontainerref as HTMLDivElement).focus();
                 enableAllCardsTabIndexAndDisableAllCardsChildrenAndFilterItemTabIndex();
               }"
               id="card-container"
@@ -132,7 +133,7 @@ onBeforeMount(() => {
               <li
                 tabindex="-1"
                 @click.self="() => {
-                  (cardscontainerref as HTMLDivElement).focus();
+                  (accessibility.cardscontainerref as HTMLDivElement).focus();
                   enableAllCardsTabIndexAndDisableAllCardsChildrenAndFilterItemTabIndex(); 
                 }"
                 v-for="(card, index) in cards"
@@ -141,10 +142,10 @@ onBeforeMount(() => {
                 style="padding: 0.875rem !important; min-width: 26.25rem !important"
               >
                 <div
-                  :tabindex="cardstabindex[index]? 0 : -1"
+                  :tabindex="(accessibility.cardstabindex as boolean[])[index]? 0 : -1"
                   :aria-describedby="'info-'+card.info.attribute"
                   @focus.self="() => { 
-                    cardsref[index].focus();
+                    (accessibility.cardsref as HTMLDivElement[])[index].focus();
                     enableAllCardsTabIndexAndDisableAllCardsChildrenAndFilterItemTabIndex(); 
                   }"
                   @click="() => {
@@ -153,7 +154,7 @@ onBeforeMount(() => {
                   @keyup.enter="() => {
                     enableACardChildrenTabIndexAndDisableOtherCardsChildrenTabIndex(index);
                   }"
-                  :ref="(el) => cardsref[index] = el as HTMLDivElement"
+                  :ref="(el) => (accessibility.cardsref as HTMLDivElement[])[index] = el as HTMLDivElement"
                   class="d-block shadow card"
                   style="background-color: white;"
                 >

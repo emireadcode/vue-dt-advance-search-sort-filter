@@ -16,13 +16,13 @@ import type {
   DateType
 } from "../types/SupportedDatatypesTypeDeclaration";
 import type {
-  VisibleCalendarType, 
+  VisibleCalendarType,
   RangeFirstAndLastSelectionType,
   RangeSelectionParamsType,
   YearMonthClickable,
   PositionTrackerType,
 } from "../types/dd_mm_yy_types";
-import { 
+import {
   mouseMovement,
   clickBackward,
   clickForward,
@@ -322,7 +322,7 @@ onBeforeMount(() => {
   (visiblecalendar.value as VisibleCalendarType).selections = props.selections as VisibleCalendarType['selections'];
   triggerRef(visiblecalendar);
 });
-  
+
 onMounted(() => {
   unwatchexcludedates = watch(
     () => props.excludedates,
@@ -960,7 +960,7 @@ onBeforeUnmount(() => {
                       />
                     </template>
                     <template v-else>
-                      <input  v-model="(
+                      <input v-model="(
                           (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
                         )[weekindex].checked"
                         class="m-0 p-0 border flex-w-100" 

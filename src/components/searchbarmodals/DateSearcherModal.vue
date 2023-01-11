@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import {
   type ShallowRef,
-  type Ref,
+  shallowRef,
   onBeforeMount,
-  provide,
   ref,
   triggerRef,
   inject,
@@ -19,6 +18,7 @@ import type {
   MonthSelectionFormat, 
   YearSelectionFormat 
 } from "../types/days_months_years_types";
+import type { AccessibilityType } from "../types/accessibility";
 
 let 
   previousYearSelection: YearSelectionFormat['years'],
@@ -29,9 +29,7 @@ let
 
   previousDD_MM_YYY_Selection: VisibleCalendarType['selections'],
 
-  accessibility = inject("accessibility") as {
-    cardsmultiplesearchopenstatus: Ref<Boolean[]>;
-  },
+  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
 
   excludedates = ref<boolean>()
 
@@ -40,7 +38,9 @@ let
 const
   index = inject("index") as number,
 
-  cards = inject("cards") as ShallowRef<DateType[]>
+  holder = inject("cards") as ShallowRef<DateType[]>,
+
+  cards = shallowRef<DateType[]>()
 
 ;
 
@@ -51,6 +51,8 @@ function updateCards() {
 }
 
 onBeforeMount(() => {
+  cards.value = JSON.parse(JSON.stringify(holder.value));
+  updateCards();
   excludedates.value = false;
 });
 
@@ -67,7 +69,7 @@ onBeforeMount(() => {
           <div class="modal-container d-block">
             <div class="d-block" style="height: 36.855rem;">
               <div
-                style="background-color: #fff; padding: 0.315rem 0.315rem 0 0.315rem;white-space: nowrap;"
+                style="background-color: #fff;padding:  0.63rem  0.315rem 0  0.315rem;white-space: nowrap;"
                 class="shadow-sm d-block"
               >
                 <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
@@ -76,9 +78,9 @@ onBeforeMount(() => {
                   >
                     <div
                       class="text-lowercase tab m-0" 
-                      style="padding: 0.315rem 0.504rem;font-size:1em;background-color:#F0E68C;border-top-right-radius: 0.504rem;border-top-left-radius: 0.504rem;"
+                      style="padding:0.315rem 1.89rem;font-size:1em;background-color:#F0E68C;border-top-right-radius: 0.504rem;border-top-left-radius: 0.504rem;"
                     >
-                      {{ cards[index].info.name }}
+                      {{ (cards as DateType[])[index].info.name }}
                     </div>
                   </li>
                 </ul>
@@ -95,8 +97,8 @@ onBeforeMount(() => {
                       Min:
                       {{
                         format(
-                          new Date(cards[index].result.min),
-                          (cards[index] as DateType).dateFormat
+                          new Date((cards as DateType[])[index].result.min),
+                          ((cards as DateType[])[index] as DateType).dateFormat
                             .replace(/mmmm/g, "MMMM")
                             .replace(/mmm/g, "MMM")
                             .replace(/mm/g, "MM")
@@ -113,8 +115,8 @@ onBeforeMount(() => {
                       Max:
                       {{
                         format(
-                          new Date(cards[index].result.max),
-                          (cards[index] as DateType).dateFormat
+                          new Date((cards as DateType[])[index].result.max),
+                          ((cards as DateType[])[index] as DateType).dateFormat
                             .replace(/mmmm/g, "MMMM")
                             .replace(/mmm/g, "MMM")
                             .replace(/mm/g, "MM")
@@ -131,11 +133,11 @@ onBeforeMount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @keypress.enter="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
-                      @click="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
+                      @keypress.enter="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
+                      @click="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 0.063rem solid rgba(0, 0, 0, 0.2);padding: 0.126rem 0;"
-                      :style="(cards[index] as DateType).search.format === 'DD/MM/YYYY'
+                      :style="((cards as DateType[])[index] as DateType).search.format === 'DD/MM/YYYY'
                         ? 'background-color:green;color: #fff;'
                         : 'background-color:gray;color: #fff;'
                       "
@@ -145,12 +147,12 @@ onBeforeMount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @keypress.enter="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
-                      @click="() => { excludedates = false; ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
+                      @keypress.enter="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
+                      @click="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 0.063rem solid rgba(0, 0, 0, 0.2);padding: 0.126rem 0;"
                       :style="
-                        ((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') === 'Day(s), Month(s), Year(s)'
+                        (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') === 'Day(s), Month(s), Year(s)'
                         ? 'background-color:green;color: #fff;'
                         : 'background-color:gray;color: #fff;'
                       "
@@ -162,7 +164,7 @@ onBeforeMount(() => {
                 <div
                   class="d-block text-wrap overflow-x-hidden overflow-y-auto"
                 >
-                  <template v-if="((cards[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') ===  'DD/MM/YYYY'">
+                  <template v-if="(((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') ===  'DD/MM/YYYY'">
                     <SearchByDDMMYYYYFormat
                       :excludedates="(excludedates as boolean)"
                       @update:excludedates="$val => excludedates = $val"
@@ -182,8 +184,8 @@ onBeforeMount(() => {
             >
               <div class="flex-w-100-over-3 align-self-stretch" style="padding-right: 0.4725rem;">
                 <button
-                  @keypress.enter="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
-                  @click="() => { accessibility.cardsmultiplesearchopenstatus.value[index] = false; }"
+                  @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                  @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 0.378rem; font-size: 1rem;color: #fff;background-color: gray;"
                 >

@@ -317,9 +317,10 @@ function getYearTypeObject(item: CardInnerType) {
       mixclicked: "mix.png",
     },
     search: {
-      tab: "RANGE",
-      multiple_or_single: [],
-      range: [],
+      format: "RANGE",
+      greaterthan: '',
+      lessthan: '',
+      years: {},
       trueorfalse: false,
     },
     searchFrom: "SERVER",
@@ -337,54 +338,13 @@ function getNumberTypeObject(item: CardInnerType) {
     },
     search: {
       trueorfalse: false,
-      tab: "GREATER-THAN",
-      greaterthan: "",
-      lessthan: "",
-      equalto: {
-        single: "",
-        pages: [],
-        deleting: false,
-        shake: [],
-        bottom: false,
-        show: [],
-        addeditemsref: [],
-        endoflistitemref: undefined,
-        addloading: false,
-        loading: false,
-        inneraddeditemsref: [],
-      },
-      notequalto: {
-        single: "",
-        pages: [],
-        deleting: false,
-        bottom: false,
-        shake: [],
-        show: [],
-        addeditemsref: [],
-        endoflistitemref: undefined,
-        addloading: false,
-        loading: false,
-        inneraddeditemsref: [],
-      },
-      fromto: {
-        from: "",
-        to: "",
-      },
-      exclude: {
-        fromto: {
-          singlefrom: "",
-          singleto: "",
-          bottom: false,
-          shake: [],
-          pages: [],
-          deleting: false,
-          addloading: false,
-          loading: false,
-          addeditemsref: [],
-          inneraddeditemsref: [],
-          endoflistitemref: undefined,
-          show: [],
-        },
+      single: '',
+      searchtype: 'SINGLE',
+      searchedornot: false,
+      multiple: {
+        tab: "GREATER-THAN",
+        greaterthan: "",
+        lessthan: "",
         equalto: {
           single: "",
           pages: [],
@@ -398,7 +358,53 @@ function getNumberTypeObject(item: CardInnerType) {
           loading: false,
           inneraddeditemsref: [],
         },
-      },
+        notequalto: {
+          single: "",
+          pages: [],
+          deleting: false,
+          bottom: false,
+          shake: [],
+          show: [],
+          addeditemsref: [],
+          endoflistitemref: undefined,
+          addloading: false,
+          loading: false,
+          inneraddeditemsref: [],
+        },
+        fromto: {
+          from: "",
+          to: "",
+        },
+        exclude: {
+          fromto: {
+            singlefrom: "",
+            singleto: "",
+            bottom: false,
+            shake: [],
+            pages: [],
+            deleting: false,
+            addloading: false,
+            loading: false,
+            addeditemsref: [],
+            inneraddeditemsref: [],
+            endoflistitemref: undefined,
+            show: [],
+          },
+          equalto: {
+            single: "",
+            pages: [],
+            deleting: false,
+            shake: [],
+            bottom: false,
+            show: [],
+            addeditemsref: [],
+            endoflistitemref: undefined,
+            addloading: false,
+            loading: false,
+            inneraddeditemsref: [],
+          },
+        },
+      }
     },
     searchFrom: "SERVER",
   } as NumberType;
@@ -415,15 +421,20 @@ function getMultipleWordStringTypeObject(item: (CardInnerType & { concatenated?:
     },
     disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
-      ...searchStringDefaultObject(),
-      include: {
-        ...searchStringDefaultObject(),
-      },
-      exclude: {
-        ...searchStringDefaultObject(),
-      },
-      includeorexcludeformat: 'STARTS-WITH',
       trueorfalse: false,
+      single: '',
+      searchtype: 'SINGLE',
+      searchedornot: false,
+      multiple: {
+        ...searchStringDefaultObject(),
+        include: {
+          ...searchStringDefaultObject(),
+        },
+        exclude: {
+          ...searchStringDefaultObject(),
+        },
+        includeorexcludeformat: 'STARTS-WITH',
+      }
     },
     searchFrom: "SERVER",
     concatenated:
@@ -560,63 +571,68 @@ function getNumberStringTypeObject(item: CardInnerType & {
     fixedlengthofstring: item.disableincludeandexclude !== undefined && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? item.fixedlengthofstring : undefined,
     disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
-      ...searchStringDefaultObject(),
-      include: {
-        ...searchStringDefaultObject(),
-      },
-      exclude: {
-        ...searchStringDefaultObject(),
-      },
+      single: '',
+      searchtype: 'SINGLE',
+      searchedornot: false,
       trueorfalse: false,
-      includeorexcludeformat: 'STARTS-WITH',
-      atnumbersearch: item.disableincludeandexclude !== undefined && item.disableincludeandexclude === false && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? {
-        last: '',
-        first: '',
-        thenumberbeforethelast: {
-          thenumberbefore: '',
-          thelast: '',
+      multiple: {
+        ...searchStringDefaultObject(),
+        include: {
+          ...searchStringDefaultObject(),
         },
-        afterthefirstthenext: {
-          afterthefirst: '',
-          thenext: '',
+        exclude: {
+          ...searchStringDefaultObject(),
         },
-        search: {
-          atnumberformat: 'LAST',
-          tab: "GREATER-THAN",
-          greaterthan: '',
-          lessthan: '',
-          equalto: {
-            single: "",
-            pages: [],
-            deleting: false,
-            bottom: false,
-            shake: [],
-            show: [],
-            addeditemsref: [],
-            endoflistitemref: undefined,
-            addloading: false,
-            loading: false,
-            inneraddeditemsref: [],
+        includeorexcludeformat: 'STARTS-WITH',
+        atnumbersearch: item.disableincludeandexclude !== undefined && item.disableincludeandexclude === false && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? {
+          last: '',
+          first: '',
+          thenumberbeforethelast: {
+            thenumberbefore: '',
+            thelast: '',
           },
-          notequalto: {
-            single: "",
-            pages: [],
-            deleting: false,
-            bottom: false,
-            shake: [],
-            show: [],
-            addeditemsref: [],
-            endoflistitemref: undefined,
-            addloading: false,
-            loading: false,
-            inneraddeditemsref: [],
+          afterthefirstthenext: {
+            afterthefirst: '',
+            thenext: '',
           },
-          fromto: {
-            from: "",
-            to: "",
+          search: {
+            atnumberformat: 'LAST',
+            tab: "GREATER-THAN",
+            greaterthan: '',
+            lessthan: '',
+            equalto: {
+              single: "",
+              pages: [],
+              deleting: false,
+              bottom: false,
+              shake: [],
+              show: [],
+              addeditemsref: [],
+              endoflistitemref: undefined,
+              addloading: false,
+              loading: false,
+              inneraddeditemsref: [],
+            },
+            notequalto: {
+              single: "",
+              pages: [],
+              deleting: false,
+              bottom: false,
+              shake: [],
+              show: [],
+              addeditemsref: [],
+              endoflistitemref: undefined,
+              addloading: false,
+              loading: false,
+              inneraddeditemsref: [],
+            },
+            fromto: {
+              from: "",
+              to: "",
+            }
           }
-        }
-      } : undefined
+        } : undefined
+      }
     },
     searchFrom: "SERVER",
     concatenated:
@@ -642,63 +658,68 @@ function getSingleWordStringTypeObject(item: CardInnerType & {
     fixedlengthofstring: item.disableincludeandexclude !== undefined && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? item.fixedlengthofstring : undefined,
     disableincludeandexclude: item.disableincludeandexclude !== undefined? item.disableincludeandexclude : undefined,
     search: {
-      ...searchStringDefaultObject(),
-      include: {
-        ...searchStringDefaultObject(),
-      },
-      exclude: {
-        ...searchStringDefaultObject(),
-      },
+      single: '',
+      searchtype: 'SINGLE',
+      searchedornot: false,
       trueorfalse: false,
-      includeorexcludeformat: 'STARTS-WITH',
-      atnumbersearch: item.disableincludeandexclude !== undefined && item.disableincludeandexclude === false && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? {
-        last: '',
-        first: '',
-        thenumberbeforethelast: {
-          thenumberbefore: '',
-          thelast: '',
+      multiple: {
+        ...searchStringDefaultObject(),
+        include: {
+          ...searchStringDefaultObject(),
         },
-        afterthefirstthenext: {
-          afterthefirst: '',
-          thenext: '',
+        exclude: {
+          ...searchStringDefaultObject(),
         },
-        search: {
-          atnumberformat: 'LAST',
-          tab: "GREATER-THAN",
-          greaterthan: '',
-          lessthan: '',
-          equalto: {
-            single: "",
-            pages: [],
-            deleting: false,
-            bottom: false,
-            shake: [],
-            show: [],
-            addeditemsref: [],
-            endoflistitemref: undefined,
-            addloading: false,
-            loading: false,
-            inneraddeditemsref: [],
+        includeorexcludeformat: 'STARTS-WITH',
+        atnumbersearch: item.disableincludeandexclude !== undefined && item.disableincludeandexclude === false && item.fixedlengthofstring !== undefined && /^\d+$/.test(""+item.fixedlengthofstring)? {
+          last: '',
+          first: '',
+          thenumberbeforethelast: {
+            thenumberbefore: '',
+            thelast: '',
           },
-          notequalto: {
-            single: "",
-            pages: [],
-            deleting: false,
-            bottom: false,
-            shake: [],
-            show: [],
-            addeditemsref: [],
-            endoflistitemref: undefined,
-            addloading: false,
-            loading: false,
-            inneraddeditemsref: [],
+          afterthefirstthenext: {
+            afterthefirst: '',
+            thenext: '',
           },
-          fromto: {
-            from: "",
-            to: "",
+          search: {
+            atnumberformat: 'LAST',
+            tab: "GREATER-THAN",
+            greaterthan: '',
+            lessthan: '',
+            equalto: {
+              single: "",
+              pages: [],
+              deleting: false,
+              bottom: false,
+              shake: [],
+              show: [],
+              addeditemsref: [],
+              endoflistitemref: undefined,
+              addloading: false,
+              loading: false,
+              inneraddeditemsref: [],
+            },
+            notequalto: {
+              single: "",
+              pages: [],
+              deleting: false,
+              bottom: false,
+              shake: [],
+              show: [],
+              addeditemsref: [],
+              endoflistitemref: undefined,
+              addloading: false,
+              loading: false,
+              inneraddeditemsref: [],
+            },
+            fromto: {
+              from: "",
+              to: "",
+            }
           }
-        }
-      } : undefined
+        } : undefined
+      }
     },
     searchFrom: "SERVER",
     concatenated:

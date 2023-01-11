@@ -213,7 +213,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           attribute: 'visited_time',
           table: 'payment',
           limit: 10,
-          timeFormat: '12-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO',
+          timeFormat: '12-HCWOSWLZ',
         },
       ],
       datetimetypes: [
@@ -224,8 +224,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           table: 'customer',
           limit: 10,
           dateFormat: 'dd-mm-yyyy',
-          timeFormat: '12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO',
-          //timeFormat: '12-HCWSWLZ',
+          timeFormat: '12-HCWOSWOLZ',
           isoweek: true,
         },
       ],

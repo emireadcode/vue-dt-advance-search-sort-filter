@@ -15,8 +15,18 @@
   import VectorLayer from "ol/layer/Vector"
   import {fromLonLat} from 'ol/proj'
   import {Circle as CircleStyle, Fill, Stroke, Text, Style} from 'ol/style';
-  import { onMounted } from "vue"
-  import "ol/ol.css"
+  import { onMounted, ref } from "vue"
+  import "ol/ol.css";
+import type Geometry from "ol/geom/Geometry"
+
+  let areas = ref<string[]>([]), 
+  states = ref<string[]>([]), 
+  coordinates = ref<string[]>([]),
+  geojsonurls = [
+    'http://localhost:3001/src/components/searchbarmodals/spatial/australian-states.min.geojson',
+   'http://localhost:3001/src/components/searchbarmodals/spatial/australian-suburbs.geojson'
+  ]
+  ;
 
   onMounted(async () => {
 
@@ -74,7 +84,9 @@
       source: vectorSource1,
       style: function(feature) {
         let statename = feature.get('STATE_NAME');
+        states.value.push(statename);
         style1.getText().setText(statename);
+        //console.log(states);
         return style1;
       }
     });
@@ -83,7 +95,9 @@
       source: vectorSource2,
       style: function(feature) {
         let areaname = feature.get('AREA_NAME');
+        areas.value.push(areaname);
         style2.getText().setText(areaname);
+        //console.log(areas);
         return style2;
       }
     });
@@ -102,7 +116,19 @@
         zoom: 5,
       }),
     });
-    
+
+    console.log(areas);
+    console.log(states);
+
+    vectorSource1.on('featuresloadend', function(){
+      console.log(vectorSource1.getFeatures());
+    });
+
+    vectorSource2.on('featuresloadend', function(){
+      console.log(vectorSource2.getFeatures().entries().next().value[1].values_.geometry.extent_);
+      console.log(vectorSource2.getFeatures().entries().next().value[1].values_.geometry.flatCoordinates);
+    });
+
   });
 
 </script>

@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import { inject, onMounted, nextTick, triggerRef, type ShallowRef, type Ref } from "vue";
+import { inject, onMounted, nextTick, triggerRef, type ShallowRef } from "vue";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 import {
   disableOtherCardsChildrenTabIndex
 } from "./helperfunctions/accessibility";
+import type { AccessibilityType } from "./types/accessibility";
 
 const
-  cards = inject("cards") as ShallowRef<PrimitiveType[]>
-;
-
-let
-  accessibility = inject("accessibility") as {
-    cardschildrentabindex: Ref<Boolean[]>;
-  },
+  cards = inject("cards") as ShallowRef<PrimitiveType[]>,
+  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
   index = inject("index") as number
 ;
 
@@ -25,8 +21,9 @@ function setSortType(sorttype: string, clicked: boolean) {
   triggerRef(cards);
 
   if(clicked) {
-    accessibility.cardschildrentabindex.value[index] = true;
-    disableOtherCardsChildrenTabIndex(index, accessibility.cardschildrentabindex);
+    (accessibility.value.cardschildrentabindex as boolean[])[index] = true;
+    accessibility.value.updateAccessibility();
+    disableOtherCardsChildrenTabIndex(index, accessibility);
   }
 
   nextTick(() => {
@@ -58,9 +55,9 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'asc-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="Ascending"
-        :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-        @click="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('ASC', true); }"
-        @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('ASC', true); }"
+        :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
+        @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; setSortType('ASC', true); accessibility.updateAccessibility(); }"
+        @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; setSortType('ASC', true); accessibility.updateAccessibility(); }"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.ascclicked" style="height:1.1667rem !important;width:1.1667rem;" />
@@ -72,9 +69,9 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'desc-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="Descending"
-        :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-        @click="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('DESC', true); }"
-        @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('DESC', true); }"
+        :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
+        @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; setSortType('DESC', true); accessibility.updateAccessibility(); }"
+        @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; setSortType('DESC', true); accessibility.updateAccessibility(); }"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.descclicked" style="height:1.1667rem !important;width:1.1667rem;" />
@@ -86,9 +83,9 @@ function setSortType(sorttype: string, clicked: boolean) {
         :id="'mix-btn-'+cards[index].info.attribute"
         aria-pressed="false"
         aria-label="No sorting"
-        :tabindex="accessibility.cardschildrentabindex.value[index]? 0 : -1"
-        @click="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('MIX', true); }"
-        @keyup.enter="() => { accessibility.cardschildrentabindex.value[index] = true; setSortType('MIX', true); }"
+        :tabindex="(accessibility.cardschildrentabindex as boolean[])[index]? 0 : -1"
+        @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; setSortType('MIX', true); accessibility.updateAccessibility(); }"
+        @keyup.enter="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; setSortType('MIX', true); accessibility.updateAccessibility(); }"
         class="sort-btn m-0 flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center cursor-pointer shadow-sm"
       >
         <img :src="'./src/assets/icons/' + cards[index].img.mixclicked" style="height:1.1667rem !important;width:1.1667rem !important;" />

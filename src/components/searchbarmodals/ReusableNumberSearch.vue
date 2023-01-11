@@ -6,6 +6,7 @@ import type {
   NumberStringType,
   NumberSearchType,
   NumberSearchExcludeEqualToType,
+  NumberSearchExcludeFromToType,
   AtNumber,
   CurrentAndSignalType,
   CurrentAndSignalInnerType,
@@ -28,7 +29,7 @@ const
       closepaste: 0,
     },
   }),
-  holder = inject("mainnumbersearcherui") as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>,
+  holder = inject("mainnumbersearcherui") as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
   index = inject("index") as number,
   props = defineProps<{
     from: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL";
@@ -71,7 +72,7 @@ async function addLocalNewInputEntry(
     newinputentry,
     inputtype,
     currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>,
+    holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
     enteredwheninandwhennot,
     props.from
   );
@@ -94,7 +95,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
           item[0],
           inputtype,
           currentandsignal as ShallowRef<CurrentAndSignalType>,
-          holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>,
+          holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
           enteredwheninandwhennot,
           props.from
         );
@@ -115,10 +116,10 @@ const equaltoAddNew = computed(() => {
   return props.from === "NUMBER-SEARCHER-MODAL"?
     (
       parseFloat(
-        (holder.value as NumberType['search']).equalto.single as string
+        (holder.value as NumberType['search']['multiple'])?.equalto.single as string
       ) <= parseFloat(cards.value[index].result.max) &&
       parseFloat(
-        (holder.value as NumberType['search']).equalto.single as string
+        (holder.value as NumberType['search']['multiple'])?.equalto.single as string
       ) >= parseFloat(cards.value[index].result.min)
     )
     :
@@ -130,10 +131,10 @@ const notequaltoAddNew = computed(() => {
   return props.from === "NUMBER-SEARCHER-MODAL"?
     (
       parseFloat(
-        (holder.value as NumberType['search']).notequalto.single as string
+        (holder.value as NumberType['search']['multiple'])?.notequalto.single as string
       ) <= parseFloat(cards.value[index].result.max) &&
       parseFloat(
-        (holder.value as NumberType['search']).notequalto.single as string
+        (holder.value as NumberType['search']['multiple'])?.notequalto.single as string
       ) >= parseFloat(cards.value[index].result.min)
     )
     :
@@ -143,10 +144,10 @@ const notequaltoAddNew = computed(() => {
 
 onMounted(() => {
   unwatchgreaterthan = watch(
-    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).greaterthan,
+    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.greaterthan as string,
     (x) => {
       if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
-        setTabAndResetOthers('GREATER-THAN', holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>, props.from);
+        setTabAndResetOthers('GREATER-THAN', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from === "NUMBER-SEARCHER-MODAL") {
           emits("reset:exclude", true);
         }
@@ -154,10 +155,10 @@ onMounted(() => {
     }
   );
   unwatchlessthan = watch(
-    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).lessthan,
+    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.lessthan as string,
     (x) => {
       if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
-        setTabAndResetOthers('LESS-THAN', holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>, props.from);
+        setTabAndResetOthers('LESS-THAN', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from === "NUMBER-SEARCHER-MODAL") {
           emits("reset:exclude", true);
         }
@@ -165,10 +166,10 @@ onMounted(() => {
     }
   );
   unwatchequalto = watch(
-    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).equalto.single,
+    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.equalto.single as string,
     (x) => {
       if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
-        setTabAndResetOthers('EQUAL-TO', holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>, props.from);
+        setTabAndResetOthers('EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from === "NUMBER-SEARCHER-MODAL") {
           emits("reset:exclude", true);
         }
@@ -176,10 +177,10 @@ onMounted(() => {
     }
   );
   unwatchnotequalto = watch(
-    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).notequalto.single,
+    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto.single as string,
     (x) => {
       if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
-        setTabAndResetOthers('NOT-EQUAL-TO', holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>, props.from);
+        setTabAndResetOthers('NOT-EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from === "NUMBER-SEARCHER-MODAL") {
           emits("reset:exclude", true);
         }
@@ -188,12 +189,12 @@ onMounted(() => {
   );
   unwatchfromto = watch(
     [
-      () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).fromto.from,
-      () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).fromto.to
+      () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.fromto.from as string,
+      () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.fromto.to as string
     ],
     ([x, y]) => {
       if((x.trim().length > 0 && y.trim().length > 0) && (/^\s*\d+\s*$/g.test(x) && /^\s*\d+\s*$/g.test(y))) {
-        setTabAndResetOthers('FROM-TO', holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>, props.from);
+        setTabAndResetOthers('FROM-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from === "NUMBER-SEARCHER-MODAL") {
           emits("reset:exclude", true);
         }
@@ -201,18 +202,18 @@ onMounted(() => {
     }
   );
   unwatchequaltolength = watch(
-    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).equalto.pages.length,
+    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.equalto.pages.length,
     (x) => {
-      setTabAndResetOthers('EQUAL-TO', holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>, props.from);
+      setTabAndResetOthers('EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
       if(props.from === "NUMBER-SEARCHER-MODAL") {
         emits("reset:exclude", true);
       }
     }
   );
   unwatchnotequaltolength = watch(
-    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']) : (holder.value as AtNumber<NumberSearchType>).search).notequalto.pages.length,
+    () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto.pages.length,
     (x) => {
-      setTabAndResetOthers('NOT-EQUAL-TO', holder as ShallowRef<NumberType['search'] | AtNumber<NumberSearchType>>, props.from);
+      setTabAndResetOthers('NOT-EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
       if(props.from === "NUMBER-SEARCHER-MODAL") {
         emits("reset:exclude", true);
       }
@@ -251,7 +252,7 @@ onBeforeUnmount(() => {
               <input
                 @keydown.space.prevent
                 @input="triggerHolder()"
-                v-model="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).greaterthan"
+                v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).greaterthan"
                 type="text"
                 class="w-100 text-left"
                 style="height: 1.89rem"
@@ -272,7 +273,7 @@ onBeforeUnmount(() => {
               <input
                 @keydown.space.prevent
                 @input="triggerHolder()"
-                v-model="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).lessthan"
+                v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).lessthan"
                 type="text"
                 class="w-100 text-left"
                 style="height: 1.89rem"
@@ -304,14 +305,14 @@ onBeforeUnmount(() => {
                   @keypress.enter="
                     equaltoAddNew?
                       addLocalNewInputEntry(
-                        (((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto as NumberSearchExcludeEqualToType).single,
+                        ((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType).single,
                         'EQUAL-TO'
                       )
                       :
                       ''
                   "
                   @input="triggerHolder()"
-                  v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto as NumberSearchExcludeEqualToType).single"
+                  v-model="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-left"
                   style="height: 1.89rem; z-index: 1110"
@@ -326,7 +327,7 @@ onBeforeUnmount(() => {
                   @keypress.enter="
                     equaltoAddNew?
                       addLocalNewInputEntry(
-                        (((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto as NumberSearchExcludeEqualToType).single,
+                        ((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType).single,
                         'EQUAL-TO'
                       )
                       :
@@ -335,7 +336,7 @@ onBeforeUnmount(() => {
                   @click="
                     equaltoAddNew?
                       addLocalNewInputEntry(
-                        (((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto as NumberSearchExcludeEqualToType).single,
+                        ((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType).single,
                         'EQUAL-TO'
                       )
                       :
@@ -391,7 +392,7 @@ onBeforeUnmount(() => {
             <PastedItemAndNewlyInputedEntryDisplayer
               paginationtype="NOT-EQUAL-TO"
               :current="[((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current]"
-              :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).equalto"
+              :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
@@ -417,14 +418,14 @@ onBeforeUnmount(() => {
                   @keypress.enter="
                     notequaltoAddNew?
                       addLocalNewInputEntry(
-                        (((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto as NumberSearchExcludeEqualToType).single,
+                        ((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType).single,
                         'NOT-EQUAL-TO'
                       )
                       :
                       ''
                   "
                   @input="triggerHolder()"
-                  v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto as NumberSearchExcludeEqualToType).single"
+                  v-model="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType).single"
                   type="text"
                   class="w-100 text-left"
                   style="height: 1.89rem; z-index: 1110"
@@ -439,7 +440,12 @@ onBeforeUnmount(() => {
                   @keypress.enter="
                     notequaltoAddNew?
                       addLocalNewInputEntry(
-                        (((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto as NumberSearchExcludeEqualToType).single,
+                        (
+                          ((
+                            (props.from === 'NUMBER-SEARCHER-MODAL')? 
+                            holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search
+                          ) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType
+                        ).single,
                         'NOT-EQUAL-TO'
                       )
                       :
@@ -448,7 +454,7 @@ onBeforeUnmount(() => {
                   @click="
                     notequaltoAddNew?
                       addLocalNewInputEntry(
-                        (((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto as NumberSearchExcludeEqualToType).single,
+                        ((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType).single,
                         'NOT-EQUAL-TO'
                       )
                       :
@@ -508,7 +514,7 @@ onBeforeUnmount(() => {
             <PastedItemAndNewlyInputedEntryDisplayer
               paginationtype="EQUAL-TO"
               :current="[((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current]"
-              :tree="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).notequalto"
+              :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
@@ -530,7 +536,7 @@ onBeforeUnmount(() => {
           <input
             @keydown.space.prevent
             @input="triggerHolder()"
-            v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).fromto as NumberSearchType['fromto']).from"
+            v-model="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.from"
             type="text"
             class="w-100 text-left"
             style="height: 1.89rem"
@@ -545,7 +551,7 @@ onBeforeUnmount(() => {
           <input
             @keydown.space.prevent
             @input="triggerHolder()"
-            v-model.trim="(((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']) : (holder as AtNumber<NumberSearchType>).search).fromto as NumberSearchType['fromto']).to"
+            v-model.trim="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).fromto.to"
             type="text"
             class="w-100 text-left"
             style="height: 1.89rem"

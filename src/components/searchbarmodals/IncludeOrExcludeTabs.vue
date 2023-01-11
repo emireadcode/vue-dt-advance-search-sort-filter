@@ -32,10 +32,10 @@ function updateCard() {
       >
         <template v-if="wordtypeandconcatfieldindex.concatfieldindex === undefined">
           <button
-            @keypress.enter="() => { (cards[index].search.include as StringSearchType).tabclicked = true; (cards[index].search.exclude as StringSearchType).tabclicked = false; updateCard(); }"
-            @click="() => { (cards[index].search.include as StringSearchType).tabclicked = true; (cards[index].search.exclude as StringSearchType).tabclicked = false; updateCard(); }"
+            @keypress.enter="() => { (cards[index].search.multiple?.include as StringSearchType).tabclicked = true; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = false; updateCard(); }"
+            @click="() => { (cards[index].search.multiple?.include as StringSearchType).tabclicked = true; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = false; updateCard(); }"
             class="text-lowercase tab w-100" 
-            :style="((cards[index] as SingleWordStringType).search.include as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            :style="((cards[index] as SingleWordStringType).search.multiple?.include as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
             style="padding:5px 0;font-size:0.9em;"
           >
             include
@@ -58,10 +58,10 @@ function updateCard() {
       >
         <template v-if="wordtypeandconcatfieldindex.concatfieldindex === undefined">
           <button
-            @keypress.enter="() => { (cards[index].search.include as StringSearchType).tabclicked = false; (cards[index].search.exclude as StringSearchType).tabclicked = true; updateCard(); }"
-            @click="() => { (cards[index].search.include as StringSearchType).tabclicked = false; (cards[index].search.exclude as StringSearchType).tabclicked = true; updateCard(); }"
+            @keypress.enter="() => { (cards[index].search.multiple?.include as StringSearchType).tabclicked = false; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = true; updateCard(); }"
+            @click="() => { (cards[index].search.multiple?.include as StringSearchType).tabclicked = false; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = true; updateCard(); }"
             class="text-lowercase tab w-100" 
-            :style="(cards[index].search.exclude as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            :style="(cards[index].search.multiple?.exclude as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
             style="padding:5px 0;font-size:0.9em;"
           >
             exclude
