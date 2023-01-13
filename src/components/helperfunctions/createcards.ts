@@ -123,7 +123,36 @@ function formConcatenatedSearch(
                 fromto: {
                   from: "",
                   to: "",
-                }
+                },
+                exclude: {
+                  fromto: {
+                    singlefrom: "",
+                    singleto: "",
+                    bottom: false,
+                    shake: [],
+                    pages: [],
+                    deleting: false,
+                    addloading: false,
+                    loading: false,
+                    addeditemsref: [],
+                    inneraddeditemsref: [],
+                    endoflistitemref: undefined,
+                    show: [],
+                  },
+                  equalto: {
+                    single: "",
+                    pages: [],
+                    deleting: false,
+                    shake: [],
+                    bottom: false,
+                    show: [],
+                    addeditemsref: [],
+                    endoflistitemref: undefined,
+                    addloading: false,
+                    loading: false,
+                    inneraddeditemsref: [],
+                  },
+                },
               }
             } : undefined
           },
@@ -629,7 +658,36 @@ function getNumberStringTypeObject(item: CardInnerType & {
             fromto: {
               from: "",
               to: "",
-            }
+            },
+            exclude: {
+              fromto: {
+                singlefrom: "",
+                singleto: "",
+                bottom: false,
+                shake: [],
+                pages: [],
+                deleting: false,
+                addloading: false,
+                loading: false,
+                addeditemsref: [],
+                inneraddeditemsref: [],
+                endoflistitemref: undefined,
+                show: [],
+              },
+              equalto: {
+                single: "",
+                pages: [],
+                deleting: false,
+                shake: [],
+                bottom: false,
+                show: [],
+                addeditemsref: [],
+                endoflistitemref: undefined,
+                addloading: false,
+                loading: false,
+                inneraddeditemsref: [],
+              },
+            },
           }
         } : undefined
       }
@@ -716,7 +774,36 @@ function getSingleWordStringTypeObject(item: CardInnerType & {
             fromto: {
               from: "",
               to: "",
-            }
+            },
+            exclude: {
+              fromto: {
+                singlefrom: "",
+                singleto: "",
+                bottom: false,
+                shake: [],
+                pages: [],
+                deleting: false,
+                addloading: false,
+                loading: false,
+                addeditemsref: [],
+                inneraddeditemsref: [],
+                endoflistitemref: undefined,
+                show: [],
+              },
+              equalto: {
+                single: "",
+                pages: [],
+                deleting: false,
+                shake: [],
+                bottom: false,
+                show: [],
+                addeditemsref: [],
+                endoflistitemref: undefined,
+                addloading: false,
+                loading: false,
+                inneraddeditemsref: [],
+              },
+            },
           }
         } : undefined
       }

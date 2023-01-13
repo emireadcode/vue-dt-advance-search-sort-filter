@@ -4,7 +4,6 @@ import {
   onBeforeMount,
   shallowRef,
   triggerRef,
-  type Ref,
   inject,
   ref,
   computed,
@@ -14,140 +13,21 @@ import type {
   NumberSearchExcludeFromToType, 
   NumberSearchExcludeEqualToType, 
   NumberType,
-  CurrentAndSignalType,
-  CurrentAndSignalInnerType,
-  EnteredWhenInAndWhenNotInPageType,
   NumberSearchType,
 } from "../types/SupportedDatatypesTypeDeclaration";
-import Paste from "./Paste.vue";
-import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import ReusableNumberSearch from "./ReusableNumberSearch.vue";
-import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
+import ExcludeNumberSearch from "./ExcludeNumberSearch.vue";
 import type { AccessibilityType } from "../types/accessibility";
 
 const
   index = inject("index") as number,
   accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
-  currentandsignal = shallowRef<CurrentAndSignalType>({
-    exclude: {
-      fromto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      },
-      equalto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      }
-    }
-  }),
   openexclude = ref(false),
   cards = inject("cards") as ShallowRef<NumberType[]>,
   holder = shallowRef<NumberType['search']['multiple']>()
 ;
 
-provide("mainnumbersearcherui", holder);
-
-function triggerHolder() {
-  triggerRef(holder);
-}
-
-function triggerCurrentAndSignal() {
-  triggerRef(currentandsignal);
-}
-
-function resetExclude(action: boolean) {
-  if(action) {
-    (holder.value as  (NumberSearchType & {
-      exclude?: {
-        fromto?: NumberSearchExcludeFromToType | undefined;
-        equalto?: NumberSearchExcludeEqualToType | undefined;
-      } | undefined;
-    })).exclude = {
-      equalto : {
-        single: "",
-        loading: false,
-        addloading: false,
-        deleting: false,
-        shake: [],
-        show: [],
-        bottom: false,
-        pages: [],
-        addeditemsref: [],
-        inneraddeditemsref: [],
-        endoflistitemref: undefined,
-      } as NumberSearchExcludeEqualToType,
-      fromto: {
-        singlefrom: "",
-        singleto: "",
-        loading: false,
-        addloading: false,
-        shake: [],
-        deleting: false,
-        show: [],
-        bottom: false,
-        pages: [],
-        addeditemsref: [],
-        inneraddeditemsref: [],
-        endoflistitemref: undefined,
-      } as NumberSearchExcludeFromToType
-    };
-  }
-}
-
-async function addLocalNewInputEntry(
-  newinputentry: [string, string] | string,
-  inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO'
-) {
-  let 
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
-  ;
-  await addNewInputEntry(
-    newinputentry,
-    inputtype,
-    currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as ShallowRef<NumberType['search']['multiple']>,
-    enteredwheninandwhennot
-  );
-}
-
-async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
-  let
-    time: NodeJS.Timeout[] = [], 
-    timeIndex = 0,
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
-  ;
-  for(let i=0; i<pasteditems.length; i++) {
-    let item = pasteditems[i];
-    if (item[1] !== "ERROR") {
-      let splititem = (inputtype==='EXCLUDE-EQUAL-TO')? '' : item[0].split("-");
-      time[timeIndex] = setTimeout(async () => {
-        await addNewInputEntry(
-          (inputtype==='EXCLUDE-EQUAL-TO')? item[0] : [splititem[0].trim(), splititem[1].trim()],
-          inputtype,
-          currentandsignal as ShallowRef<CurrentAndSignalType>,
-          holder as ShallowRef<NumberType['search']['multiple']>,
-          enteredwheninandwhennot
-        );
-        clearTimeout(time[timeIndex]);
-      }, 10);
-      timeIndex++;
-    }
-  }
-  (inputtype==='EXCLUDE-EQUAL-TO')?
-    ((currentandsignal.value as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).closepaste++
-    :
-    ((currentandsignal.value as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).closepaste++
-  ;
-  triggerRef(currentandsignal);
-}
+provide("numbersearchcard", holder);
 
 function openExcludeWindow() {
   if (
@@ -162,53 +42,6 @@ function openExcludeWindow() {
     openexclude.value = true;
   }
 }
-
-const excludeAddNewFromTo = computed(() => {
-  if (holder.value?.tab === "GREATER-THAN") {
-    return (
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) <
-        parseFloat(cards.value[index].result.max) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) <
-        parseFloat(cards.value[index].result.max) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) > parseFloat(holder.value?.greaterthan as string) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto)
-    );
-  } else if (holder.value?.tab === "LESS-THAN") {
-    return (
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) >
-        parseFloat(cards.value[index].result.min) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) >
-        parseFloat(cards.value[index].result.min) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) < parseFloat(holder.value?.lessthan as string) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto)
-    );
-  } else {
-    return (
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) > parseFloat(holder.value?.fromto?.from as string) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto) < parseFloat(holder.value?.fromto?.to as string) &&
-      parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom) < parseFloat((holder.value?.exclude?.fromto as NumberSearchExcludeFromToType).singleto)
-    );
-  }
-});
-
-const excludeAddNewEqualto = computed(() => {
-  if (holder.value?.tab === "GREATER-THAN") {
-    return (
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) > parseFloat(holder.value?.greaterthan as string) &&
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) < parseFloat(cards.value[index].result.max)
-    );
-  } else if (holder.value?.tab === "LESS-THAN") {
-    return (
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) < parseFloat(holder.value?.lessthan as string) &&
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) > parseFloat(cards.value[index].result.min)
-    );
-  } else {
-    return (
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) > parseFloat(holder.value?.fromto?.from as string) &&
-      parseFloat((holder.value?.exclude?.equalto as NumberSearchExcludeEqualToType).single) < parseFloat(holder.value?.fromto?.to as string)
-    );
-  }
-});
 
 const done = computed(() => {
   return (
@@ -280,6 +113,7 @@ const clear = computed(() => {
 
 onBeforeMount(() => {
   holder.value = JSON.parse(JSON.stringify(cards.value[index].search.multiple)) as NumberType['search']['multiple'];
+  triggerRef(holder);
 });
 
 </script>
@@ -294,22 +128,35 @@ onBeforeMount(() => {
         <div class="modal-wrapper text-center">
           <div class="modal-container d-block">
             <div class="d-block" style="height: 36.855rem;">
-              <div
-                style="background-color: #fff;padding:  0.63rem  0.315rem 0  0.315rem;white-space: nowrap;"
-                class="shadow-sm d-block"
-              >
-                <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
-                  <li
-                    class="flex-shrink-0 flex-grow-0 align-self-stretch"
+              <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-end align-items-center">
+                <div class="flex-fill" style="z-index: 860;">
+                  <div
+                    style="background-color: #fff;padding:  0.63rem  0.315rem 0  0.315rem;white-space: nowrap;"
+                    class="shadow-sm d-block"
                   >
-                    <div
-                      class="text-lowercase tab m-0" 
-                      style="padding:0.315rem 1.89rem;font-size:1em;background-color:#F0E68C;border-top-right-radius: 0.504rem;border-top-left-radius: 0.504rem;"
-                    >
-                      {{ cards[index].info.name }}
-                    </div>
-                  </li>
-                </ul>
+                    <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
+                      <li
+                        class="flex-shrink-0 flex-grow-0 align-self-stretch"
+                      >
+                        <div
+                          class="text-lowercase tab m-0" 
+                          style="padding:0.315rem 1.89rem;font-size:1em;background-color:#F0E68C;border-top-right-radius: 0.504rem;border-top-left-radius: 0.504rem;"
+                        >
+                          {{ cards[index].info.name }}
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="position-absolute flex-w-1-dot-75-rem t-0" style="right:5px;z-index: 900;padding-right:5px;">
+                  <a 
+                    class="d-block underline-none m-0 p-0 cursor-pointer"
+                    @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                    @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                  >
+                    <img src="/src/assets/icons/close.png" style="width:30px; height: 30px;" class="align-middle" />
+                  </a>
+                </div>
               </div>
               <div class="d-block position-relative">
                 <div
@@ -333,488 +180,10 @@ onBeforeMount(() => {
                     </span>
                   </div>
                 </div>
-                <ReusableNumberSearch @reset:exclude="$val => resetExclude($val)" from="NUMBER-SEARCHER-MODAL"></ReusableNumberSearch>
-                <div v-if="openexclude" class="d-block position-absolute t-0 l-0" style="background-color:#fff;z-index:9000;">
-                  <div class="d-block m-0 p-0">
-                    <div class="d-block">
-                      <div
-                        class="shadow-sm d-block text-center"
-                        style="background-color: blue;padding: 0 0.63rem;"
-                      >
-                        <a
-                          class="underline-none cursor-pointer align-middle"
-                          @click="openexclude = false"
-                          @keypress.enter="openexclude = false"
-                        >
-                          <img
-                            src="/src/assets/icons/close.png"
-                            class="align-middle"
-                            style="width: 2.205rem; height: 2.205rem"
-                          />
-                        </a>
-                      </div>
-                      <div
-                        class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                        style="padding:  0.63rem 0"
-                      >
-                        <div class="flex-w-50">
-                          <span
-                            class="d-inline-block p-0 m-0 letter-spacing align-middle"
-                          >
-                            Max:
-                              {{
-                                holder?.tab === "GREATER-THAN"
-                                  ? cards[index].result.max
-                                  : holder?.tab === "LESS-THAN"
-                                  ? holder?.lessthan
-                                  : holder?.fromto?.to
-                              }}
-                          </span>
-                        </div>
-                        <div class="flex-w-50">
-                          <span
-                            class="d-inline-block p-0 m-0 letter-spacing align-middle"
-                          >
-                            Min:
-                              {{
-                                holder?.tab === "LESS-THAN"? 
-                                  cards[index].result.min
-                                  : holder?.tab === "GREATER-THAN"? 
-                                    holder?.greaterthan
-                                    : holder?.fromto?.from
-                              }}
-                          </span>
-                        </div>
-                      </div>
-                      <template
-                        v-if="
-                          holder?.tab === 'GREATER-THAN'
-                        "
-                      >
-                        <div
-                          class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
-                          style="padding:  0.315rem  0.63rem"
-                        >
-                          <div
-                            class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
-                          >
-                            <img
-                              src="/src/assets/icons/greater-than.png"
-                              style="width: 1.575rem; height: 1.575rem"
-                              class="align-middle"
-                            />
-                          </div>
-                          <div
-                            class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                            style="padding:  0.315rem 0 0.063rem  0.315rem"
-                          >
-                            {{ holder?.greaterthan }}
-                          </div>
-                        </div>
-                      </template>
-                      <template
-                        v-else-if="
-                          holder?.tab === 'LESS-THAN'
-                        "
-                      >
-                        <div
-                          class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
-                          style="padding:  0.315rem  0.63rem"
-                        >
-                          <div
-                            class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
-                          >
-                            <img
-                              src="/src/assets/icons/less-than.png"
-                              style="width: 1.575rem; height: 1.575rem"
-                              class="align-middle"
-                            />
-                          </div>
-                          <div
-                            class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                            style="padding:  0.315rem 0 0.053rem  0.315rem"
-                          >
-                            {{ holder?.lessthan }}
-                          </div>
-                        </div>
-                      </template>
-                      <template v-else>
-                        <div
-                          class="d-block shadow-sm text-center"
-                          style="padding:  0.315rem  0.63rem"
-                        >
-                          <img
-                            src="/src/assets/icons/range.png"
-                            style="width: 1.575rem; height: 1.575rem"
-                            class="align-middle"
-                          />
-                        </div>
-                      </template>
-                      <div
-                        class="d-block text-center"
-                        style="padding:  0.63rem 0  0.315rem 0"
-                      >
-                        <span
-                          class="d-inline-block letter-spacing font-bold font-0-dot-70-rem"
-                        >Exclude By</span>
-                      </div>
-                      <div class="d-block" style="padding:  0.315rem">
-                        <div class="d-block">
-                          <div
-                            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                          >
-                            <div
-                              class="flex-w-60"
-                              style="padding-right: 0.315rem"
-                            >
-                              <div
-                                class="d-block text-center shadow-sm"
-                                style="padding:  0.315rem 0"
-                              >
-                                <span
-                                  class="d-inline-block letter-spacing font-0-dot-80-rem"
-                                >RANGE</span>
-                              </div>
-                              <div
-                                class="d-block shadow-sm"
-                                style="padding:  0.63rem  0.315rem  0.315rem"
-                              >
-                                <div
-                                  class="w-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                                >
-                                  <div
-                                    class="flex-fill p-0 m-0 align-self-stretch"
-                                  >
-                                    <div class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center">
-                                      <div
-                                        class="flex-w-50 p-0 m-0 align-self-stretch"
-                                      >
-                                        <div
-                                          class="d-block"
-                                          style="padding-bottom:  0.315rem"
-                                        >
-                                          <label>From</label>
-                                        </div>
-                                        <div class="d-block">
-                                          <input
-                                            @keydown.space.prevent
-                                            @input="triggerHolder()"
-                                            v-model="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom"
-                                            type="text"
-                                            class="w-100 text-left"
-                                            style="height: 1.89rem;z-index: 1110;"
-                                          />
-                                        </div>
-                                      </div>
-                                      <div
-                                        class="flex-w-50 p-0 m-0 align-self-stretch"
-                                      >
-                                        <div
-                                          class="d-block"
-                                          style="padding-bottom:  0.315rem"
-                                        >
-                                          <label>To</label>
-                                        </div>
-                                        <div class="d-block">
-                                          <template v-if="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom.trim().length > 0">
-                                            <input
-                                              aria-disabled="false"
-                                              @input="triggerHolder()"
-                                              v-model="(holder?.exclude?.fromto as NumberSearchExcludeFromToType).singleto"
-                                              @keypress.enter="
-                                                excludeAddNewFromTo?
-                                                  addLocalNewInputEntry(
-                                                    [
-                                                      (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
-                                                      (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
-                                                    ],
-                                                    'EXCLUDE-FROM-TO'
-                                                  )
-                                                  :
-                                                  ''
-                                              "
-                                              @keydown.space.prevent
-                                              type="text"
-                                              class="w-100 text-left"
-                                              style="height: 1.89rem;z-index: 1110;"
-                                            />
-                                          </template>
-                                          <template v-else>
-                                            <input
-                                              @keydown.space.prevent
-                                              aria-disabled="true"
-                                              type="text"
-                                              class="w-100 text-left"
-                                              style="height: 1.89rem;z-index: 1110;"
-                                            />
-                                          </template>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div
-                                    class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
-                                  >
-                                    <div
-                                      class="d-block"
-                                      style="padding-bottom:  0.315rem"
-                                    >
-                                      <label>&nbsp;</label>
-                                    </div>
-                                    <div class="d-block" style="outline: 0.063rem solid rgba(0, 0, 0, 0.2)">
-                                      <button
-                                        :style="
-                                        excludeAddNewFromTo
-                                          ? 'background-color: #F0E68C;'
-                                          : 'background-color: #eee;'
-                                        "
-                                        :disabled="
-                                          excludeAddNewFromTo
-                                            ? false
-                                            : true
-                                        "
-                                        :class="[
-                                          excludeAddNewFromTo? 'cursor-pointer' : ''
-                                        ]"
-                                        @keypress.enter="
-                                          excludeAddNewFromTo?
-                                            addLocalNewInputEntry(
-                                              [
-                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
-                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
-                                              ],
-                                              'EXCLUDE-FROM-TO'
-                                            )
-                                            :
-                                            ''
-                                        "
-                                        @click="
-                                          excludeAddNewFromTo?
-                                            addLocalNewInputEntry(
-                                              [
-                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singlefrom,
-                                                (holder?.exclude?.fromto as NumberSearchExcludeFromToType)?.singleto
-                                              ],
-                                              'EXCLUDE-FROM-TO'
-                                            )
-                                            :
-                                            ''
-                                        "
-                                        class="btn w-100 shadow-sm font-0-dot-85-rem text-center"
-                                        style="height:1.89rem; padding:0 0.126rem;"
-                                      >
-                                        <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Paste
-                                  :breakdescription="(true as boolean)"
-                                  @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
-                                  :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).closepaste"
-                                  title="none overlapping a-b range"
-                                  :datatype="'NumberRange'"
-                                  :max="((
-                                    holder?.tab ===
-                                      'GREATER-THAN'
-                                        ? cards[index].result.max
-                                        : holder?.tab === 'LESS-THAN'
-                                        ? holder?.lessthan
-                                        : holder?.fromto?.to
-                                  ) as string)"
-                                  :min="((
-                                    holder?.tab === 'LESS-THAN'
-                                      ? cards[index].result.min
-                                      : holder?.tab === 'GREATER-THAN'
-                                      ? holder?.greaterthan
-                                      : holder?.fromto?.from
-                                  ) as string)"
-                                  :text-area-height="'height: 11.34rem;'"
-                                >
-                                  <template v-slot:outcomeidentifier>
-                                    <div
-                                      class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                                    >
-                                      <div class="flex-fill text-center">
-                                        <div
-                                          class="d-inline-block align-middle"
-                                          style="background-color: #fff; width: 0.945rem; height: 0.945rem"
-                                        ></div>
-                                        Pasted Lines
-                                      </div>
-                                      <div class="flex-fill text-center">
-                                        <div
-                                          class="d-inline-block align-middle"
-                                          style="background-color: red; width: 0.945rem; height: 0.945rem"
-                                        ></div>
-                                        Invalid Numbers
-                                      </div>
-                                    </div>
-                                  </template>
-                                </Paste>
-                                <PastedItemAndNewlyInputedEntryDisplayer
-                                  paginationtype="EXCLUDE-FROM-TO"
-                                  :current="[((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current]"
-                                  :tree="(holder?.exclude?.fromto as NumberSearchExcludeFromToType)"
-                                  treetype="NumberSearchExcludeFromToType"
-                                  :display-area-height="'height: 9.9477rem;'"
-                                  :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
-                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
-                                ></PastedItemAndNewlyInputedEntryDisplayer>
-                              </div>
-                            </div>
-                            <div
-                              class="flex-w-40"
-                              style="padding-left: 0.315rem;"
-                            >
-                              <div
-                                class="d-block text-center shadow-sm"
-                                style="padding: 0.315rem 0"
-                              >
-                                <span
-                                  class="d-inline-block letter-spacing font-0-dot-80-rem"
-                                >EQUAL TO</span>
-                              </div>
-                              <div
-                                class="d-block shadow-sm"
-                                style="padding:  0.63rem  0.315rem  0.315rem;"
-                              >
-                                <div
-                                  class="d-block"
-                                  style="padding-bottom: 0.315rem"
-                                >
-                                  <img
-                                    src="/src/assets/icons/equal-to.png"
-                                    class="align-middle"
-                                    style="width: 1.512rem; height: 1.512rem"
-                                  />
-                                </div>
-                                <div
-                                  class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                                >
-                                  <div class="flex-fill p-0 m-0 align-self-stretch" style="padding-right: 0.126rem;">
-                                    <input
-                                      @input="triggerHolder()"
-                                      v-model="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType).single"
-                                      type="text"
-                                      @keydown.space.prevent
-                                      @keypress.enter="
-                                        excludeAddNewEqualto?
-                                          addLocalNewInputEntry(
-                                            (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
-                                            'EXCLUDE-EQUAL-TO'
-                                          )
-                                          :
-                                          ''
-                                      "
-                                      class="w-100 text-left"
-                                      style="height: 1.89rem;z-index: 1110;"
-                                    />
-                                  </div>
-                                  <div
-                                    class="flex-w-1-dot-75-rem p-0 m-0 align-self-stretch"
-                                    style="outline: 0.063rem solid rgba(0, 0, 0, 0.2)"
-                                  >
-                                    <button
-                                      @click="
-                                        excludeAddNewEqualto?
-                                          addLocalNewInputEntry(
-                                            (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
-                                            'EXCLUDE-EQUAL-TO'
-                                          )
-                                          :
-                                          ''
-                                      "
-                                      @keypress.enter="
-                                        excludeAddNewEqualto?
-                                          addLocalNewInputEntry(
-                                            (holder?.exclude?.equalto as NumberSearchExcludeEqualToType)?.single,
-                                            'EXCLUDE-EQUAL-TO'
-                                          )
-                                          :
-                                          ''
-                                      "
-                                      :class="[
-                                        excludeAddNewEqualto? 'cursor-pointer' : ''
-                                      ]"
-                                      class="btn w-100 shadow-sm font-0-dot-85-rem"
-                                      style="height:1.89rem; padding:0 0.126rem;"
-                                      :style="
-                                        excludeAddNewEqualto
-                                          ? 'background-color: #F0E68C;'
-                                          : 'background-color: #eee;'
-                                      "
-                                      :disabled="
-                                        excludeAddNewEqualto
-                                        ? false
-                                        : true
-                                      "
-                                    >
-                                      <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
-                                    </button>
-                                  </div>
-                                </div>
-                                <Paste
-                                  :breakdescription="(true as boolean)"
-                                  @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
-                                  :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).closepaste"
-                                  title="numbers"
-                                  :datatype="cards[index].info.datatype as 'Number'"
-                                  :max="((
-                                    holder?.tab === 'GREATER-THAN'
-                                        ? cards[index].result.max
-                                        : holder?.tab === 'LESS-THAN'
-                                        ? holder?.lessthan
-                                        : holder?.fromto?.to
-                                  ) as string)"
-                                  :min="((
-                                    holder?.tab === 'LESS-THAN'
-                                      ? cards[index].result.min
-                                      : holder?.tab === 'GREATER-THAN'
-                                      ? holder?.greaterthan
-                                      : holder?.fromto?.from
-                                  ) as string)"
-                                  :text-area-height="'height: 11.34rem;'"
-                                  :descriptionfontsize="'font-size: 0.7rem;'"
-                                >
-                                  <template v-slot:outcomeidentifier>
-                                    <div
-                                      class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-                                    >
-                                      <div class="flex-fill text-center">
-                                        <div
-                                          class="d-inline-block align-middle"
-                                          style="background-color: #fff; width: 0.945rem; height: 0.945rem"
-                                        ></div>
-                                        Pasted Lines
-                                      </div>
-                                      <div class="flex-fill text-center">
-                                        <div
-                                          class="d-inline-block align-middle"
-                                          style="background-color: red; width: 0.945rem; height: 0.945rem"
-                                        ></div>
-                                        Invalid Numbers
-                                      </div>
-                                    </div>
-                                  </template>
-                                </Paste>
-                                <PastedItemAndNewlyInputedEntryDisplayer
-                                  paginationtype="EXCLUDE-EQUAL-TO"
-                                  :current="[((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current]"
-                                  :tree="(holder?.exclude?.equalto as NumberSearchExcludeEqualToType)"
-                                  treetype="NumberSearchExcludeEqualToType"
-                                  :display-area-height="'height: 9.9477rem;'"
-                                  :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
-                                  @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
-                                ></PastedItemAndNewlyInputedEntryDisplayer>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <ReusableNumberSearch from="NUMBER-SEARCHER-MODAL"></ReusableNumberSearch>
+                <template v-if="openexclude">
+                  <ExcludeNumberSearch @close:exclude="($val: boolean) => openexclude = $val" from="NUMBER-SEARCHER-MODAL"></ExcludeNumberSearch>
+                </template>
               </div>
             </div>
             <div
@@ -832,7 +201,7 @@ onBeforeMount(() => {
                   class="btn w-100 shadow-sm font-family"
                   style="padding:0.378rem;font-size:1rem;border-radius: 0.756rem"
                 >
-                  Done
+                  Search
                 </button>
               </div>
               <div class="flex-w-100-over-3" style="padding-right: 0.1575rem;">

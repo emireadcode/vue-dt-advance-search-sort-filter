@@ -48,35 +48,6 @@ export interface YearType extends IdentityType {
   };
 }
 
-export type StringSearchType = {
-  single: string;
-  pages: string[][];
-  deleting: boolean;
-  bottom: boolean;
-  loading: boolean;
-  addloading: boolean;
-  tabclicked: boolean;
-  addeditemsref: HTMLDivElement[] | [];
-  endoflistitemref: HTMLLIElement | undefined;
-};
-
-export type MultipleWordsStringConcatenatedFieldType = {
-  [key: string]: {
-    disableincludeandexclude?: boolean | undefined;
-    name: string;
-    attribute?: string | undefined;
-    table?: string | undefined;
-    join?: string | undefined;
-    search?:
-      | (StringSearchType & {
-          include?: StringSearchType | undefined;
-          exclude?: StringSearchType | undefined;
-          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
-        })
-      | undefined;
-  };
-};
-
 export type CurrentAndSignalInnerType = {
   signal: number;
   current: number;
@@ -90,7 +61,7 @@ export type CurrentAndSignalType = {
   notequalto?: CurrentAndSignalInnerType | undefined;
   exclude?: {
     equalto: CurrentAndSignalInnerType;
-    fromto: CurrentAndSignalInnerType | undefined;
+    fromto: CurrentAndSignalInnerType;
   }
 };
 
@@ -99,19 +70,50 @@ export type EnteredWhenInAndWhenNotInPageType = {
   enteredwhennotinpage: boolean;
 };
 
+export type StringSearchType = {
+  single: string;
+  pages: string[][];
+  deleting: boolean;
+  bottom: boolean;
+  loading: boolean;
+  addloading: boolean;
+  tabclicked: boolean;
+  addeditemsref: HTMLDivElement[] | [];
+  endoflistitemref: HTMLLIElement | undefined;
+};
+
 export type AtNumber<T> = {
-  last?: number | undefined;
-  first?: number | undefined;
+  last?: string | undefined;
+  first?: string | undefined;
   thenumberbeforethelast?: {
-    thenumberbefore: number;
-    thelast: number;
+    thenumberbefore: string;
+    thelast: string;
   } | undefined;
   afterthefirstthenext?: {
-    afterthefirst: number;
-    thenext: number;
+    afterthefirst: string;
+    thenext: string;
   } | undefined;
   search: T & {
     atnumberformat: 'LAST' | 'FIRST' | 'THE-NUMBER-BEFORE-THE-LAST' | 'AFTER-THE-FIRST-THE-NEXT';
+    exclude: {
+        fromto: NumberSearchExcludeFromToType;
+        equalto: NumberSearchExcludeEqualToType;
+      };
+  };
+};
+
+export type MultipleWordsStringConcatenatedFieldType = {
+  [key: string]: {
+    disableincludeandexclude?: boolean | undefined;
+    name: string;
+    attribute?: string | undefined;
+    table?: string | undefined;
+    join?: string | undefined;
+    search: (StringSearchType & {
+      include?: StringSearchType | undefined;
+      exclude?: StringSearchType | undefined;
+      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+    });
   };
 };
 
@@ -123,14 +125,12 @@ export type SingleWordStringConcatenatedFieldType = {
     attribute?: string | undefined;
     table?: string | undefined;
     join?: string | undefined;
-    search?:
-      | (StringSearchType & {
+    search: (StringSearchType & {
           include?: StringSearchType | undefined;
           exclude?: StringSearchType | undefined;
           includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
-          atnumbersearch?: AtNumber<NumberSearchType> | undefined;
-        })
-      | undefined;
+          atnumbersearch: AtNumber<NumberSearchType>;
+        });
     startmodifierwildcard?: StartModifierWildCardUnionType | StartModifierWildCardType | undefined;
     endmodifierwildcard?: EndModifierWildCardUnionType | EndModifierWildCardType | undefined;
   };
@@ -152,12 +152,12 @@ export interface MultipleWordsStringType extends IdentityType {
   search: {
     searchtype: 'SINGLE' | 'MULTIPLE';
     searchedornot: boolean;
-    single?: string | undefined;
-    multiple?: StringSearchType & {
+    single: string;
+    multiple: StringSearchType & {
       include?: StringSearchType | undefined;
       exclude?: StringSearchType | undefined;
       includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
-    } | undefined;
+    };
     trueorfalse: boolean;
   };
   searchFrom: "DOM" | "SERVER";
@@ -169,13 +169,13 @@ export interface SingleWordStringType extends IdentityType {
   search: {
     searchtype: 'SINGLE' | 'MULTIPLE';
     searchedornot: boolean;
-    single?: string | undefined;
-    multiple?: StringSearchType & {
+    single: string;
+    multiple: StringSearchType & {
       include?: StringSearchType | undefined;
       exclude?: StringSearchType | undefined;
       includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
-      atnumbersearch?: AtNumber<NumberSearchType> | undefined;
-    } | undefined;
+      atnumbersearch: AtNumber<NumberSearchType>;
+    };
     trueorfalse: boolean;
   };
   fixedlengthofstring?: number | undefined;
@@ -326,19 +326,13 @@ export interface NumberType extends IdentityType {
     trueorfalse: boolean;
     searchtype: 'SINGLE' | 'MULTIPLE';
     searchedornot: boolean;
-    single?: string | undefined;
-    multiple?: NumberSearchType & {
-      exclude?:
-        | {
-            fromto?:
-              | NumberSearchExcludeFromToType
-              | undefined;
-            equalto?:
-              | NumberSearchExcludeEqualToType
-              | undefined;
-          }
-        | undefined;
-    } | undefined;
+    single: string;
+    multiple: NumberSearchType & {
+      exclude: {
+            fromto: NumberSearchExcludeFromToType;
+            equalto: NumberSearchExcludeEqualToType;
+          };
+    };
   };
   searchFrom: "DOM" | "SERVER";
 }

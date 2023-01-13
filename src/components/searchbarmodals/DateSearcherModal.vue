@@ -68,22 +68,35 @@ onBeforeMount(() => {
         <div class="modal-wrapper text-center">
           <div class="modal-container d-block">
             <div class="d-block" style="height: 36.855rem;">
-              <div
-                style="background-color: #fff;padding:  0.63rem  0.315rem 0  0.315rem;white-space: nowrap;"
-                class="shadow-sm d-block"
-              >
-                <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
-                  <li
-                    class="flex-shrink-0 flex-grow-0 align-self-stretch"
+              <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-end align-items-center">
+                <div class="flex-fill" style="z-index: 860;"> 
+                  <div
+                    style="background-color: #fff;padding:  0.63rem  0.315rem 0  0.315rem;white-space: nowrap;"
+                    class="shadow-sm d-block"
                   >
-                    <div
-                      class="text-lowercase tab m-0" 
-                      style="padding:0.315rem 1.89rem;font-size:1em;background-color:#F0E68C;border-top-right-radius: 0.504rem;border-top-left-radius: 0.504rem;"
-                    >
-                      {{ (cards as DateType[])[index].info.name }}
-                    </div>
-                  </li>
-                </ul>
+                    <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
+                      <li
+                        class="flex-shrink-0 flex-grow-0 align-self-stretch"
+                      >
+                        <div
+                          class="text-lowercase tab m-0" 
+                          style="padding:0.315rem 1.89rem;font-size:1em;background-color:#F0E68C;border-top-right-radius: 0.504rem;border-top-left-radius: 0.504rem;"
+                        >
+                          {{ (cards as DateType[])[index].info.name }}
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="position-absolute flex-w-1-dot-75-rem t-0" style="right:5px;z-index: 900;padding-right:5px;">
+                  <a 
+                    class="d-block underline-none m-0 p-0 cursor-pointer"
+                    @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                    @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                  >
+                    <img src="/src/assets/icons/close.png" style="width:30px; height: 30px;" class="align-middle" />
+                  </a>
+                </div>
               </div>
               <div class="d-block m-0 p-0">
                 <div
@@ -184,12 +197,10 @@ onBeforeMount(() => {
             >
               <div class="flex-w-100-over-3 align-self-stretch" style="padding-right: 0.4725rem;">
                 <button
-                  @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
-                  @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 0.378rem; font-size: 1rem;color: #fff;background-color: gray;"
                 >
-                  Close
+                  Search
                 </button>
               </div>
               <div

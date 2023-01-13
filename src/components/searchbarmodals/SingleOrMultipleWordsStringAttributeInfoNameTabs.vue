@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { SingleWordStringConcatenatedFieldType, SingleWordStringType, StringSearchType, MultipleWordsStringType, MultipleWordsStringConcatenatedFieldType, NumberStringType } from "../types/SupportedDatatypesTypeDeclaration";
 import { inject, triggerRef, type ShallowRef, onMounted } from "vue";
+import type { AccessibilityType } from "../types/accessibility";
 
 const 
+  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
   props = defineProps<{
     wordtype: 'MULTIPLE' | 'SINGLE';
   }>(),
@@ -58,45 +60,57 @@ onMounted(() => {
 
 </script>
 
-
 <template>
-  <div
-    style="background-color: #fff; padding: 10px 5px 0 5px;white-space: nowrap;"
-    class="shadow-sm d-block overflow-x-scroll"
-  >
-    <template v-if="!(cards[index] as MultipleWordsStringType).concatenated">
-      <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
-        <li
-          class="flex-shrink-0 flex-grow-0 align-self-stretch"
-        >
-          <button 
-            aria-disabled="true" 
-            class="text-lowercase tab" 
-            style="padding:5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
-          >
-            {{ (cards[index] as MultipleWordsStringType).info.name }}
-          </button>
-        </li>
-      </ul>
-    </template>
-    <template v-else>
-      <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
-        <li
-          v-for="(concatenated, cindex) in (cards[index] as MultipleWordsStringType).concatenated"
-          class="flex-shrink-0 flex-grow-0 align-self-stretch"
-        >
-          <button 
-            :style="(concatenated.search as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
-            @keypress.enter="() => { (concatenated.search as StringSearchType).tabclicked=true; updateAttributeButtonTabClicked(cindex as number); }"
-            @click="() => { (concatenated.search as StringSearchType).tabclicked=true; updateAttributeButtonTabClicked(cindex as number); }"
-            class="text-lowercase tab" 
-            style="padding:5px 8px;font-size:1em;border-top-right-radius: 8px;border-top-left-radius: 8px;"
-          >
-            {{ concatenated.name }}
-          </button>
-        </li>
-      </ul>
-    </template>
+  <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-end align-items-center">
+    <div class="flex-fill" style="z-index: 860;"> 
+      <div
+        style="background-color: #fff; padding: 10px 5px 0 5px;white-space: nowrap;"
+        class="shadow-sm d-block overflow-x-scroll"
+      >
+        <template v-if="!(cards[index] as MultipleWordsStringType).concatenated">
+          <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
+            <li
+              class="flex-shrink-0 flex-grow-0 align-self-stretch"
+            >
+              <button 
+                aria-disabled="true" 
+                class="text-lowercase tab" 
+                style="padding:5px 8px;font-size:1em;background-color:#F0E68C;border-top-right-radius: 8px;border-top-left-radius: 8px;"
+              >
+                {{ (cards[index] as MultipleWordsStringType).info.name }}
+              </button>
+            </li>
+          </ul>
+        </template>
+        <template v-else>
+          <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
+            <li
+              v-for="(concatenated, cindex) in (cards[index] as MultipleWordsStringType).concatenated"
+              class="flex-shrink-0 flex-grow-0 align-self-stretch"
+            >
+              <button 
+                :style="(concatenated.search as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+                @keypress.enter="() => { (concatenated.search as StringSearchType).tabclicked=true; updateAttributeButtonTabClicked(cindex as number); }"
+                @click="() => { (concatenated.search as StringSearchType).tabclicked=true; updateAttributeButtonTabClicked(cindex as number); }"
+                class="text-lowercase tab" 
+                style="padding:5px 8px;font-size:1em;border-top-right-radius: 8px;border-top-left-radius: 8px;"
+              >
+                {{ concatenated.name }}
+              </button>
+            </li>
+          </ul>
+        </template>
+      </div>
+    </div>
+    <div class="position-absolute flex-w-1-dot-75-rem t-0" style="right:5px;z-index: 900;padding-right:5px;">
+      <a 
+        class="d-block underline-none m-0 p-0 cursor-pointer"
+        @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+        @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+      >
+        <img src="/src/assets/icons/close.png" style="width:30px; height: 30px;" class="align-middle" />
+      </a>
+    </div>
   </div>
 </template>
 

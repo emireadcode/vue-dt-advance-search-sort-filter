@@ -29,13 +29,13 @@ const
       closepaste: 0,
     },
   }),
-  holder = inject("mainnumbersearcherui") as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
+  holder = inject("numbersearchcard") as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
   index = inject("index") as number,
   props = defineProps<{
     from: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL";
   }>(),
   emits = defineEmits<{
-    (e: "reset:exclude", action: boolean): void;
+    (e: "enable:exclude", action: boolean): void;
   }>(),
   cards = inject("cards") as ShallowRef<NumberType[] | SingleWordStringType[] | NumberStringType[]>
 ;
@@ -112,6 +112,40 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
   triggerRef(currentandsignal);
 }
 
+function resetExclude(action: boolean) {
+  if(action) {
+    ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search).exclude.equalto = {
+      single: '',
+      loading: false,
+      addloading: false,
+      shake: [],
+      show: [],
+      bottom: false,
+      pages: [],
+      deleting: false,
+      addeditemsref: [],
+      inneraddeditemsref: [],
+      endoflistitemref: undefined
+    } as NumberSearchExcludeEqualToType;
+
+    ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search).exclude.fromto = {
+      singlefrom: '',
+      singleto: '',
+      loading: false,
+      addloading: false,
+      shake: [],
+      show: [],
+      bottom: false,
+      pages: [],
+      deleting: false,
+      addeditemsref: [],
+      inneraddeditemsref: [],
+      endoflistitemref: undefined
+    } as NumberSearchExcludeFromToType;
+    triggerHolder();
+  }
+}
+
 const equaltoAddNew = computed(() => {
   return props.from === "NUMBER-SEARCHER-MODAL"?
     (
@@ -123,7 +157,7 @@ const equaltoAddNew = computed(() => {
       ) >= parseFloat(cards.value[index].result.min)
     )
     :
-    (/^\s*\d+\s*$/g.test((holder.value as AtNumber<NumberSearchType>).search.equalto.single))
+    (/^\s*\d+(\.\d+)?\s*$/g.test((holder.value as AtNumber<NumberSearchType>).search.equalto.single))
     ;
 });
 
@@ -138,7 +172,7 @@ const notequaltoAddNew = computed(() => {
       ) >= parseFloat(cards.value[index].result.min)
     )
     :
-    (/^\s*\d+\s*$/g.test((holder.value as AtNumber<NumberSearchType>).search.notequalto.single))
+    (/^\s*\d+(\.\d+)?\s*$/g.test((holder.value as AtNumber<NumberSearchType>).search.notequalto.single))
     ;
 });
 
@@ -146,44 +180,42 @@ onMounted(() => {
   unwatchgreaterthan = watch(
     () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.greaterthan as string,
     (x) => {
-      if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
+      if(x.trim().length > 0 && /^\s*\d+(\.\d+)?\s*$/g.test(x)) {
         setTabAndResetOthers('GREATER-THAN', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
-        if(props.from === "NUMBER-SEARCHER-MODAL") {
-          emits("reset:exclude", true);
+        if(props.from !== "NUMBER-SEARCHER-MODAL") {
+          emits('enable:exclude', false);
         }
+        resetExclude(true);
       }
     }
   );
   unwatchlessthan = watch(
     () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.lessthan as string,
     (x) => {
-      if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
+      if(x.trim().length > 0 && /^\s*\d+(\.\d+)?\s*$/g.test(x)) {
         setTabAndResetOthers('LESS-THAN', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
-        if(props.from === "NUMBER-SEARCHER-MODAL") {
-          emits("reset:exclude", true);
+        if(props.from !== "NUMBER-SEARCHER-MODAL") {
+          emits('enable:exclude', false);
         }
+        resetExclude(true);
       }
     }
   );
   unwatchequalto = watch(
     () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.equalto.single as string,
     (x) => {
-      if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
+      if(x.trim().length > 0 && /^\s*\d+(\.\d+)?\s*$/g.test(x)) {
         setTabAndResetOthers('EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
-        if(props.from === "NUMBER-SEARCHER-MODAL") {
-          emits("reset:exclude", true);
-        }
+        resetExclude(true);
       }
     }
   );
   unwatchnotequalto = watch(
     () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto.single as string,
     (x) => {
-      if(x.trim().length > 0 && /^\s*\d+\s*$/g.test(x)) {
+      if(x.trim().length > 0 && /^\s*\d+(\.\d+)?\s*$/g.test(x)) {
         setTabAndResetOthers('NOT-EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
-        if(props.from === "NUMBER-SEARCHER-MODAL") {
-          emits("reset:exclude", true);
-        }
+        resetExclude(true);
       }
     }
   );
@@ -193,29 +225,30 @@ onMounted(() => {
       () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.fromto.to as string
     ],
     ([x, y]) => {
-      if((x.trim().length > 0 && y.trim().length > 0) && (/^\s*\d+\s*$/g.test(x) && /^\s*\d+\s*$/g.test(y))) {
+      if((x.trim().length > 0 && y.trim().length > 0) && (/^\s*\d+(\.\d+)?\s*$/g.test(x) && /^\s*\d+(\.\d+)?\s*$/g.test(y))) {
         setTabAndResetOthers('FROM-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
-        if(props.from === "NUMBER-SEARCHER-MODAL") {
-          emits("reset:exclude", true);
+        if(props.from !== "NUMBER-SEARCHER-MODAL") {
+          emits('enable:exclude', false);
         }
+        resetExclude(true);
       }
     }
   );
   unwatchequaltolength = watch(
     () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.equalto.pages.length,
     (x) => {
-      setTabAndResetOthers('EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
-      if(props.from === "NUMBER-SEARCHER-MODAL") {
-        emits("reset:exclude", true);
+      if((x as number) > 0) {
+        setTabAndResetOthers('EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
+        resetExclude(true);
       }
     }
   );
   unwatchnotequaltolength = watch(
     () => ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto.pages.length,
     (x) => {
-      setTabAndResetOthers('NOT-EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
-      if(props.from === "NUMBER-SEARCHER-MODAL") {
-        emits("reset:exclude", true);
+      if((x as number) > 0) {
+        setTabAndResetOthers('NOT-EQUAL-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
+        resetExclude(true);
       }
     }
   );
@@ -234,7 +267,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="d-block" style="z-index: 8992;padding: 0 0.126rem">
+  <div 
+    class="d-block" 
+    style="z-index: 8992;"
+    :style="props.from==='NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL'? '':'padding: 0 0.126rem'"
+  >
     <div class="d-block" style="padding: 0 0 0.945rem 0">
       <div
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"

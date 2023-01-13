@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { inject, type ShallowRef, type Ref } from "vue";
+import { inject, type ShallowRef, ref } from "vue";
 import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
 import TabPanelWithIncludeAndExclude from "./TabPanelWithIncludeAndExclude.vue";
 import TabPanelWithoutIncludeAndExclude from "./TabPanelWithoutIncludeAndExclude.vue";
 import SingleOrMultipleWordsStringAttributeInfoNameTabs from "./SingleOrMultipleWordsStringAttributeInfoNameTabs.vue";
-import type { AccessibilityType } from "../types/accessibility";
 
 const
   cards = inject("cards") as ShallowRef<(NumberStringType | SingleWordStringType | MultipleWordsStringType)[]>,
   index = inject("index") as number,
-  accessibility = inject("accessibility") as ShallowRef<AccessibilityType>
+  numberexclude = ref(false),
+  enablenumberexclude = ref(true)
 ;
 
 </script>
@@ -32,6 +32,9 @@ const
                   <template v-if="cards[index].search.multiple?.tabclicked">
                     <template v-if="cards[index].disableincludeandexclude!==undefined && cards[index].disableincludeandexclude===false">
                       <TabPanelWithIncludeAndExclude 
+                        @close:exclude="$val => numberexclude = $val"
+                        @enable:exclude="$val => enablenumberexclude = $val"
+                        :numberexclude="numberexclude"
                         :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
                       ></TabPanelWithIncludeAndExclude>
                     </template>
@@ -48,6 +51,9 @@ const
                       <template v-if="concatenated.disableincludeandexclude!==undefined && !concatenated.disableincludeandexclude">
                         <template v-if="(concatenated.search as StringSearchType).tabclicked">
                           <TabPanelWithIncludeAndExclude 
+                            :numberexclude="numberexclude"
+                            @close:exclude="$val => numberexclude = $val"
+                            @enable:exclude="$val => enablenumberexclude = $val"
                             :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
                             :concatfieldindex="(cindex as number)"
                           ></TabPanelWithIncludeAndExclude>
@@ -72,12 +78,10 @@ const
             >
               <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
                 <button
-                  @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
-                  @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
                 >
-                  Close
+                  Search
                 </button>
               </div>
               <div
@@ -85,12 +89,13 @@ const
                 style="padding-right: 2.5px;"
               >
                 <button
-                  @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
-                  @click="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"
+                  @click="numberexclude = true"
+                  @keypress.enter="numberexclude = true"
+                  :disabled="enablenumberexclude"
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
                 >
-                  Close
+                  @Number Exclude
                 </button>
               </div>
               <div
