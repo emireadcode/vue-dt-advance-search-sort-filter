@@ -48,31 +48,14 @@ export interface YearType extends IdentityType {
   };
 }
 
-export type CurrentAndSignalInnerType = {
-  signal: number;
-  current: number;
-  closepaste: number;
-};
-
-export type CurrentAndSignalType = {
-  displayer?: CurrentAndSignalInnerType | undefined;
-  word?: CurrentAndSignalInnerType | undefined;
-  equalto?: CurrentAndSignalInnerType | undefined;
-  notequalto?: CurrentAndSignalInnerType | undefined;
-  exclude?: {
-    equalto: CurrentAndSignalInnerType;
-    fromto: CurrentAndSignalInnerType;
-  }
-};
-
-export type EnteredWhenInAndWhenNotInPageType = {
-  enteredwheninpage: boolean;
-  enteredwhennotinpage: boolean;
-};
-
 export type StringSearchType = {
   single: string;
   pages: string[][];
+  enteredwheninpage: boolean;
+  enteredwhennotinpage: boolean;
+  signal: number;
+  current: number;
+  closepaste: number;
   deleting: boolean;
   bottom: boolean;
   loading: boolean;
@@ -83,16 +66,20 @@ export type StringSearchType = {
 };
 
 export type AtNumber<T> = {
-  last?: string | undefined;
-  first?: string | undefined;
-  thenumberbeforethelast?: {
+  last: string;
+  first: string;
+  thenumberbeforethelast: {
     thenumberbefore: string;
     thelast: string;
-  } | undefined;
-  afterthefirstthenext?: {
+  };
+  afterthefirstthenext: {
     afterthefirst: string;
     thenext: string;
-  } | undefined;
+  };
+  thematchfromthispattern: {
+    thematch: string;
+    fromthispattern: string;
+  }[] | [];
   search: T & {
     atnumberformat: 'LAST' | 'FIRST' | 'THE-NUMBER-BEFORE-THE-LAST' | 'AFTER-THE-FIRST-THE-NEXT';
     exclude: {
@@ -126,11 +113,11 @@ export type SingleWordStringConcatenatedFieldType = {
     table?: string | undefined;
     join?: string | undefined;
     search: (StringSearchType & {
-          include?: StringSearchType | undefined;
-          exclude?: StringSearchType | undefined;
-          includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
-          atnumbersearch: AtNumber<NumberSearchType>;
-        });
+      include?: StringSearchType | undefined;
+      exclude?: StringSearchType | undefined;
+      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
+      atnumbersearch: AtNumber<NumberSearchType>;
+    });
     startmodifierwildcard?: StartModifierWildCardUnionType | StartModifierWildCardType | undefined;
     endmodifierwildcard?: EndModifierWildCardUnionType | EndModifierWildCardType | undefined;
   };
@@ -301,6 +288,11 @@ export type NumberSearchExcludeFromToType = {
   show: boolean[];
   bottom: boolean;
   pages: [string, string][][];
+  enteredwheninpage: boolean;
+  enteredwhennotinpage: boolean;
+  signal: number;
+  current: number;
+  closepaste: number;
   deleting: boolean;
   addeditemsref: HTMLDivElement[] | [];
   inneraddeditemsref: HTMLDivElement[] | [];
@@ -315,6 +307,11 @@ export type NumberSearchExcludeEqualToType = {
   show: boolean[];
   bottom: boolean;
   pages: string[][];
+  enteredwheninpage: boolean;
+  enteredwhennotinpage: boolean;
+  signal: number;
+  current: number;
+  closepaste: number;
   deleting: boolean;
   addeditemsref: HTMLDivElement[] | [];
   inneraddeditemsref: HTMLDivElement[] | [];

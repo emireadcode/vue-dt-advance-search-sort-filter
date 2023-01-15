@@ -1,15 +1,12 @@
-import type { 
-  CurrentAndSignalInnerType,
-  CurrentAndSignalType,
+import type {
   AtNumber,
   NumberSearchType,
   StringSearchType,
   NumberType,
   NumberSearchExcludeEqualToType,
   NumberSearchExcludeFromToType,
-  EnteredWhenInAndWhenNotInPageType,
 } from "../types/SupportedDatatypesTypeDeclaration";
-import { shallowRef, nextTick, type ShallowRef, triggerRef, } from "vue";
+import { nextTick, type ShallowRef, triggerRef, } from "vue";
 
 const numberlimit = 10, wordlimit = 100;
 
@@ -20,17 +17,12 @@ function scrollToElement(el: HTMLDivElement | HTMLLIElement) {
 }
 
 export async function repaginateExcludeEqualtoPage(
-  currentandsignal:  ShallowRef<CurrentAndSignalType>,
   holder: ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
   from?: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL" | undefined
 ) {
   let
   allinflatarray = [],
-    done = false,
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
+    done = false
   ;
   for(
     let i=0;
@@ -66,9 +58,7 @@ export async function repaginateExcludeEqualtoPage(
     await addNewInputEntry(
       item,
       'EXCLUDE-EQUAL-TO',
-      currentandsignal,
       holder,
-      enteredwheninandwhennot,
       from
     );
   });
@@ -78,7 +68,6 @@ export async function repaginateExcludeEqualtoPage(
 }
 
 async function isAlreadyInPageArray(
-  currentandsignal: ShallowRef<CurrentAndSignalType>,
   newinputentry: string | [string, string],
   holder: ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType> | StringSearchType>,
   direction: 'DIRECT' | 'INDIRECT-CHECK-WHETHER-NEWINPUTENTRY-WITHIN-RANGE-OF-EXCLUDE-FROMTO' | 'INDIRECT-CHECK-WHETHER-RANGE-NEWINPUTENTRY-COVERS-EXCLUDE-EQUALTO',
@@ -286,9 +275,9 @@ async function isAlreadyInPageArray(
             inpage = true;
             let time3: NodeJS.Timeout;
             time3 = setTimeout(() => {
-              (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = i;
-              (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).signal++;
-              triggerRef(currentandsignal);
+              (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = i;
+              (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).signal++;
+              triggerRef(holder);
               if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[pos] as HTMLDivElement) {
                 scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).addeditemsref[pos] as HTMLDivElement);
                 ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).inneraddeditemsref[pos] as HTMLDivElement).style.backgroundColor = "red";
@@ -328,7 +317,6 @@ async function isAlreadyInPageArray(
   else {
     if(typeof newinputentry !== 'string') {
       let inpagepageindexandpos = await isAlreadyInPageArray(
-        currentandsignal, 
         newinputentry, 
         holder, 
         'DIRECT', 
@@ -369,9 +357,9 @@ async function isAlreadyInPageArray(
               pos = j;
               inpage = true;
               time3[time3Index] = setTimeout(() => {
-                (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = i;
-                (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).signal++;
-                triggerRef(currentandsignal);
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = i;
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).signal++;
+                triggerRef(holder);
                 if((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j] as HTMLDivElement) {
                   scrollToElement((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).addeditemsref[j] as HTMLDivElement);
                   ((((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).inneraddeditemsref[j] as HTMLDivElement).style.backgroundColor="red";
@@ -477,12 +465,10 @@ async function isAlreadyInPageArray(
         time6 = setTimeout(async () => {
           if(somethingdeleted) {
             if(await repaginateExcludeEqualtoPage(
-              currentandsignal,
               holder as ShallowRef<NumberType['search']['multiple']>,
               from
             )) {
               let inpagepageindexandpos = await isAlreadyInPageArray(
-                currentandsignal,
                 newinputentry,
                 holder,
                 direction,
@@ -527,9 +513,7 @@ function storeAllInExcludeEqualToPagesIntoAFlatArray(
 export async function addNewInputEntry(
   newinputentry: string | [string, string],
   inputtype: 'WORD' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO' | 'NOT-EQUAL-TO' | 'EQUAL-TO',
-  currentandsignal: ShallowRef<CurrentAndSignalType>,
   holder: ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType> | StringSearchType>,
-  enteredwheninandwhennot: ShallowRef<EnteredWhenInAndWhenNotInPageType>,
   from?: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL" | undefined
 ) {
   nextTick(async () => {
@@ -540,7 +524,6 @@ export async function addNewInputEntry(
           if(typeof newinputentry === 'string') {
             if(newinputentry.trim().length > 0 && newinputentry.length <= maxwordlength) {
               let inpagepageindexandpos = await isAlreadyInPageArray(
-                currentandsignal, 
                 newinputentry, 
                 holder, 
                 'DIRECT', 
@@ -548,8 +531,7 @@ export async function addNewInputEntry(
                 from
               );
               if(!inpagepageindexandpos.inpage) {
-                enteredwheninandwhennot.value.enteredwhennotinpage = true;
-                triggerRef(enteredwheninandwhennot);
+                (holder.value as StringSearchType).enteredwhennotinpage = true;
                 (holder.value as StringSearchType).addloading = true;
                 triggerRef(holder);
                 let time1: NodeJS.Timeout;
@@ -586,21 +568,21 @@ export async function addNewInputEntry(
                 }, 100);
                 let time3: NodeJS.Timeout;
                 time3 = setTimeout(() => {
-                  (currentandsignal.value.word as CurrentAndSignalInnerType).current = (holder.value as StringSearchType).pages.length - 1;
-                  (currentandsignal.value.word as CurrentAndSignalInnerType).signal++;
-                  triggerRef(currentandsignal);
+                  (holder.value as StringSearchType).current = (holder.value as StringSearchType).pages.length - 1;
+                  (holder.value as StringSearchType).signal++;
+                  triggerRef(holder);
                   clearTimeout(time3);
                 }, 120);
               }
               else {
-                enteredwheninandwhennot.value.enteredwheninpage = true;
-                triggerRef(enteredwheninandwhennot);
+                (holder.value as StringSearchType).enteredwheninpage = true;
+                triggerRef(holder);
                 //scroll to element and show effect that word is in page
                 let time1: NodeJS.Timeout;
                 time1 = setTimeout(() => {
-                  (currentandsignal.value.word as CurrentAndSignalInnerType).current = inpagepageindexandpos.pageindex;
-                  (currentandsignal.value.word as CurrentAndSignalInnerType).signal++;
-                  triggerRef(currentandsignal);
+                  (holder.value as StringSearchType).current = inpagepageindexandpos.pageindex;
+                  (holder.value as StringSearchType).signal++;
+                  triggerRef(holder);
                   clearTimeout(time1);
                 }, 400);
                 let time7: NodeJS.Timeout;
@@ -634,7 +616,6 @@ export async function addNewInputEntry(
           if(typeof newinputentry === 'string') {
             if(newinputentry.trim().length > 0) {
               let inpagepageindexandpos = await isAlreadyInPageArray(
-                currentandsignal, 
                 newinputentry, 
                 holder, 
                 'DIRECT',
@@ -642,8 +623,7 @@ export async function addNewInputEntry(
                 from
               );
               if(!inpagepageindexandpos.inpage) {
-                enteredwheninandwhennot.value.enteredwhennotinpage = true;
-                triggerRef(enteredwheninandwhennot);
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).enteredwhennotinpage = true;
                 (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).addloading = true;
                 triggerRef(holder);
                 let time1: NodeJS.Timeout;
@@ -678,21 +658,21 @@ export async function addNewInputEntry(
                 }, 100);
                 let time3: NodeJS.Timeout;
                 time3 = setTimeout(() => {
-                  (currentandsignal.value.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
-                  (currentandsignal.value.equalto as CurrentAndSignalInnerType).signal++;
-                  triggerRef(currentandsignal);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).signal++;
+                  triggerRef(holder);
                   clearTimeout(time3);
                 }, 120);
               }
               else {
-                enteredwheninandwhennot.value.enteredwheninpage = true;
-                triggerRef(enteredwheninandwhennot);
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).enteredwheninpage = true;
+                triggerRef(holder);
                 //scroll to element and show effect that word is in page
                 let time3: NodeJS.Timeout;
                 time3 = setTimeout(() => {
-                  (currentandsignal.value.equalto as CurrentAndSignalInnerType).current = inpagepageindexandpos.pageindex;
-                  (currentandsignal.value.equalto as CurrentAndSignalInnerType).signal++;
-                  triggerRef(currentandsignal);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).current = inpagepageindexandpos.pageindex;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).signal++;
+                  triggerRef(holder);
                   clearTimeout(time3);
                 }, 400);
                 let time7: NodeJS.Timeout;
@@ -742,7 +722,6 @@ export async function addNewInputEntry(
             if(newinputentry.trim().length > 0) {
               let 
                 inpagepageindexandpos = await isAlreadyInPageArray(
-                  currentandsignal, 
                   newinputentry, 
                   holder, 
                   'DIRECT', 
@@ -751,8 +730,7 @@ export async function addNewInputEntry(
                 )
               ;
               if(!inpagepageindexandpos.inpage) {
-                enteredwheninandwhennot.value.enteredwhennotinpage = true;
-                triggerRef(enteredwheninandwhennot);
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).enteredwhennotinpage = true;
                 (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).addloading = true;
                 triggerRef(holder);
                 let time1: NodeJS.Timeout;
@@ -787,21 +765,21 @@ export async function addNewInputEntry(
                 }, 100);
                 let time3: NodeJS.Timeout;
                 time3 = setTimeout(() => {
-                  (currentandsignal.value.notequalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
-                  (currentandsignal.value.notequalto as CurrentAndSignalInnerType).signal++;
-                  triggerRef(currentandsignal);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).signal++;
+                  triggerRef(holder);
                   clearTimeout(time3);
                 }, 120);
               }
               else {
-                enteredwheninandwhennot.value.enteredwheninpage = true;
-                triggerRef(enteredwheninandwhennot);
+                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).enteredwheninpage = true;
+                triggerRef(holder);
                 //scroll to element and show effect that word is in page
                 let time3: NodeJS.Timeout;
                 time3 = setTimeout(() => {
-                  (currentandsignal.value.notequalto as CurrentAndSignalInnerType).current = inpagepageindexandpos.pageindex;
-                  (currentandsignal.value.notequalto as CurrentAndSignalInnerType).signal++;
-                  triggerRef(currentandsignal);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).current = inpagepageindexandpos.pageindex;
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).signal++;
+                  triggerRef(holder);
                   clearTimeout(time3);
                 }, 400);
                 let time7: NodeJS.Timeout;
@@ -850,7 +828,6 @@ export async function addNewInputEntry(
           if(typeof newinputentry === 'string') {
             if(newinputentry.trim().length > 0) {
               let inpagepageindexandpos1 = await isAlreadyInPageArray(
-                currentandsignal, 
                 newinputentry, 
                 holder, 
                 'INDIRECT-CHECK-WHETHER-NEWINPUTENTRY-WITHIN-RANGE-OF-EXCLUDE-FROMTO', 
@@ -860,7 +837,6 @@ export async function addNewInputEntry(
               if(!inpagepageindexandpos1.inpage) {
                 let
                   inpagepageindexandpos2 = await isAlreadyInPageArray(
-                    currentandsignal, 
                     newinputentry, 
                     holder, 
                     'DIRECT', 
@@ -869,8 +845,7 @@ export async function addNewInputEntry(
                   )
                 ;
                 if(!inpagepageindexandpos2.inpage) {
-                  enteredwheninandwhennot.value.enteredwhennotinpage = true;
-                  triggerRef(enteredwheninandwhennot);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).enteredwhennotinpage = true;
                   (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).addloading = true;
                   triggerRef(holder);
                   let time1: NodeJS.Timeout;
@@ -905,21 +880,21 @@ export async function addNewInputEntry(
                   }, 100);
                   let time3: NodeJS.Timeout;
                   time3 = setTimeout(() => {
-                    (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
-                    (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).signal++;
-                    triggerRef(currentandsignal);
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).signal++;
+                    triggerRef(holder);
                     clearTimeout(time3);
                   }, 120);
                 }
                 else {
-                  enteredwheninandwhennot.value.enteredwheninpage = true;
-                  triggerRef(enteredwheninandwhennot);
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).enteredwheninpage = true;
+                  triggerRef(holder);
                   //scroll to element and show effect that word is in page
                   let time3: NodeJS.Timeout;
                   time3 = setTimeout(() => {
-                    (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = inpagepageindexandpos2.pageindex;
-                    (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).signal++;
-                    triggerRef(currentandsignal);
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = inpagepageindexandpos2.pageindex;
+                    (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).signal++;
+                    triggerRef(holder);
                     clearTimeout(time3);
                   }, 400);
                   let time7: NodeJS.Timeout;
@@ -971,7 +946,6 @@ export async function addNewInputEntry(
       if(typeof newinputentry !== 'string') {
         let 
           inpagepageindexandpos1 = await isAlreadyInPageArray(
-            currentandsignal, 
             newinputentry, 
             holder, 
             'INDIRECT-CHECK-WHETHER-RANGE-NEWINPUTENTRY-COVERS-EXCLUDE-EQUALTO', 
@@ -979,7 +953,6 @@ export async function addNewInputEntry(
             from
           ),
           inpagepageindexandpos2 = await isAlreadyInPageArray(
-            currentandsignal, 
             newinputentry, 
             holder, 
             'DIRECT', 
@@ -988,8 +961,7 @@ export async function addNewInputEntry(
           )
         ;
         if(!inpagepageindexandpos2.inpage) {
-          enteredwheninandwhennot.value.enteredwhennotinpage = true;
-          triggerRef(enteredwheninandwhennot);
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).enteredwhennotinpage = true;
           (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).addloading = true;
           triggerRef(holder);
           let time1: NodeJS.Timeout;
@@ -1024,9 +996,9 @@ export async function addNewInputEntry(
           }, 100);
           let time3: NodeJS.Timeout;
           time3 = setTimeout(() => {
-            (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
-            (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).signal++;
-            triggerRef(currentandsignal);
+            (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
+            (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).signal++;
+            triggerRef(holder);
             clearTimeout(time3);
           }, 120);
           (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).singlefrom = '';
@@ -1034,14 +1006,14 @@ export async function addNewInputEntry(
           triggerRef(holder);
         }
         else {
-          enteredwheninandwhennot.value.enteredwheninpage = true;
-          triggerRef(enteredwheninandwhennot);
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).enteredwheninpage = true;
+          triggerRef(holder);
           //scroll to element and show effect that word is in page
           let time3: NodeJS.Timeout;
           time3 = setTimeout(() => {
-            (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = inpagepageindexandpos2.pageindex;
-            (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).signal++;
-            triggerRef(currentandsignal);
+            (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = inpagepageindexandpos2.pageindex;
+            (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).signal++;
+            triggerRef(holder);
             clearTimeout(time3);
           }, 400);
           let time7: NodeJS.Timeout;
@@ -1085,28 +1057,28 @@ export async function addNewInputEntry(
     }
     let time10: NodeJS.Timeout;
     time10 = setTimeout(() => {
-      if(enteredwheninandwhennot.value.enteredwheninpage && enteredwheninandwhennot.value.enteredwhennotinpage) {
+      if((holder.value as StringSearchType).enteredwheninpage && (holder.value as StringSearchType).enteredwhennotinpage) {
         if(inputtype==='WORD') {
-          (currentandsignal.value.word as CurrentAndSignalInnerType).current = (holder.value as StringSearchType).pages.length - 1;
-          (currentandsignal.value.word as CurrentAndSignalInnerType).signal++;
+          (holder.value as StringSearchType).current = (holder.value as StringSearchType).pages.length - 1;
+          (holder.value as StringSearchType).signal++;
         }
         else if(inputtype==='EQUAL-TO') {
-          (currentandsignal.value.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
-          (currentandsignal.value.equalto as CurrentAndSignalInnerType).signal++;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.equalto as NumberSearchExcludeEqualToType).signal++;
         }
         else if(inputtype==='NOT-EQUAL-TO') {
-          (currentandsignal.value.notequalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
-          (currentandsignal.value.notequalto as CurrentAndSignalInnerType).signal++;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).pages.length - 1;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.notequalto as NumberSearchExcludeEqualToType).signal++;
         }
         else if(inputtype=='EXCLUDE-EQUAL-TO') {
-          (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
-          (currentandsignal.value.exclude?.equalto as CurrentAndSignalInnerType).signal++;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).pages.length - 1;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).signal++;
         }
         else {
-          (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
-          (currentandsignal.value.exclude?.fromto as CurrentAndSignalInnerType).signal++;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).pages.length - 1;
+          (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).signal++;
         }
-        triggerRef(currentandsignal);
+        triggerRef(holder);
       }
     }, 935);
   });
@@ -1115,26 +1087,25 @@ export async function addNewInputEntry(
 
 export function deletePastedOrNewInputEntry(
   dindex: number,
-  currentandsignal: ShallowRef<CurrentAndSignalType>,
   holder: ShallowRef<NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType>,
   inputtype: 'DISPLAYER-EQUAL-TO-NOT-EQUAL-TO-OR-EXCLUDE-EQUAL-TO' | 'DISPLAYER-EXCLUDE-FROM-TO' | 'WORD'
 ) {
   if(!(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).deleting) {
     (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).deleting = true;
-    delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current][dindex];
+    delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages[(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).current][dindex];
     if(inputtype === 'WORD') {
-      (holder.value as StringSearchType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current] = [
-        ...(holder.value as StringSearchType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current].filter((item: string | undefined | null) => (item !== undefined && item !== null))
+      (holder.value as StringSearchType).pages[(holder.value as StringSearchType).current] = [
+        ...(holder.value as StringSearchType).pages[(holder.value as StringSearchType).current].filter((item: string | undefined | null) => (item !== undefined && item !== null))
       ];
     }
     else if(inputtype === 'DISPLAYER-EQUAL-TO-NOT-EQUAL-TO-OR-EXCLUDE-EQUAL-TO') {
-      (holder.value as NumberSearchExcludeEqualToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current] = [
-        ...(holder.value as NumberSearchExcludeEqualToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current].filter((item: string | undefined | null) => (item !== undefined && item !== null))
+      (holder.value as NumberSearchExcludeEqualToType).pages[(holder.value as NumberSearchExcludeEqualToType).current] = [
+        ...(holder.value as NumberSearchExcludeEqualToType).pages[(holder.value as NumberSearchExcludeEqualToType).current].filter((item: string | undefined | null) => (item !== undefined && item !== null))
       ];
     }
     else {
-      (holder.value as NumberSearchExcludeFromToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current] = [
-        ...(holder.value as NumberSearchExcludeFromToType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current].filter((item: [string, string] | undefined | null) => (item !== undefined && item !== null))
+      (holder.value as NumberSearchExcludeFromToType).pages[(holder.value as NumberSearchExcludeFromToType).current] = [
+        ...(holder.value as NumberSearchExcludeFromToType).pages[(holder.value as NumberSearchExcludeFromToType).current].filter((item: [string, string] | undefined | null) => (item !== undefined && item !== null))
       ];
     }
     delete (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).addeditemsref[dindex];
@@ -1158,10 +1129,10 @@ export function deletePastedOrNewInputEntry(
 
     triggerRef(holder);
 
-    if((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages[(currentandsignal.value.displayer as CurrentAndSignalInnerType).current].length > 0) {
+    if((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages[(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).current].length > 0) {
       let isize = (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages.length;
       for(
-        let i=(currentandsignal.value.displayer as CurrentAndSignalInnerType).current;
+        let i=(holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).current;
         i<isize;
         i++
       ) {
@@ -1220,7 +1191,7 @@ export function deletePastedOrNewInputEntry(
       }
     }
     else {
-      (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages.splice((currentandsignal.value.displayer as CurrentAndSignalInnerType).current, 1);
+      (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages.splice((holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).current, 1);
       inputtype === 'WORD'?
         (holder.value as StringSearchType).pages = [
           ...(holder.value as StringSearchType).pages.filter((item: string[] | undefined | null) => (item !== undefined && item !== null))
@@ -1235,9 +1206,8 @@ export function deletePastedOrNewInputEntry(
           ...(holder.value as NumberSearchExcludeFromToType).pages.filter((item: [string, string][] | undefined | null) => (item !== undefined && item !== null))
         ]
       );
-      (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages.length - 1;
-      (currentandsignal.value.displayer as CurrentAndSignalInnerType).signal++;
-      triggerRef(currentandsignal);
+      (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).current = (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).pages.length - 1;
+      (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).signal++;
       triggerRef(holder);
     }
     (holder.value as NumberSearchExcludeEqualToType | NumberSearchExcludeFromToType | StringSearchType).deleting = false;

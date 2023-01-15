@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { triggerRef, shallowRef, type Ref, provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
 import type {
-  CurrentAndSignalInnerType,
   NumberStringType,
   SingleWordStringType,
   MultipleWordsStringType,
   MultipleWordsStringConcatenatedFieldType,
   StringSearchType,
   SingleWordStringConcatenatedFieldType,
-  CurrentAndSignalType,
-  EnteredWhenInAndWhenNotInPageType
 } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
 import Paste from "./Paste.vue";
@@ -17,13 +14,6 @@ import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputen
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 const
-  currentandsignal = shallowRef<CurrentAndSignalType>({
-    word: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    }
-  }),
   holder = shallowRef<StringSearchType>(),
   props = defineProps<{
     concatfieldindex?: string | number | undefined;
@@ -40,34 +30,18 @@ function triggerHolder() {
   triggerRef(holder);
 }
 
-function triggerCurrentAndSignal() {
-  triggerRef(currentandsignal);
-}
-
 async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
-  let 
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
-  ;
   await addNewInputEntry(
     newinputentry,
     inputtype,
-    currentandsignal as ShallowRef<CurrentAndSignalType>,
-    holder as ShallowRef<StringSearchType>,
-    enteredwheninandwhennot
+    holder as ShallowRef<StringSearchType>
   );
 }
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
   let 
     time: NodeJS.Timeout[] = [], 
-    timeIndex = 0,
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
+    timeIndex = 0
   ;
   for(let i=0; i<pasteditems.length; i++) {
     let item = pasteditems[i];
@@ -77,9 +51,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
           await addNewInputEntry(
             item[0],
             inputtype,
-            currentandsignal as ShallowRef<CurrentAndSignalType>,
-            holder as ShallowRef<StringSearchType>,
-            enteredwheninandwhennot
+            holder as ShallowRef<StringSearchType>
           );
           clearTimeout(time[timeIndex]);
         }, 10);
@@ -87,8 +59,8 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
       }
     }
   }
-  ((currentandsignal.value as CurrentAndSignalType).word as CurrentAndSignalInnerType).closepaste++;
-  triggerRef(currentandsignal);
+  (holder.value as StringSearchType).closepaste++;
+  triggerRef(holder);
 }
 
 onBeforeMount(() => {
@@ -169,7 +141,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <Paste
-      :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).closepaste"
+      :receiveclosepastemodalsignal="(holder as StringSearchType).closepaste"
       :title="cards[index].info.name"
       :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
       :text-area-height="'height:377px;'"
@@ -198,12 +170,12 @@ onBeforeMount(() => {
     </Paste>
     <PastedItemAndNewlyInputedEntryDisplayer
       paginationtype="WORD"
-      :current="[((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current]"
+      :current="[(holder as StringSearchType).signal, (holder as StringSearchType).current]"
       :tree="(holder as StringSearchType)"
       treetype="StringSearchType"
       :display-area-height="'height: 358.9px;'"
       :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
-      @update:current="($val) => {((currentandsignal as CurrentAndSignalType).word as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal();}"
+      @update:current="($val) => { (holder as StringSearchType).current = $val; triggerHolder();}"
     ></PastedItemAndNewlyInputedEntryDisplayer>
   </div>
 </template>

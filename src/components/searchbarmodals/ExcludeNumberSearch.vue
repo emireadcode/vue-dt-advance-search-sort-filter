@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { 
   type ShallowRef,
-  shallowRef,
   triggerRef,
   inject,
   computed,
@@ -10,9 +9,6 @@ import type {
   NumberSearchExcludeFromToType, 
   NumberSearchExcludeEqualToType, 
   NumberType,
-  CurrentAndSignalType,
-  CurrentAndSignalInnerType,
-  EnteredWhenInAndWhenNotInPageType,
   SingleWordStringType,
   AtNumber,
   NumberSearchType,
@@ -23,20 +19,6 @@ import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputen
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 const
-  currentandsignal = shallowRef<CurrentAndSignalType>({
-    exclude: {
-      fromto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      },
-      equalto: {
-        signal: 0,
-        current: 0,
-        closepaste: 0,
-      }
-    }
-  }),
   holder = inject("numbersearchcard") as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
   index = inject("index") as number,
   props = defineProps<{
@@ -52,26 +34,14 @@ function triggerHolder() {
   triggerRef(holder);
 }
 
-function triggerCurrentAndSignal() {
-  triggerRef(currentandsignal);
-}
-
 async function addLocalNewInputEntry(
   newinputentry: [string, string] | string,
   inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO'
 ) {
-  let 
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
-  ;
   await addNewInputEntry(
     newinputentry,
     inputtype,
-    currentandsignal as ShallowRef<CurrentAndSignalType>,
     holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
-    enteredwheninandwhennot,
     props.from
   );
 }
@@ -79,11 +49,7 @@ async function addLocalNewInputEntry(
 async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-TO' | 'EXCLUDE-EQUAL-TO') {
   let
     time: NodeJS.Timeout[] = [], 
-    timeIndex = 0,
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
+    timeIndex = 0
   ;
   for(let i=0; i<pasteditems.length; i++) {
     let item = pasteditems[i];
@@ -93,9 +59,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
         await addNewInputEntry(
           (inputtype==='EXCLUDE-EQUAL-TO')? item[0] : [splititem[0].trim(), splititem[1].trim()],
           inputtype,
-          currentandsignal as ShallowRef<CurrentAndSignalType>,
           holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
-          enteredwheninandwhennot,
           props.from
         );
         clearTimeout(time[timeIndex]);
@@ -104,11 +68,11 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'EXCLUDE-FROM-
     }
   }
   (inputtype==='EXCLUDE-EQUAL-TO')?
-    ((currentandsignal.value as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).closepaste++
+  (((props.from === 'NUMBER-SEARCHER-MODAL')? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).closepaste++
     :
-    ((currentandsignal.value as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).closepaste++
+    (((props.from === 'NUMBER-SEARCHER-MODAL')? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).closepaste++
   ;
-  triggerRef(currentandsignal);
+  triggerRef(holder);
 }
 
 const excludeAddNewFromTo = computed(() => {
@@ -504,7 +468,7 @@ const excludeAddNewEqualto = computed(() => {
                   <Paste
                     :breakdescription="(true as boolean)"
                     @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
-                    :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).closepaste"
+                    :receiveclosepastemodalsignal="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)?.closepaste"
                     title="none overlapping a-b range"
                     :datatype="'NumberRange'"
                     :max="((
@@ -547,12 +511,12 @@ const excludeAddNewEqualto = computed(() => {
                   </Paste>
                   <PastedItemAndNewlyInputedEntryDisplayer
                     paginationtype="EXCLUDE-FROM-TO"
-                    :current="[((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current]"
+                    :current="[(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)?.signal, (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)?.current]"
                     :tree="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)"
                     treetype="NumberSearchExcludeFromToType"
                     :display-area-height="'height: 9.9477rem;'"
                     :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
-                    @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.fromto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
+                    @update:current="($val) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = $val; triggerHolder(); }"
                   ></PastedItemAndNewlyInputedEntryDisplayer>
                 </div>
               </div>
@@ -650,7 +614,7 @@ const excludeAddNewEqualto = computed(() => {
                   <Paste
                     :breakdescription="(true as boolean)"
                     @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
-                    :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).closepaste"
+                    :receiveclosepastemodalsignal="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)?.closepaste"
                     title="numbers"
                     :datatype="cards[index].info.datatype as 'Number'"
                     :max="((
@@ -693,12 +657,12 @@ const excludeAddNewEqualto = computed(() => {
                   </Paste>
                   <PastedItemAndNewlyInputedEntryDisplayer
                     paginationtype="EXCLUDE-EQUAL-TO"
-                    :current="[((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current]"
+                    :current="[(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).signal, (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)?.current]"
                     :tree="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                     treetype="NumberSearchExcludeEqualToType"
                     :display-area-height="'height: 9.9477rem;'"
                     :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
-                    @update:current="($val) => {((currentandsignal as CurrentAndSignalType).exclude?.equalto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
+                    @update:current="($val) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = $val; triggerHolder(); }"
                   ></PastedItemAndNewlyInputedEntryDisplayer>
                 </div>
               </div>

@@ -93,7 +93,8 @@ const
                   @keypress.enter="numberexclude = true"
                   :disabled="enablenumberexclude"
                   class="btn shadow-sm w-100 font-family"
-                  style="padding: 6px; font-size: 1rem;color:#fff;background-color: gray;"
+                  style="padding: 6px; font-size: 1rem;color:#fff;"
+                  :style="!enablenumberexclude? 'background-color: blue;color:#fff': 'background-color:#B8B8B8;color:#fff;'"
                 >
                   @Number Exclude
                 </button>

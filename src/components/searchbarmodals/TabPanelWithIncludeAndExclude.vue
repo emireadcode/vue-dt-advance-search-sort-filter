@@ -6,9 +6,10 @@ import { triggerRef, provide, type ShallowRef, inject, ref, shallowRef, } from '
 import type { NumberStringType, SingleWordStringType, SingleWordStringConcatenatedFieldType, MultipleWordsStringType, StringSearchType, MultipleWordsStringConcatenatedFieldType } from '../types/SupportedDatatypesTypeDeclaration';
 import ReusableNumberSearch from "./ReusableNumberSearch.vue";
 import ExcludeNumberSearch from "./ExcludeNumberSearch.vue";
+import AtNumberSearchSetter from "./AtNumberSearchSetter.vue";
 
 const
-  excludebuttonenabled = ref(true),
+  openatnumbersearch = ref(false),
   format = ref<'INCLUDE' | 'EXCLUDE' | '@NUMBER'>(),
   props = defineProps<{
     concatfieldindex?: string | number | undefined;
@@ -92,13 +93,8 @@ function setDefaultFormat() {
     <IncludeOrExcludeTabs @update:format="($val: 'INCLUDE' | 'EXCLUDE' | '@NUMBER') => { format = $val; setDefaultFormat(); }"></IncludeOrExcludeTabs>
     <template v-if="format === '@NUMBER'">
       <div class="d-block" style="padding:2px 0">
-        <div class="d-block overflow-y-auto shadow-sm" style="height:390px;padding: 10px 5px;">
-          <template v-if="typeof props.numberexclude === undefined || props.numberexclude === false">
-            <ReusableNumberSearch @enable:exclude="($val: boolean) => { excludebuttonenabled = $val; emits('enable:exclude', $val); }" from="NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL"></ReusableNumberSearch>
-          </template>
-          <template v-else>
-            <ExcludeNumberSearch @close:exclude="($val: boolean) => emits('close:exclude', $val)" from="NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL"></ExcludeNumberSearch>
-          </template>
+        <div class="d-block overflow-hidden shadow-sm" style="height:390px;padding: 10px 0px;">
+          <AtNumberSearchSetter @enable:exclude="($val: boolean) => emits('enable:exclude', $val)" @open:atnumbersearch="($val: boolean) => openatnumbersearch=$val"></AtNumberSearchSetter>
         </div>
       </div>
     </template>
@@ -120,16 +116,26 @@ function setDefaultFormat() {
         </template>
       </template>
     </template>
-    <template v-if="excludebuttonenabled === false">
+    <template v-if="openatnumbersearch">
       <template v-if="format === '@NUMBER'">
         <div class="w-100 position-absolute t-0 l-0 h-100">
           <div class="overflow-y-auto h-100 d-block" style="background-color: #fff;outline: 1px solid blue;border-bottom:3px solid blue;">
             <template v-if="typeof props.numberexclude === undefined || props.numberexclude === false">
               <div
                 class="shadow-sm d-block text-center"
-                style="background-color: blue;padding:0.63rem 0;"
+                style="background-color: blue;padding: 0 0.63rem;"
               >
-                @number
+                <a
+                  class="underline-none cursor-pointer align-middle"
+                  @click="() => { openatnumbersearch=false; emits('enable:exclude', true); }"
+                  @keypress.enter="() => { openatnumbersearch=false; emits('enable:exclude', true); }"
+                >
+                  <img
+                    src="/src/assets/icons/close.png"
+                    class="align-middle"
+                    style="width: 2.205rem; height: 2.205rem"
+                  />
+                </a>
               </div>
               <ReusableNumberSearch @enable:exclude="($val: boolean) => emits('enable:exclude', $val)" from="NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL"></ReusableNumberSearch>
             </template>

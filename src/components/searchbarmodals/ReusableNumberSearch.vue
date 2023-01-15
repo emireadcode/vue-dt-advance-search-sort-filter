@@ -8,27 +8,12 @@ import type {
   NumberSearchExcludeEqualToType,
   NumberSearchExcludeFromToType,
   AtNumber,
-  CurrentAndSignalType,
-  CurrentAndSignalInnerType,
-  EnteredWhenInAndWhenNotInPageType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import { addNewInputEntry, setTabAndResetOthers } from "../helperfunctions/addnewlypastedandnewinputentry";
 import Paste from "./Paste.vue";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 
 const
-  currentandsignal = shallowRef<CurrentAndSignalType>({
-    equalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-    notequalto: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-  }),
   holder = inject("numbersearchcard") as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
   index = inject("index") as number,
   props = defineProps<{
@@ -54,26 +39,14 @@ function triggerHolder() {
   triggerRef(holder);
 }
 
-function triggerCurrentAndSignal() {
-  triggerRef(currentandsignal);
-}
-
 async function addLocalNewInputEntry(
   newinputentry: string,
   inputtype: 'EQUAL-TO' | 'NOT-EQUAL-TO'
 ) {
-  let 
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
-  ;
   await addNewInputEntry(
     newinputentry,
     inputtype,
-    currentandsignal as ShallowRef<CurrentAndSignalType>,
     holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
-    enteredwheninandwhennot,
     props.from
   );
 }
@@ -81,11 +54,7 @@ async function addLocalNewInputEntry(
 async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO' | 'EQUAL-TO') {
   let 
     time: NodeJS.Timeout[] = [], 
-    timeIndex = 0,
-    enteredwheninandwhennot = shallowRef<EnteredWhenInAndWhenNotInPageType>({
-      enteredwheninpage: false,
-      enteredwhennotinpage: false
-    })
+    timeIndex = 0
   ;
   for(let i=0; i<pasteditems.length; i++) {
     let item = pasteditems[i];
@@ -94,9 +63,7 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
         await addNewInputEntry(
           item[0],
           inputtype,
-          currentandsignal as ShallowRef<CurrentAndSignalType>,
           holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>,
-          enteredwheninandwhennot,
           props.from
         );
         clearTimeout(time[timeIndex]);
@@ -105,11 +72,11 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'NOT-EQUAL-TO'
     }
   }
   (inputtype==='EQUAL-TO')? 
-    ((currentandsignal.value as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).closepaste++
+    ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search).equalto.closepaste++
     : 
-    ((currentandsignal.value as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).closepaste++
+    ((props.from === "NUMBER-SEARCHER-MODAL")? (holder.value as NumberType['search']['multiple']) : (holder.value as AtNumber<NumberSearchType>).search).notequalto.closepaste++
   ;
-  triggerRef(currentandsignal);
+  triggerRef(holder);
 }
 
 function resetExclude(action: boolean) {
@@ -119,6 +86,11 @@ function resetExclude(action: boolean) {
       loading: false,
       addloading: false,
       shake: [],
+      signal: 0,
+      enteredwheninpage: false,
+      enteredwhennotinpage: false,
+      current: 0,
+      closepaste: 0,
       show: [],
       bottom: false,
       pages: [],
@@ -133,7 +105,12 @@ function resetExclude(action: boolean) {
       singleto: '',
       loading: false,
       addloading: false,
+      enteredwheninpage: false,
+      enteredwhennotinpage: false,
       shake: [],
+      signal: 0,
+      current: 0,
+      closepaste: 0,
       show: [],
       bottom: false,
       pages: [],
@@ -187,6 +164,11 @@ onMounted(() => {
         }
         resetExclude(true);
       }
+      else {
+        if(props.from !== "NUMBER-SEARCHER-MODAL") {
+          emits('enable:exclude', true);
+        }
+      }
     }
   );
   unwatchlessthan = watch(
@@ -198,6 +180,11 @@ onMounted(() => {
           emits('enable:exclude', false);
         }
         resetExclude(true);
+      }
+      else {
+        if(props.from !== "NUMBER-SEARCHER-MODAL") {
+          emits('enable:exclude', true);
+        }
       }
     }
   );
@@ -231,6 +218,11 @@ onMounted(() => {
           emits('enable:exclude', false);
         }
         resetExclude(true);
+      }
+      else {
+        if(props.from !== "NUMBER-SEARCHER-MODAL") {
+          emits('enable:exclude', true);
+        }
       }
     }
   );
@@ -397,7 +389,7 @@ onBeforeUnmount(() => {
             <Paste
               :breakdescription="(true as boolean)"
               :from="props.from"
-              :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).closepaste"
+              :receiveclosepastemodalsignal="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
@@ -428,12 +420,12 @@ onBeforeUnmount(() => {
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
               paginationtype="NOT-EQUAL-TO"
-              :current="[((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current]"
+              :current="[((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.signal, ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.current]"
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
-              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).equalto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
+              @update:current="($val) => { ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.current = $val; triggerHolder(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
@@ -515,7 +507,7 @@ onBeforeUnmount(() => {
             <Paste
               :breakdescription="(true as boolean)"
               :from="props.from"
-              :receiveclosepastemodalsignal="((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).closepaste"
+              :receiveclosepastemodalsignal="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
@@ -550,12 +542,12 @@ onBeforeUnmount(() => {
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
               paginationtype="EQUAL-TO"
-              :current="[((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).signal, ((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current]"
+              :current="[((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.signal, ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.current]"
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
               :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
-              @update:current="($val) => {((currentandsignal as CurrentAndSignalType).notequalto as CurrentAndSignalInnerType).current = $val; triggerCurrentAndSignal(); }"
+              @update:current="($val) => {((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.current = $val; triggerHolder(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
