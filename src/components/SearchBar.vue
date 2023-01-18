@@ -40,7 +40,7 @@ let
 </script>
 
 <template>
-  <div class="d-block" style="padding: 0.410156718rem 0">
+  <div class="d-block" style="padding: 0 0 0.410156718rem 0">
     <div
       class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
       style="height: 1.75rem"

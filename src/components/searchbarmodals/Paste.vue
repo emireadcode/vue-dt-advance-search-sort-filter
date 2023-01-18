@@ -20,6 +20,7 @@ const
     breakdescription?: boolean | undefined;
     receiveclosepastemodalsignal?: number | undefined;
     title: string;
+    pastebuttonfontsize: string;
     min?: string | undefined;
     max?: string | undefined;
     datatype: 'NumberFromNumberString' | 'NumberRange' | 'DateTime' | 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number';
@@ -166,17 +167,20 @@ function removeDuplicateAndValidateNumericRangeLine(acceptedArray: string[], min
                     )
                     ||
                     (
-                      parseFloat(splititem[0].trim()) <= parseFloat(splititem1[0].trim())
-                      &&
                       (
+                        //here
                         parseFloat(splititem[1].trim()) >= parseFloat(splititem1[1].trim())
                         ||
                         (
-                          parseFloat(splititem[1].trim()) <= parseFloat(splititem1[1].trim())
-                          &&
-                          parseFloat(splititem[1].trim()) >= parseFloat(splititem1[0].trim())
+                        parseFloat(splititem[1].trim()) <= parseFloat(splititem1[1].trim())
+                        &&
+                        parseFloat(splititem[1].trim()) >= parseFloat(splititem1[0].trim())
+                      
                         )
                       )
+                      &&
+                      parseFloat(splititem[0].trim()) <= parseFloat(splititem1[0].trim())
+                      
                     )
                     ||
                     parseFloat(splititem[1].trim()) === parseFloat(splititem1[0].trim())

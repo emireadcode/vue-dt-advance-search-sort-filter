@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, type ShallowRef, ref } from "vue";
+import { onBeforeUnmount, triggerRef, inject, type ShallowRef, ref } from "vue";
 import type { NumberStringType, SingleWordStringType, MultipleWordsStringType, StringSearchType } from "../types/SupportedDatatypesTypeDeclaration";
 import TabPanelWithIncludeAndExclude from "./TabPanelWithIncludeAndExclude.vue";
 import TabPanelWithoutIncludeAndExclude from "./TabPanelWithoutIncludeAndExclude.vue";
@@ -8,8 +8,9 @@ import SingleOrMultipleWordsStringAttributeInfoNameTabs from "./SingleOrMultiple
 const
   cards = inject("cards") as ShallowRef<(NumberStringType | SingleWordStringType | MultipleWordsStringType)[]>,
   index = inject("index") as number,
-  numberexclude = ref(false),
-  enablenumberexclude = ref(true)
+  enableatnumbersearchwindowopenerbutton = ref(true),
+  openatnumbersearchexcludenumberwindow = ref(false),
+  showatnumbersearchexcludenumberwindowopenerbutton = ref(false)
 ;
 
 </script>
@@ -24,48 +25,50 @@ const
         <div class="modal-wrapper text-center">
           <div class="modal-container" style="width:550px;">
             <div class="d-block" style="height:585px !important;">
-              <SingleOrMultipleWordsStringAttributeInfoNameTabs
-                :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
-              ></SingleOrMultipleWordsStringAttributeInfoNameTabs>
+              <SingleOrMultipleWordsStringAttributeInfoNameTabs></SingleOrMultipleWordsStringAttributeInfoNameTabs>
               <div class="d-block m-0 overflow-hidden" style="padding: 0 10px;">
                 <template v-if="!cards[index].concatenated">
-                  <template v-if="cards[index].search.multiple?.tabclicked">
-                    <template v-if="cards[index].disableincludeandexclude!==undefined && cards[index].disableincludeandexclude===false">
-                      <TabPanelWithIncludeAndExclude 
-                        @close:exclude="$val => numberexclude = $val"
-                        @enable:exclude="$val => enablenumberexclude = $val"
-                        :numberexclude="numberexclude"
-                        :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
-                      ></TabPanelWithIncludeAndExclude>
-                    </template>
-                    <template v-else>
-                      <TabPanelWithoutIncludeAndExclude 
-                        :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
-                      ></TabPanelWithoutIncludeAndExclude>
-                    </template>
+                  <template v-if="cards[index].enableincludeandexcludesearch!==undefined && cards[index].enableincludeandexcludesearch === true">
+                    <TabPanelWithIncludeAndExclude 
+                      :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
+                      @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
+                      @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
+                      @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
+                    ></TabPanelWithIncludeAndExclude>
+                  </template>
+                  <template v-else>
+                    <TabPanelWithoutIncludeAndExclude
+                      :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
+                      @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
+                      @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
+                      @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
+                    ></TabPanelWithoutIncludeAndExclude>
                   </template>
                 </template>
                 <template v-else>
                   <div class="d-block">
                     <template v-for="(concatenated, cindex) in cards[index].concatenated">
-                      <template v-if="concatenated.disableincludeandexclude!==undefined && !concatenated.disableincludeandexclude">
-                        <template v-if="(concatenated.search as StringSearchType).tabclicked">
+                      <template v-if="concatenated.enableincludeandexcludesearch!==undefined && concatenated.enableincludeandexcludesearch === true">
+                        <template v-if="concatenated.search?.tabclicked">
                           <TabPanelWithIncludeAndExclude 
-                            :numberexclude="numberexclude"
-                            @close:exclude="$val => numberexclude = $val"
-                            @enable:exclude="$val => enablenumberexclude = $val"
-                            :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'" 
-                            :concatfieldindex="(cindex as number)"
+                            :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
+                            @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
+                            @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
+                            @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
+                            :concatfieldindex="(parseInt(''+cindex) as number)"
                           ></TabPanelWithIncludeAndExclude>
                         </template>
                       </template>
                       <template v-else>
-                        <template v-if="(concatenated.search as StringSearchType).tabclicked">
+                        <template v-if="concatenated.search?.tabclicked">
                           <TabPanelWithoutIncludeAndExclude
-                            :wordtype="cards[index].info.datatype === 'MultipleWordsString'? 'MULTIPLE' : 'SINGLE'"
-                            :concatfieldindex="(cindex as number)"
+                            :concatfieldindex="(parseInt(''+cindex) as number)"
+                            :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
+                            @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
+                            @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
+                            @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
                           ></TabPanelWithoutIncludeAndExclude>
-                        </template>
+                         </template>
                       </template>
                     </template>
                   </div>
@@ -76,7 +79,7 @@ const
               style="padding: 10px 10px 12px 10px;"
               class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center"
             >
-              <div class="flex-w-100-over-3 align-self-stretch" style="padding-right:7.5px;">
+              <div :class="[showatnumbersearchexcludenumberwindowopenerbutton? 'flex-w-100-over-3' : 'flex-w-50']" class="align-self-stretch" style="padding-right:7.5px;">
                 <button
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 6px; font-size: 1rem;color: #fff;background-color: gray;"
@@ -84,23 +87,26 @@ const
                   Search
                 </button>
               </div>
-              <div
-                class="flex-w-100-over-3 align-self-stretch"
-                style="padding-right: 2.5px;"
-              >
-                <button
-                  @click="numberexclude = true"
-                  @keypress.enter="numberexclude = true"
-                  :disabled="enablenumberexclude"
-                  class="btn shadow-sm w-100 font-family"
-                  style="padding: 6px; font-size: 1rem;color:#fff;"
-                  :style="!enablenumberexclude? 'background-color: blue;color:#fff': 'background-color:#B8B8B8;color:#fff;'"
+              <template v-if="showatnumbersearchexcludenumberwindowopenerbutton">
+                <div
+                  class="flex-w-100-over-3 align-self-stretch"
+                  style="padding-right: 2.5px;"
                 >
-                  @Number Exclude
-                </button>
-              </div>
+                  <button
+                    @click="openatnumbersearchexcludenumberwindow = true"
+                    @keypress.enter="openatnumbersearchexcludenumberwindow = true"
+                    :disabled="enableatnumbersearchwindowopenerbutton"
+                    class="btn shadow-sm w-100 font-family"
+                    style="padding: 6px; font-size: 1rem;color:#fff;"
+                    :style="!enableatnumbersearchwindowopenerbutton? 'background-color: blue;color:#fff': 'background-color:#B8B8B8;color:#fff;'"
+                  >
+                    @Number Exclude
+                  </button>
+                </div>
+              </template>
               <div
-                class="flex-w-100-over-3 align-self-stretch"
+                :class="[showatnumbersearchexcludenumberwindowopenerbutton? 'flex-w-100-over-3' : 'flex-w-50']"
+                class="align-self-stretch"
                 style="padding-left: 5px;"
               >
                 <button

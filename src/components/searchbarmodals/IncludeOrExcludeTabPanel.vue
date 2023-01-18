@@ -25,9 +25,11 @@ const
   props = defineProps<{
     context: string;
   }>(),
+  emits = defineEmits<{
+    (e: "disable:searchphraseinputbox", action: boolean): void;
+  }>(),
   holder = shallowRef<StringSearchType>(),
-  format = ref<'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER'>(),
-  wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; },
+  concatfieldindex = inject("concatfieldindex") as number | undefined,
   index = inject("index") as number,
   cards = inject("cards") as ShallowRef<(SingleWordStringType | MultipleWordsStringType | NumberStringType)[]>
 ;
@@ -35,7 +37,6 @@ const
 function triggerHolder() {
   triggerRef(holder);
 }
-
 
 async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
   await addNewInputEntry(
@@ -72,31 +73,20 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
   triggerRef(holder);
 }
 
-function updateFormat() {
-  if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
-    cards.value[index].search.multiple.includeorexcludeformat = format.value as "STARTS-WITH" | "CONTAINS" | "ENDS-WITH" | "EQUAL-TO" | "@NUMBER";
-  }
-  else {
-    (cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search.includeorexcludeformat = format.value as "STARTS-WITH" | "CONTAINS" | "ENDS-WITH" | "EQUAL-TO" | "@NUMBER";
-  }
-  triggerRef(cards);
-}
-
 onBeforeMount(() => {
-  if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
+  if(concatfieldindex === undefined) {
     holder.value = JSON.parse(JSON.stringify(cards.value[index].search.multiple as StringSearchType)) as StringSearchType;
-    format.value = cards.value[index].search.multiple?.includeorexcludeformat;
   }
   else {
     if(props.context === 'DESCRIBE-INCLUDE') {
-      holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex].search?.include as StringSearchType)) as StringSearchType;
+      holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search?.include as StringSearchType)) as StringSearchType;
     }
     else {
-      holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex].search?.exclude as StringSearchType)) as StringSearchType;
+      holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search?.exclude as StringSearchType)) as StringSearchType;
     }
-    format.value = (cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex].search?.includeorexcludeformat;
   }
 });
+
 </script>
 
 <template>
@@ -104,7 +94,7 @@ onBeforeMount(() => {
     <DescribeLabel 
       :context="context"
     ></DescribeLabel>
-    <StartWithContainExactlyEqualToAndEndsWithTabs :format="format as 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO'" @update:format="$val => { format = $val; updateFormat(); }"></StartWithContainExactlyEqualToAndEndsWithTabs>
+    <StartWithContainExactlyEqualToAndEndsWithTabs @disable:searchphraseinputbox="($val: boolean) => emits('disable:searchphraseinputbox', $val)"></StartWithContainExactlyEqualToAndEndsWithTabs>
     <div class="d-block">
       <div
         class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
@@ -150,19 +140,20 @@ onBeforeMount(() => {
         </div>
       </div>
       <Paste
+        :pastebuttonfontsize="'font-size:0.85rem;'"
         :receiveclosepastemodalsignal="(holder as StringSearchType).closepaste"
-        :title="format==='STARTS-WITH'?
-            'starts with'
-            : (
-              format==='ENDS-WITH'?
-                'ends with'
-                : (
-                  format==='EQUAL-TO'?
-                    'equal to'
-                    : 
-                    'contains'
-                )
+        :title="(concatfieldindex === undefined? cards[index].search.multiple :  (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='STARTS-WITH'?
+          'starts with'
+          : (
+            (concatfieldindex === undefined? cards[index].search.multiple :  (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='ENDS-WITH'?
+              'ends with'
+              : (
+                (concatfieldindex === undefined? cards[index].search.multiple :  (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='EQUAL-TO'?
+                'equal to'
+                : 
+              'contains'
             )
+          )
         "
         :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
         :text-area-height="'height:197px;'"
@@ -190,7 +181,7 @@ onBeforeMount(() => {
         </template>
       </Paste>
       <PastedItemAndNewlyInputedEntryDisplayer
-        paginationtype="WORD"
+        paginationarea="WORD"
         :current="[(holder as StringSearchType).signal, (holder as StringSearchType).current]"
         :tree="(holder as StringSearchType)"
         treetype="StringSearchType"

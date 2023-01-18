@@ -12,15 +12,15 @@ const
 
   index = inject("index") as number,
 
-  wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; }
+  concatfieldindex = inject("concatfieldindex") as number | undefined
 ;
 
 const info = computed(() => {
-  if(wordtypeandconcatfieldindex.concatfieldindex === undefined) {
+  if(concatfieldindex === undefined) {
     return cards.value[index].info.name
   }
   else {
-    return ((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).name;
+    return ((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number]).name;
   }
 });
 

@@ -11,8 +11,8 @@ const
   holder = inject("numbersearchcard") as ShallowRef<AtNumber<NumberSearchType>>,
   index = inject("index") as number,
   emits = defineEmits<{
-    (e: "open:atnumbersearch", action: boolean): void;
-    (e: "enable:exclude", action: boolean): void;
+    (e: "open:atnumbersearchwindow", action: boolean): void;
+    (e: "enable:atnumbersearchwindowopenerbutton", action: boolean): void;
   }>(),
   thematchref = ref<HTMLInputElement>(),
   fromthispattern = ref<string>(),
@@ -53,22 +53,10 @@ function addMatchAndPattern() {
       }
       triggerRef(holder);
       fromthispattern.value = '';
-      (thematchref.value as HTMLInputElement).value = '1';
-      let time: NodeJS.Timeout;
-      time = setTimeout(() => {
-        scrollToElement(thematchref.value as HTMLInputElement);
-        clearTimeout(time);
-      }, 500);
+      (thematchref.value as HTMLInputElement).value = '0';
     }
   });
 }
-
-function scrollToElement(el: HTMLDivElement | HTMLLIElement) {
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth" });
-  }
-}
-
 function checkWhetherToEnableExclude() {
   if(
     (
@@ -95,7 +83,7 @@ function checkWhetherToEnableExclude() {
       /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.lessthan)
     )
   ) {
-    emits('enable:exclude', false);
+    emits('enable:atnumbersearchwindowopenerbutton', false);
   }
 }
 
@@ -120,16 +108,21 @@ let addnewpatternguard = computed(() => {
 <template>
   <div class="d-block">
     <div class="d-block" style="padding:0px 5px 8px 5px;">
-      <button 
-        @click="() => { emits('open:atnumbersearch', true); checkWhetherToEnableExclude(); }"
-        @keypress.enter="() => { emits('open:atnumbersearch', true); checkWhetherToEnableExclude(); }"
-        class="btn w-100 shadow-sm" 
-        style="padding:5px;"
-      >
-        Open @Number Picker
-      </button>
+      <div class="flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
+        <div class="flex-fill align-self-stretch">
+          <button 
+            @click="() => { emits('open:atnumbersearchwindow', true); checkWhetherToEnableExclude(); }"
+            @keypress.enter="() => { emits('open:atnumbersearchwindow', true); checkWhetherToEnableExclude(); }"
+            class="btn w-100 shadow-sm" 
+            style="padding:5px;"
+          >
+            Open @Number Picker
+          </button>
+        </div>
+        <slot name="closeatnumbersearch"></slot>
+      </div>
     </div>
-    <div class="d-block" style="padding: 5px 5px 10px 5px;height:65px;">
+    <div class="d-block" style="padding: 5px 5px 10px 5px;height:60px;">
       <div class="shadow-sm flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center" style="background-color: #E8E8E8;">
         <div class="flex-fill">
           {{
@@ -141,7 +134,7 @@ let addnewpatternguard = computed(() => {
         </div>
       </div>
     </div>
-    <div class="d-block overflow-y-auto" style="padding: 5px; height:268px; background-color: #fff;">
+    <div class="d-block overflow-y-auto" style="padding: 5px; height:274px; background-color: #fff;">
       <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
         <div class="flex-fill align-self-stretch" style="padding-right:5px;">
           <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
@@ -152,12 +145,12 @@ let addnewpatternguard = computed(() => {
                 @change=""
                 @keypress.enter=""
                 type="number"
-                min="1"
-                value="1"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid blue;" 
+                min="0"
+                value="0"
+                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
               />
             </div>
-            letters
+            digits
           </div>
         </div>
         <div class="flex-fill align-self-stretch" style="padding-left:5px;">
@@ -169,17 +162,17 @@ let addnewpatternguard = computed(() => {
                 @change=""
                 @keypress.enter=""
                 type="number"
-                min="1"
-                value="1"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid blue;" 
+                min="0"
+                value="0"
+                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
               />
             </div>
-            letters
+            digits
           </div>
         </div>
       </div>
       <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
-        <div class="flex-fill align-self-stretch" style="padding: 15px 0;">
+        <div class="flex-fill align-self-stretch" style="padding: 13px 0;">
           <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
             the
             <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
@@ -188,29 +181,29 @@ let addnewpatternguard = computed(() => {
                 @change=""
                 @keypress.enter=""
                 type="number"
-                min="1"
-                value="1"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid blue;" 
+                min="0"
+                value="0"
+                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
               />
             </div>
-            letters before the last
+            digits, before the last
             <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
               <input 
                 ref=""
                 @change=""
                 @keypress.enter=""
                 type="number"
-                min="1"
-                value="1"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid blue;" 
+                min="0"
+                value="0"
+                style="height:32px;width:100px;border:none;outline:0.063rem solid black;" 
               />
             </div>
-            letters 
+            characters
           </div>
         </div>
       </div>
       <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
-        <div class="flex-fill align-self-stretch" style="padding: 0 0 15px 0;">
+        <div class="flex-fill align-self-stretch" style="padding: 0 0 13px 0;">
           <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
             after the first
             <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
@@ -219,27 +212,66 @@ let addnewpatternguard = computed(() => {
                 @change=""
                 @keypress.enter=""
                 type="number"
-                min="1"
-                value="1"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid blue;" 
+                min="0"
+                value="0"
+                style="height:32px;width:100px;border:none;outline:0.063rem solid black;" 
               />
             </div>
-            letters the next
+            characters, the next
             <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
               <input 
                 ref=""
                 @change=""
                 @keypress.enter=""
                 type="number"
-                min="1"
-                value="1"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid blue;" 
+                min="0"
+                value="0"
+                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
               />
             </div>
-            letters 
+            digits
           </div>
         </div>
       </div>
+      <div class="d-block shadow-sm" style="padding:6px;">
+        <div style="font-size:0.9rem;padding: 0 0 8px 0;" class="flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
+          the
+          <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
+            <input 
+              :ref="(el) => thematchref = el as HTMLInputElement"
+              @change=""
+              @keypress.enter=""
+              type="number"
+              min="0"
+              value="0"
+              style="background-color:#FFFF99;height:32px;width:60px;border:none;outline:0.063rem solid black;" 
+            />
+          </div>
+          match from this
+          <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
+            <input 
+              v-model="fromthispattern"
+              type="text" 
+              style="height:32px;width:230px;border:none;outline:0.063rem solid black;" 
+            />
+          </div>
+          pattern
+        </div>
+        <div class="d-block" style="padding: 4px 0;">
+          <button 
+            @click="addMatchAndPattern()"
+            @keypress.enter="addMatchAndPattern()"
+            class="btn w-100 shadow-sm" 
+            style="padding:5px;"
+            :style="addnewpatternguard? 'background-color: blue; color: #fff;' : 'background-color:#B8B8B8;color:gray;'"
+            :disabled="addnewpatternguard? false : true"
+          >
+            Add New Match and Pattern
+          </button>
+        </div>
+      </div>
+      <!--
+      
       <table class="w-100 text-center m-0 p-0">
         <tr class="w-100" style="border:1px solid gray;">
           <th style="width:20%;border:1px solid gray;">Match</th>
@@ -260,45 +292,9 @@ let addnewpatternguard = computed(() => {
           </span>
         </span>
       </div>
-      <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
-        <div class="flex-fill align-self-stretch" style="padding: 0 0 5px 0;">
-          <div class="d-block">
-            <button 
-              @click="addMatchAndPattern()"
-              @keypress.enter="addMatchAndPattern()"
-              class="btn w-100 shadow-sm" 
-              style="padding:5px;"
-              :style="addnewpatternguard? 'background-color: blue; color: #fff;' : 'background-color:#B8B8B8;color:gray;'"
-              :disabled="addnewpatternguard? false : true"
-            >
-              Add New Match and Pattern
-            </button>
-          </div>
-          <div style="padding:8px 0;font-size:0.9rem;border:1px solid #A9A9A9;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
-            the
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                :ref="(el) => thematchref = el as HTMLInputElement"
-                @change=""
-                @keypress.enter=""
-                type="number"
-                min="1"
-                value="1"
-                style="height:32px;width:60px;border:none;outline:0.063rem solid black;" 
-              />
-            </div>
-            match from this
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                v-model="fromthispattern"
-                type="text" 
-                style="height:32px;width:230px;border:none;outline:0.063rem solid black;" 
-              />
-            </div>
-            pattern
-          </div>
-        </div>
-      </div>
+
+      -->
+
     </div>
   </div>
 </template>

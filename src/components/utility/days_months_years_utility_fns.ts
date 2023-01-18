@@ -291,8 +291,8 @@ export function fillYearArray(
 ) {
   let index = 0, row = 0, col = 0, counter = 0, years = shallowRef<YearSelectionType>();
 
-  //let remainder = calculateRemainder(2022, 2000), maxyear = 2022 + remainder;
-  //for(let year=2000; year<=maxyear; year++) {
+  //let remainder = calculateRemainder(2022, 1945), maxyear = 2022 + remainder;
+  //for(let year=1945; year<=maxyear; year++) {
 
   let 
     remainder = calculateRemainder(

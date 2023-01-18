@@ -33,7 +33,8 @@ export interface IdentityType {
     all: boolean;
     data: { row: string; checked: boolean; selected: boolean }[] | [];
     total: number;
-    offset: number;
+    current: number;
+    signal: number;
     max: string;
     min: string;
     totalselection: number;
@@ -60,7 +61,6 @@ export type StringSearchType = {
   bottom: boolean;
   loading: boolean;
   addloading: boolean;
-  tabclicked: boolean;
   addeditemsref: HTMLDivElement[] | [];
   endoflistitemref: HTMLLIElement | undefined;
 };
@@ -91,33 +91,45 @@ export type AtNumber<T> = {
 
 export type MultipleWordsStringConcatenatedFieldType = {
   [key: string]: {
-    disableincludeandexclude?: boolean | undefined;
+    enableincludeandexcludesearch?: boolean | undefined;
+    hasfixedlengthof?: number | undefined;
+    enableatnumbersearch?: boolean | undefined;
     name: string;
     attribute?: string | undefined;
     table?: string | undefined;
     join?: string | undefined;
-    search: (StringSearchType & {
+    search?: (StringSearchType & {
+      tabclicked: boolean;
       include?: StringSearchType | undefined;
       exclude?: StringSearchType | undefined;
-      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
-    });
+      openatnumbersearchwindow: boolean;
+      openatnumbersearchexcludenumberwindow: boolean;
+      includeorexcludestartswithcontainsendswithequaltoformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+      includeorexcludeformat: 'INCLUDE' | 'EXCLUDE' | '@NUMBER';
+      atnumbersearch?: AtNumber<NumberSearchType> | undefined;
+    }) | undefined;
   };
 };
 
 export type SingleWordStringConcatenatedFieldType = {
   [key: string]: {
-    disableincludeandexclude?: boolean | undefined;
-    fixedlengthofstring?: number | undefined;
+    enableincludeandexcludesearch?: boolean | undefined;
+    hasfixedlengthof?: number | undefined;
+    enableatnumbersearch?: boolean | undefined;
     name: string;
     attribute?: string | undefined;
     table?: string | undefined;
     join?: string | undefined;
-    search: (StringSearchType & {
+    search?: (StringSearchType & {
+      tabclicked: boolean;
       include?: StringSearchType | undefined;
       exclude?: StringSearchType | undefined;
-      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
-      atnumbersearch: AtNumber<NumberSearchType>;
-    });
+      openatnumbersearchwindow: boolean;
+      openatnumbersearchexcludenumberwindow: boolean;
+      includeorexcludestartswithcontainsendswithequaltoformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+      includeorexcludeformat: 'INCLUDE' | 'EXCLUDE' | '@NUMBER';
+      atnumbersearch?: AtNumber<NumberSearchType> | undefined;
+    }) | undefined;
     startmodifierwildcard?: StartModifierWildCardUnionType | StartModifierWildCardType | undefined;
     endmodifierwildcard?: EndModifierWildCardUnionType | EndModifierWildCardType | undefined;
   };
@@ -135,37 +147,49 @@ export type SingleWordConcatenatedType = {
 
 export interface MultipleWordsStringType extends IdentityType {
   concatenated?: MultipleWordsStringConcatenatedFieldType | undefined;
-  disableincludeandexclude?: boolean | undefined;
+  enableincludeandexcludesearch?: boolean | undefined;
+  hasfixedlengthof?: number | undefined;
+  enableatnumbersearch?: boolean | undefined;
   search: {
     searchtype: 'SINGLE' | 'MULTIPLE';
     searchedornot: boolean;
     single: string;
     multiple: StringSearchType & {
+      tabclicked: boolean;
       include?: StringSearchType | undefined;
       exclude?: StringSearchType | undefined;
-      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+      atnumbersearch?: AtNumber<NumberSearchType> | undefined;
+      openatnumbersearchwindow: boolean;
+      openatnumbersearchexcludenumberwindow: boolean;
+      includeorexcludestartswithcontainsendswithequaltoformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+      includeorexcludeformat: 'INCLUDE' | 'EXCLUDE' | '@NUMBER';
     };
     trueorfalse: boolean;
   };
   searchFrom: "DOM" | "SERVER";
 }
-  
+
 export interface SingleWordStringType extends IdentityType {
   concatenated?: SingleWordStringConcatenatedFieldType | undefined;
-  disableincludeandexclude?: boolean | undefined;
+  enableincludeandexcludesearch?: boolean | undefined;
+  hasfixedlengthof?: number | undefined;
+  enableatnumbersearch?: boolean | undefined;
   search: {
     searchtype: 'SINGLE' | 'MULTIPLE';
     searchedornot: boolean;
     single: string;
     multiple: StringSearchType & {
+      tabclicked: boolean;
       include?: StringSearchType | undefined;
       exclude?: StringSearchType | undefined;
-      includeorexcludeformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO' | '@NUMBER';
-      atnumbersearch: AtNumber<NumberSearchType>;
+      openatnumbersearchwindow: boolean;
+      openatnumbersearchexcludenumberwindow: boolean;
+      includeorexcludestartswithcontainsendswithequaltoformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+      includeorexcludeformat: 'INCLUDE' | 'EXCLUDE' | '@NUMBER';
+      atnumbersearch?: AtNumber<NumberSearchType> | undefined;
     };
     trueorfalse: boolean;
   };
-  fixedlengthofstring?: number | undefined;
   searchFrom: "DOM" | "SERVER";
 }
 
@@ -326,9 +350,9 @@ export interface NumberType extends IdentityType {
     single: string;
     multiple: NumberSearchType & {
       exclude: {
-            fromto: NumberSearchExcludeFromToType;
-            equalto: NumberSearchExcludeEqualToType;
-          };
+        fromto: NumberSearchExcludeFromToType;
+        equalto: NumberSearchExcludeEqualToType;
+      };
     };
   };
   searchFrom: "DOM" | "SERVER";
@@ -346,7 +370,12 @@ export type CardInnerType = {
 export type CardType<T> = 
 {
   multiplewordsstringtypes?:
-    | (T & { concatenated?: MultipleWordsStringConcatenatedType | undefined; disableincludeandexclude?: boolean | undefined; })[]
+    | (T & { 
+      concatenated?: MultipleWordsStringConcatenatedType | undefined; 
+      enableincludeandexcludesearch?: boolean | undefined; 
+      hasfixedlengthof?: number | undefined;
+      enableatnumbersearch?: boolean | undefined;
+    })[]
     | undefined;
   datetypes?: (T & DateFormat & { isoweek: boolean; })[] | undefined;
   numbertypes?: T[] | undefined;
@@ -356,15 +385,17 @@ export type CardType<T> =
   singlewordstringtypes?:
     | (T & {
         concatenated?: SingleWordConcatenatedType | undefined;
-        fixedlengthofstring?: number | undefined;
-        disableincludeandexclude?: boolean | undefined;
+        enableincludeandexcludesearch?: boolean | undefined;
+        hasfixedlengthof?: number | undefined;
+        enableatnumbersearch?: boolean | undefined;
       })[]
     | undefined;
   numberstringtypes?:
     | (T & {
         concatenated?: SingleWordConcatenatedType | undefined;
-        fixedlengthofstring?: number | undefined;
-        disableincludeandexclude?: boolean | undefined;
+        enableincludeandexcludesearch?: boolean | undefined;
+        hasfixedlengthof?: number | undefined;
+        enableatnumbersearch?: boolean | undefined;
       })[]
     | undefined;
   yeartypes?: T[] | undefined;

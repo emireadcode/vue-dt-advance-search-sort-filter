@@ -88,7 +88,7 @@ onBeforeMount(() => {
                     </ul>
                   </div>
                 </div>
-                <div class="position-absolute flex-w-1-dot-75-rem t-0" style="right:5px;z-index: 900;padding-right:5px;">
+                <div class="position-absolute flex-w-1-dot-75-rem" style="right:5px;z-index: 900;">
                   <a 
                     class="d-block underline-none m-0 p-0 cursor-pointer"
                     @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"

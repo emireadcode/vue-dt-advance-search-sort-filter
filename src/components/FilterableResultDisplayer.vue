@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { shallowRef, inject, triggerRef, nextTick, type ShallowRef, onBeforeMount } from "vue";
-import type { KeyToNameType, PrimitiveType, CurrentAndSignalType, CurrentAndSignalInnerType } from "./types/SupportedDatatypesTypeDeclaration";
+import type { KeyToNameType, PrimitiveType, } from "./types/SupportedDatatypesTypeDeclaration";
 import Pagination from "./searchbarmodals/Pagination.vue";
 import type { AccessibilityType } from "./types/accessibility";
 
 const 
-  currentandsignal = shallowRef<CurrentAndSignalType>({
-    displayer: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-  }),
   accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
   holder = inject("cards") as ShallowRef<PrimitiveType[]>,
   cards = shallowRef<PrimitiveType[]>(),
@@ -34,8 +27,8 @@ function handleTabPress(e: KeyboardEvent) {
 }
 
 function updateCurrent(val: number) { 
-  (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = val; 
-  triggerRef(currentandsignal);
+  (cards.value as PrimitiveType[])[index].result.current = val; 
+  triggerRef(cards);
 }
 
 function selectAllOrNot() {
@@ -94,7 +87,7 @@ function handleSelection(i: number) {
 <template>
   <div class="d-block">
     <div class="d-block shadow-sm" style="z-index:8000;">
-      <div class="m-0 p-0 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100" style="height:30px;">
+      <div class="m-0 p-0 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100" style="height:45px;">
         <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 0.063rem solid gray;">
           <button
             @click="() => { (accessibility.cardschildrentabindex as boolean[])[index] = true; accessibility.updateAccessibility(); }"
@@ -118,6 +111,8 @@ function handleSelection(i: number) {
           </button>
         </div>
         <div class="flex-fill align-self-stretch m-0 p-0">
+          <div class="d-block p-0 m-0" style="height: 40%;background-color: pink;"></div>
+          <div class="d-block p-0 m-0" style="height: 60%;background-color: yellow;"></div>
         </div>
         <div class="flex-w-1-dot-75-rem p-0 m-0 h-100" style="outline: 0.063rem solid gray;">
           <button
@@ -167,10 +162,10 @@ function handleSelection(i: number) {
         <div class="flex-fill" style="padding-left: 10px;">
           <template v-if="parseInt(''+(((cards as PrimitiveType[])[index].result.data.length) / 100)) > 1">
             <Pagination
-              paginationtype="RESULT-DISPLAYER-VERTICAL"
-              :_current="[
-                (currentandsignal.displayer as CurrentAndSignalInnerType).signal,
-                (currentandsignal.displayer as CurrentAndSignalInnerType).current
+              paginationarea="RESULT-DISPLAYER-VERTICAL"
+              :currentandsignal="[
+                (cards as PrimitiveType[])[index].result.signal,
+                (cards as PrimitiveType[])[index].result.current
               ]"
               :length="parseInt(''+(((cards as PrimitiveType[])[index].result.data.length) / 100))"
               @update:current="($val: number) => updateCurrent($val)"

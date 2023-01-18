@@ -131,7 +131,7 @@ onBeforeMount(() => {
               <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-end align-items-center">
                 <div class="flex-fill" style="z-index: 860;">
                   <div
-                    style="background-color: #fff;padding:  0.63rem  0.315rem 0  0.315rem;white-space: nowrap;"
+                    style="background-color: #fff;padding:  0.63rem  0.63rem 0  0.63rem;white-space: nowrap;"
                     class="shadow-sm d-block"
                   >
                     <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
@@ -148,7 +148,7 @@ onBeforeMount(() => {
                     </ul>
                   </div>
                 </div>
-                <div class="position-absolute flex-w-1-dot-75-rem t-0" style="right:5px;z-index: 900;padding-right:5px;">
+                <div class="position-absolute flex-w-1-dot-75-rem" style="right:10px;z-index: 900;">
                   <a 
                     class="d-block underline-none m-0 p-0 cursor-pointer"
                     @keypress.enter="() => { (accessibility.cardsmultiplesearchopenstatus as boolean[])[index] = false; accessibility.updateAccessibility(); }"

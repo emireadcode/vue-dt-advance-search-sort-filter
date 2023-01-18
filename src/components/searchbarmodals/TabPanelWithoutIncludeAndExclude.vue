@@ -1,5 +1,17 @@
 <script setup lang="ts">
-import { triggerRef, shallowRef, type Ref, provide, inject, type ShallowRef, ref, onBeforeMount } from "vue";
+import { 
+  type WatchStopHandle, 
+  watch, 
+  ref, 
+  computed, 
+  triggerRef, 
+  shallowRef, 
+  provide, 
+  inject, 
+  type ShallowRef, 
+  onBeforeMount, 
+  onBeforeUnmount 
+} from "vue";
 import type {
   NumberStringType,
   SingleWordStringType,
@@ -12,19 +24,55 @@ import DescribeLabel from "./DescribeLabel.vue";
 import Paste from "./Paste.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
+import ReusableNumberSearch from "./ReusableNumberSearch.vue";
+import ExcludeNumberSearch from "./ExcludeNumberSearch.vue";
+import AtNumberSearchSetter from "./AtNumberSearchSetter.vue";
 
 const
   holder = shallowRef<StringSearchType>(),
   props = defineProps<{
-    concatfieldindex?: string | number | undefined;
-    wordtype: "MULTIPLE" | "SINGLE";
+    openatnumbersearchexcludenumberwindow: boolean;
+    concatfieldindex?: number | undefined;
+  }>(),
+  showatnumbersearchexcludenumberwindowopenerbutton = ref(false),
+  emits = defineEmits<{
+    (e: "enable:atnumbersearchwindowopenerbutton", action: boolean): void;
+    (e: "close:atnumbersearchexcludenumberwindow", action: boolean): void;
+    (e: "disable:searchphraseinputbox", action: boolean): void;
+    (e: "show:atnumbersearchexcludenumberwindowopenerbutton", action: boolean): void;
   }>(),
   cards = inject("cards") as ShallowRef<(MultipleWordsStringType | SingleWordStringType | NumberStringType)[]>,
-  concatfieldindex = props.concatfieldindex,
   index = inject("index") as number
 ;
 
-provide("wordtypeandconcatfieldindex", {wordtype: props.wordtype, concatfieldindex: props.concatfieldindex});
+let unwatchopenatnumbersearchexcludenumberwindow: WatchStopHandle;
+
+provide("concatfieldindex", props.concatfieldindex as number | undefined);
+
+if(props.concatfieldindex === undefined) {
+  if(
+    (cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).enableatnumbersearch !== undefined
+    &&
+    (cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).enableatnumbersearch === true
+  ) {
+    provide(
+      "numbersearchcard", 
+      shallowRef(JSON.parse(JSON.stringify((cards.value[index] as MultipleWordsStringType | SingleWordStringType | NumberStringType).search.multiple.atnumbersearch)))
+    )
+  }
+}
+else {
+  if(
+    (cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[props.concatfieldindex as number].enableatnumbersearch !== undefined
+    &&
+    (cards.value[index].concatenated as SingleWordStringConcatenatedFieldType)[props.concatfieldindex as number].enableatnumbersearch === true
+  ) {
+    provide(
+      "numbersearchcard", 
+      shallowRef(JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[props.concatfieldindex as number].search?.atnumbersearch)))
+    )
+  }
+}
 
 function triggerHolder() {
   triggerRef(holder);
@@ -63,18 +111,61 @@ async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
   triggerRef(holder);
 }
 
+function openOrCloseAtNumberSearchWindow(action: boolean) {
+  ((
+    (props.concatfieldindex === undefined)? 
+    cards.value[index].search.multiple 
+    : 
+    (
+      cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType
+    )[props.concatfieldindex as number].search
+  ) as {openatnumbersearchwindow: boolean}).openatnumbersearchwindow = action; 
+  triggerRef(cards);
+  if(action === false) {
+    emits('enable:atnumbersearchwindowopenerbutton', true);
+  }
+}
+
+function openOrCloseAtNumberSearchExcludeNumberWindow(action: boolean) {
+  ((
+    (props.concatfieldindex === undefined)? 
+    cards.value[index].search.multiple 
+    : 
+    (
+      cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType
+    )[props.concatfieldindex as number].search
+  ) as {openatnumbersearchexcludenumberwindow: boolean}).openatnumbersearchexcludenumberwindow = action; 
+  triggerRef(cards);
+}
+
+const atnumberbuttonstyleguard = computed(() => {
+  return (((props.concatfieldindex !== undefined)? (cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[props.concatfieldindex] : (cards.value[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).search as {includeorexcludeformat: '@NUMBER' | 'INCLUDE' | 'EXCLUDE'}).includeorexcludeformat==='@NUMBER'
+});
+
 onBeforeMount(() => {
-  (concatfieldindex === undefined)?
-    holder.value = JSON.parse(JSON.stringify(cards.value[index].search.multiple as StringSearchType)) as StringSearchType
+  holder.value = (props.concatfieldindex === undefined)?
+    JSON.parse(JSON.stringify(cards.value[index].search.multiple as StringSearchType)) as StringSearchType
     :
-    holder.value = JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search as StringSearchType)) as StringSearchType
+    JSON.parse(JSON.stringify((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[props.concatfieldindex].search as StringSearchType)) as StringSearchType
   ;
+  unwatchopenatnumbersearchexcludenumberwindow = watch(
+    () => props.openatnumbersearchexcludenumberwindow,
+    (action) => {
+      openOrCloseAtNumberSearchExcludeNumberWindow(action);
+    }
+  )
+});
+
+onBeforeUnmount(() => {
+  unwatchopenatnumbersearchexcludenumberwindow();
+  openOrCloseAtNumberSearchWindow(false);
+  openOrCloseAtNumberSearchExcludeNumberWindow(false);
 });
 
 </script>
 
 <template>
-  <div class="d-block" style="padding: 15px 0 10px 0">
+  <div class="d-block position-relative" style="padding: 15px 0 10px 0">
     <DescribeLabel
       context="DESCRIBE-MODAL"
     ></DescribeLabel>
@@ -82,7 +173,7 @@ onBeforeMount(() => {
       class="shadow-sm flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
     >
       <div class="flex-fill p-0 m-0 align-self-stretch">
-        <template v-if="wordtype === 'MULTIPLE'">
+        <template v-if="cards[index].info.datatype === 'MultipleWordsString'">
           <input
             @keypress.enter="
               addLocalNewInputEntry(
@@ -140,12 +231,38 @@ onBeforeMount(() => {
         </a>
       </div>
     </div>
+    <template v-if="
+      ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch !== undefined
+      &&
+      ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch === true
+    ">
+      <template v-if="showatnumbersearchexcludenumberwindowopenerbutton===false">
+        <div class="d-block" style="padding:10px 0 4px 0">
+          <button
+            :style="atnumberbuttonstyleguard?'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            @click="() => {
+              showatnumbersearchexcludenumberwindowopenerbutton = true;
+              emits('show:atnumbersearchexcludenumberwindowopenerbutton', true);
+            }"
+            @keypress.enter="() => {
+              showatnumbersearchexcludenumberwindowopenerbutton = true;
+              emits('show:atnumbersearchexcludenumberwindowopenerbutton', true);
+            }"
+            class="text-lowercase btn w-100 shadow-sm" 
+            style="padding:5px 0;font-size:0.9em;"
+          >
+            @number
+          </button>
+        </div>
+      </template>
+    </template>
     <Paste
       :receiveclosepastemodalsignal="(holder as StringSearchType).closepaste"
-      :title="cards[index].info.name"
+      :title="((props.concatfieldindex === undefined)? cards[index].info : ((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[props.concatfieldindex as number])).name"
       :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
-      :text-area-height="'height:377px;'"
-      @return:newlypasteditems="$val => { addPastedItems($val, 'WORD'); }"
+      :text-area-height="'height:357px;'"
+      :pastebuttonfontsize="'font-size:0.85rem;'"
+      @return:newlypasteditems="($val) => { addPastedItems($val, 'WORD'); showatnumbersearchexcludenumberwindowopenerbutton = false; emits('show:atnumbersearchexcludenumberwindowopenerbutton', false); }"
     >
       <template v-slot:outcomeidentifier>
         <div
@@ -168,14 +285,76 @@ onBeforeMount(() => {
         </div>
       </template>
     </Paste>
-    <PastedItemAndNewlyInputedEntryDisplayer
-      paginationtype="WORD"
-      :current="[(holder as StringSearchType).signal, (holder as StringSearchType).current]"
-      :tree="(holder as StringSearchType)"
-      treetype="StringSearchType"
-      :display-area-height="'height: 358.9px;'"
-      :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
-      @update:current="($val) => { (holder as StringSearchType).current = $val; triggerHolder();}"
-    ></PastedItemAndNewlyInputedEntryDisplayer>
+    <template v-if="showatnumbersearchexcludenumberwindowopenerbutton">
+      <div class="d-block" style="padding:2px 0">
+        <div class="d-block overflow-hidden shadow-sm" style="height:390px;padding: 10px 0px;">
+          <AtNumberSearchSetter @enable:atnumbersearchwindowopenerbutton="($val: boolean) => emits('enable:atnumbersearchwindowopenerbutton', $val)" @open:atnumbersearchwindow="($val: boolean) => openOrCloseAtNumberSearchWindow($val)">
+            <template v-slot:closeatnumbersearch>
+              <div
+                class="flex-w-50 align-self-stretch text-center shadow-sm"
+                style="background-color: blue;border-radius: 0.25rem;"
+              >
+                <a
+                  class="underline-none cursor-pointer align-middle"
+                  @click="() => {
+                    showatnumbersearchexcludenumberwindowopenerbutton = false;
+                    emits('show:atnumbersearchexcludenumberwindowopenerbutton', false);
+                  }"
+                  @keypress.enter="() => {
+                    showatnumbersearchexcludenumberwindowopenerbutton = false;
+                    emits('show:atnumbersearchexcludenumberwindowopenerbutton', false);
+                  }"
+                >
+                  <img
+                    src="/src/assets/icons/close.png"
+                    class="align-middle"
+                    style="width: 2.205rem; height: 2.205rem"
+                  />
+                </a>
+              </div>
+            </template>
+          </AtNumberSearchSetter>
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <PastedItemAndNewlyInputedEntryDisplayer
+        paginationarea="WORD"
+        :current="[(holder as StringSearchType).signal, (holder as StringSearchType).current]"
+        :tree="(holder as StringSearchType)"
+        treetype="StringSearchType"
+        :display-area-height="'height: 338.9px;'"
+        :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
+        @update:current="($val) => { (holder as StringSearchType).current = $val; triggerHolder();}"
+      ></PastedItemAndNewlyInputedEntryDisplayer>
+    </template>
+    <template v-if="((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.openatnumbersearchwindow">
+      <div class="w-100 position-absolute t-0 l-0 h-100">
+        <div class="overflow-y-auto d-block h-100" style="background-color: #fff;outline: 1px solid blue;border-bottom:3px solid blue;">
+          <template v-if="((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.openatnumbersearchexcludenumberwindow === false">
+            <div
+              class="shadow-sm d-block text-center"
+              style="background-color: blue;"
+            >
+              <a
+                class="underline-none cursor-pointer align-middle"
+                @click="openOrCloseAtNumberSearchWindow(false)"
+                @keypress.enter="openOrCloseAtNumberSearchWindow(false)"
+              >
+                <img
+                  src="/src/assets/icons/close.png"
+                  class="align-middle"
+                  style="width: 2.205rem; height: 2.205rem"
+                />
+              </a>
+            </div>
+            <ReusableNumberSearch @enable:atnumbersearchwindowopenerbutton="($val: boolean) => emits('enable:atnumbersearchwindowopenerbutton', $val)" from="NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL"></ReusableNumberSearch>
+          </template>
+          <template v-else>
+            <ExcludeNumberSearch @close:atnumbersearchexcludenumberwindow="($val: boolean) => emits('close:atnumbersearchexcludenumberwindow', $val)" from="NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL"></ExcludeNumberSearch>
+          </template>
+        </div>
+      </div>
+    </template>
   </div>
 </template>

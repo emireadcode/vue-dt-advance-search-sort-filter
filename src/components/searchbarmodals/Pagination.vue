@@ -10,10 +10,9 @@ import {
 const 
   current = ref(0),
   props = defineProps<{
-    paginationtype: 'WORD' | 'RESULT-DISPLAYER-VERTICAL' | 'RESULT-DISPLAYER-HORIZONTAL' | 'EQUAL-TO' | 'NOT-EQUAL-TO' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO';
+    paginationarea: 'WORD' | 'RESULT-DISPLAYER-VERTICAL' | 'RESULT-DISPLAYER-HORIZONTAL' | 'EQUAL-TO' | 'NOT-EQUAL-TO' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO';
     length: number;
-    _current: [number, number];
-    
+    currentandsignal: [number, number];
   }>(),
   emits = defineEmits<{
     (e: "update:current", action: number): void
@@ -27,7 +26,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
   if (previousornext === "NEXT") {
     if(current.value < props.length) {
       current.value++;
-      if(props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL') {
+      if(props.paginationarea === 'RESULT-DISPLAYER-VERTICAL' || props.paginationarea === 'WORD' || props.paginationarea === 'RESULT-DISPLAYER-HORIZONTAL') {
         if(props.length > 9 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 4 && current.value <= props.length - 2) {
@@ -50,7 +49,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
           }
         }
       }
-      else if(props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO') {
+      else if(props.paginationarea === 'EQUAL-TO' || props.paginationarea === 'NOT-EQUAL-TO') {
         if(props.length > 6 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 3 && current.value <= props.length - 2) {
@@ -73,7 +72,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
           }
         }
       }
-      else if(props.paginationtype === 'EXCLUDE-EQUAL-TO') {
+      else if(props.paginationarea === 'EXCLUDE-EQUAL-TO') {
         if(props.length > 5 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 2 && current.value <= props.length - 2) {
@@ -89,7 +88,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
           }
         }
       }
-      else if(props.paginationtype === 'EXCLUDE-FROM-TO') {
+      else if(props.paginationarea === 'EXCLUDE-FROM-TO') {
         if(props.length > 8 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 4 && current.value <= props.length - 3) {
@@ -117,7 +116,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
   } else if (previousornext === "PREVIOUS") {
     if (current.value > 1) {
       current.value--;
-      if(props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL') {
+      if(props.paginationarea === 'RESULT-DISPLAYER-VERTICAL' || props.paginationarea === 'WORD' || props.paginationarea === 'RESULT-DISPLAYER-HORIZONTAL') {
         if(props.length > 9 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 4 && current.value <= props.length - 2) {
@@ -140,7 +139,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
           }
         }
       }
-      else if(props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO') {
+      else if(props.paginationarea === 'EQUAL-TO' || props.paginationarea === 'NOT-EQUAL-TO') {
         if(props.length > 6 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 3 && current.value <= props.length - 2) {
@@ -163,7 +162,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
           }
         }
       }
-      else if(props.paginationtype === 'EXCLUDE-EQUAL-TO') {
+      else if(props.paginationarea === 'EXCLUDE-EQUAL-TO') {
         if(props.length > 5 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 2 && current.value <= props.length - 2) {
@@ -179,7 +178,7 @@ function previousOrNextClicked(previousornext: "PREVIOUS" | "NEXT" | "INPUT") {
           }
         }
       }
-      else if(props.paginationtype === 'EXCLUDE-FROM-TO') {
+      else if(props.paginationarea === 'EXCLUDE-FROM-TO') {
         if(props.length > 8 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 4 && current.value <= props.length - 3) {
@@ -216,12 +215,12 @@ function setCurrent(pageindex: number) {
 }
 
 onBeforeMount(() => {
-  current.value = props._current[1] + 1;
+  current.value = props.currentandsignal[1] + 1;
   unwatchcurrent = watch(
-    () => props._current[0],
+    () => props.currentandsignal[0],
     (x) => {
-      current.value = props._current[1] + 1;
-      if(props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL') {
+      current.value = props.currentandsignal[1] + 1;
+      if(props.paginationarea === 'RESULT-DISPLAYER-VERTICAL' || props.paginationarea === 'WORD' || props.paginationarea === 'RESULT-DISPLAYER-HORIZONTAL') {
         if(props.length > 9 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 4 && current.value <= props.length - 2) {
@@ -244,7 +243,7 @@ onBeforeMount(() => {
           }
         }
       }
-      else if(props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO') {
+      else if(props.paginationarea === 'EQUAL-TO' || props.paginationarea === 'NOT-EQUAL-TO') {
         if(props.length > 6 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 3 && current.value <= props.length - 2) {
@@ -267,7 +266,7 @@ onBeforeMount(() => {
           }
         }
       }
-      else if(props.paginationtype === 'EXCLUDE-EQUAL-TO') {
+      else if(props.paginationarea === 'EXCLUDE-EQUAL-TO') {
         if(props.length > 5 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 2 && current.value <= props.length - 2) {
@@ -283,7 +282,7 @@ onBeforeMount(() => {
           }
         }
       }
-      else if(props.paginationtype === 'EXCLUDE-FROM-TO') {
+      else if(props.paginationarea === 'EXCLUDE-FROM-TO') {
         if(props.length > 8 && props.length <= 99) {
           if (inputpagenumberref.value) {
             if(current.value >= 4 && current.value <= props.length - 3) {
@@ -352,7 +351,7 @@ onBeforeUnmount(() => {
               style="padding: 0px 3px 0px 0;height:26px;"
               class="flex-grow-0 flex-shrink-0 text-center"
               :style="
-                (props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL')?
+                (props.paginationarea === 'RESULT-DISPLAYER-VERTICAL' || props.paginationarea === 'WORD' || props.paginationarea === 'RESULT-DISPLAYER-HORIZONTAL')?
                 (
                   length<=9? 'width:' + (100 / (length + 2)) + '%;' : 'width: 9.090909091%;'
                 )
@@ -373,7 +372,7 @@ onBeforeUnmount(() => {
                 />
               </button>
             </li>
-            <template v-if="props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL'">
+            <template v-if="props.paginationarea === 'RESULT-DISPLAYER-VERTICAL' || props.paginationarea === 'WORD' || props.paginationarea === 'RESULT-DISPLAYER-HORIZONTAL'">
               <template v-if="length <= 9">
                 <li
                   class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
@@ -600,7 +599,7 @@ onBeforeUnmount(() => {
                 </template>
               </template>
             </template>
-            <template v-else-if="props.paginationtype === 'EQUAL-TO' || props.paginationtype === 'NOT-EQUAL-TO'">
+            <template v-else-if="props.paginationarea === 'EQUAL-TO' || props.paginationarea === 'NOT-EQUAL-TO'">
               <template v-if="length <= 6">
                 <li
                   class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
@@ -806,7 +805,7 @@ onBeforeUnmount(() => {
                 </template>
               </template>
             </template>
-            <template v-else-if="props.paginationtype === 'EXCLUDE-FROM-TO'">
+            <template v-else-if="props.paginationarea === 'EXCLUDE-FROM-TO'">
               <template v-if="length <= 8">
                 <li
                   class="flex-grow-0 flex-shrink-0 align-self-stretch text-center m-0"
@@ -1154,7 +1153,7 @@ onBeforeUnmount(() => {
               style="padding: 0px 0px 0px 3px;height:26px;"
               class="flex-grow-0 flex-shrink-0 text-center"
               :style="
-                (props.paginationtype === 'RESULT-DISPLAYER-VERTICAL' || props.paginationtype === 'WORD' || props.paginationtype === 'RESULT-DISPLAYER-HORIZONTAL')?
+                (props.paginationarea === 'RESULT-DISPLAYER-VERTICAL' || props.paginationarea === 'WORD' || props.paginationarea === 'RESULT-DISPLAYER-HORIZONTAL')?
                 (
                   length<=9? 'width:' + (100 / (length + 2)) + '%;' : 'width: 9.090909091%;'
                 )

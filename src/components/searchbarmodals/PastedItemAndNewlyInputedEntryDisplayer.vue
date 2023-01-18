@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { 
-  CurrentAndSignalType,
-  CurrentAndSignalInnerType,
+import type {
   NumberSearchExcludeEqualToType,
   NumberSearchExcludeFromToType,
   StringSearchType,
@@ -22,7 +20,7 @@ import Pagination from "./Pagination.vue";
 
 const
   props = defineProps<{
-    paginationtype: 'WORD' | 'RESULT-DISPLAYER-VERTICAL' | 'RESULT-DISPLAYER-HORIZONTAL' | 'EQUAL-TO' | 'NOT-EQUAL-TO' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO';
+    paginationarea: 'WORD' | 'RESULT-DISPLAYER-VERTICAL' | 'RESULT-DISPLAYER-HORIZONTAL' | 'EQUAL-TO' | 'NOT-EQUAL-TO' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO';
     current: [number, number],
     treetype: 'StringSearchType' | 'NumberSearchExcludeFromToType' | 'NumberSearchExcludeEqualToType';
     displayAreaHeight: string;
@@ -32,13 +30,6 @@ const
   emits = defineEmits<{
     (e: "update:current", action: number): void
   }>(),
-  currentandsignal = shallowRef<CurrentAndSignalType>({
-    displayer: {
-      signal: 0,
-      current: 0,
-      closepaste: 0,
-    },
-  }),
   holder = shallowRef<StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType>()
 ;
 
@@ -46,32 +37,29 @@ let
   unwatchcurrent: WatchStopHandle
 ;
 
-function updateCurrentAndEmitCurrent(val: number) { 
-  (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = val; 
-  triggerRef(currentandsignal);
-  emits('update:current', val);
-}
-
 async function localDeleteSaved(dindex: number, inputtype: 'DISPLAYER-EXCLUDE-FROM-TO' | 'DISPLAYER-EQUAL-TO-NOT-EQUAL-TO-OR-EXCLUDE-EQUAL-TO' | 'WORD') {
   deletePastedOrNewInputEntry(
     dindex,
-    currentandsignal,
     holder as ShallowRef<StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType>,
     inputtype
   );
 }
 
+function updateCurrentAndEmitCurrentPageIndex(val: number) {
+  (holder.value as StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).current = val;
+  triggerRef(holder);
+  emits('update:current', val);
+}
+
 onBeforeMount(() => {
   holder.value = props.tree;
   triggerRef(holder);
-  (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = props.current[1];
-  triggerRef(currentandsignal);
   unwatchcurrent = watch(
     () => props.current[0],
     (x) => {
-      (currentandsignal.value.displayer as CurrentAndSignalInnerType).current = props.current[1];
-      (currentandsignal.value.displayer as CurrentAndSignalInnerType).signal = x;
-      triggerRef(currentandsignal);
+      (holder.value as StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).current = props.current[1];
+      (holder.value as StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).signal = x;
+      triggerRef(holder);
     }
   );
 });
@@ -85,16 +73,16 @@ onBeforeUnmount(() => {
 <template>
   <div class="d-block">
     <Pagination
-      :paginationtype="props.paginationtype"
-      :_current="[
-        (currentandsignal.displayer as CurrentAndSignalInnerType).signal,
-        (currentandsignal.displayer as CurrentAndSignalInnerType).current
+      :paginationarea="props.paginationarea"
+      :currentandsignal="[
+        (holder as NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType | StringSearchType).signal,
+        (holder as NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType | StringSearchType).current
       ]"
       :length="(holder as StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).pages.length"
-      @update:current="($val: number) => updateCurrentAndEmitCurrent($val)"
+      @update:current="($val: number) => updateCurrentAndEmitCurrentPageIndex($val)"
     ></Pagination>
     <div
-      :id="(currentandsignal.displayer as CurrentAndSignalInnerType).current === 0 ? scrollareaid : ''"
+      :id="(holder as NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType | StringSearchType).current === 0 ? scrollareaid : ''"
       class="m-0 p-0 d-block overflow-y-auto overflow-x-hidden"
       style="z-index: 1000; background-color: #eee"
       :style="displayAreaHeight"
@@ -108,7 +96,7 @@ onBeforeUnmount(() => {
               <li
                 style="padding: 5px"
                 class="flex-grow-0 flex-shrink-0"
-                v-for="(holderitem, holderitemindex) in (holder as StringSearchType).pages[(currentandsignal.displayer as CurrentAndSignalInnerType).current]"
+                v-for="(holderitem, holderitemindex) in (holder as StringSearchType).pages[(holder as StringSearchType).current]"
                 :key="holderitemindex + 'include'"
               >
                 <div
@@ -163,7 +151,7 @@ onBeforeUnmount(() => {
             >
               <li
                 class="w-100"
-                v-for="(holderitem, holderitemindex) in (holder as NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).pages[(currentandsignal.displayer as CurrentAndSignalInnerType).current]"
+                v-for="(holderitem, holderitemindex) in (holder as NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).pages[(holder as NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).current]"
                 :key="
                   (
                     props.treetype === 'NumberSearchExcludeFromToType'?

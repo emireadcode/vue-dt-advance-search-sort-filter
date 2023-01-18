@@ -20,7 +20,7 @@ const
     from: "NUMBER-SEARCHER-MODAL" | "NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL";
   }>(),
   emits = defineEmits<{
-    (e: "enable:exclude", action: boolean): void;
+    (e: "enable:atnumbersearchwindowopenerbutton", action: boolean): void;
   }>(),
   cards = inject("cards") as ShallowRef<NumberType[] | SingleWordStringType[] | NumberStringType[]>
 ;
@@ -160,13 +160,13 @@ onMounted(() => {
       if(x.trim().length > 0 && /^\s*\d+(\.\d+)?\s*$/g.test(x)) {
         setTabAndResetOthers('GREATER-THAN', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from !== "NUMBER-SEARCHER-MODAL") {
-          emits('enable:exclude', false);
+          emits('enable:atnumbersearchwindowopenerbutton', false);
         }
         resetExclude(true);
       }
       else {
         if(props.from !== "NUMBER-SEARCHER-MODAL") {
-          emits('enable:exclude', true);
+          emits('enable:atnumbersearchwindowopenerbutton', true);
         }
       }
     }
@@ -177,13 +177,13 @@ onMounted(() => {
       if(x.trim().length > 0 && /^\s*\d+(\.\d+)?\s*$/g.test(x)) {
         setTabAndResetOthers('LESS-THAN', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from !== "NUMBER-SEARCHER-MODAL") {
-          emits('enable:exclude', false);
+          emits('enable:atnumbersearchwindowopenerbutton', false);
         }
         resetExclude(true);
       }
       else {
         if(props.from !== "NUMBER-SEARCHER-MODAL") {
-          emits('enable:exclude', true);
+          emits('enable:atnumbersearchwindowopenerbutton', true);
         }
       }
     }
@@ -215,13 +215,13 @@ onMounted(() => {
       if((x.trim().length > 0 && y.trim().length > 0) && (/^\s*\d+(\.\d+)?\s*$/g.test(x) && /^\s*\d+(\.\d+)?\s*$/g.test(y))) {
         setTabAndResetOthers('FROM-TO', holder as ShallowRef<NumberType['search']['multiple'] | AtNumber<NumberSearchType>>, props.from);
         if(props.from !== "NUMBER-SEARCHER-MODAL") {
-          emits('enable:exclude', false);
+          emits('enable:atnumbersearchwindowopenerbutton', false);
         }
         resetExclude(true);
       }
       else {
         if(props.from !== "NUMBER-SEARCHER-MODAL") {
-          emits('enable:exclude', true);
+          emits('enable:atnumbersearchwindowopenerbutton', true);
         }
       }
     }
@@ -262,7 +262,7 @@ onBeforeUnmount(() => {
   <div 
     class="d-block" 
     style="z-index: 8992;"
-    :style="props.from==='NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL'? '':'padding: 0 0.126rem'"
+    :style="props.from==='NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL'? 'padding: 0.3rem 0.5rem;':'padding: 0 0.5rem'"
   >
     <div class="d-block" style="padding: 0 0 0.945rem 0">
       <div
@@ -387,6 +387,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <Paste
+              :pastebuttonfontsize="'font-size:0.85rem;'"
               :breakdescription="(true as boolean)"
               :from="props.from"
               :receiveclosepastemodalsignal="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.closepaste"
@@ -419,7 +420,7 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              paginationtype="NOT-EQUAL-TO"
+              paginationarea="NOT-EQUAL-TO"
               :current="[((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.signal, ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.current]"
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
@@ -505,6 +506,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <Paste
+              :pastebuttonfontsize="'font-size:0.85rem;'"
               :breakdescription="(true as boolean)"
               :from="props.from"
               :receiveclosepastemodalsignal="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.closepaste"
@@ -541,7 +543,7 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              paginationtype="EQUAL-TO"
+              paginationarea="EQUAL-TO"
               :current="[((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.signal, ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.current]"
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"

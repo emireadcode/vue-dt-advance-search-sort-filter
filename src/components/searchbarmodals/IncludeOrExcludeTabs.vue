@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, type ShallowRef, triggerRef, ref } from "vue";
+import { inject, type ShallowRef, triggerRef, ref, onBeforeMount, } from "vue";
 import type { 
   StringSearchType, 
   MultipleWordsStringType, 
@@ -9,26 +9,43 @@ import type {
   SingleWordStringConcatenatedFieldType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 
-const 
-  emits = defineEmits<{
-    (e: "update:format", action: 'INCLUDE' | 'EXCLUDE' | '@NUMBER'): void;
-  }>(),
+const
 
-  format = ref<'@NUMBER' | 'INCLUDE' | 'EXCLUDE'>(),
+  emits = defineEmits<{
+    (e: "disable:searchphraseinputbox", action: boolean): void;
+    (e: "show:atnumbersearchexcludenumberwindowopenerbutton", action: boolean): void;
+  }>(),
 
   cards = inject("cards") as ShallowRef<(MultipleWordsStringType | SingleWordStringType | NumberStringType)[]>,
 
   index = inject("index") as number,
 
-  wordtypeandconcatfieldindex = inject("wordtypeandconcatfieldindex") as { wordtype: 'MULTIPLE' | 'SINGLE'; concatfieldindex: number | string | undefined; }
+  concatfieldindex = inject("concatfieldindex") as number | undefined
 ;
 
-function updateCard() {
+function updateFormat(cardtype: 'CONCATENATED' | 'NOT-CONCATENATED', format: 'INCLUDE' | 'EXCLUDE' | '@NUMBER') {
+  if(cardtype === 'CONCATENATED') {
+    ((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search as {includeorexcludeformat: '@NUMBER' | 'INCLUDE' | 'EXCLUDE'}).includeorexcludeformat = format;
+    if(format !== '@NUMBER') {
+      ((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search as {includeorexcludestartswithcontainsendswithequaltoformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO'}).includeorexcludestartswithcontainsendswithequaltoformat = 'STARTS-WITH';
+    }
+  }
+  else {
+    (cards.value[index].search.multiple as {includeorexcludeformat: '@NUMBER' | 'INCLUDE' | 'EXCLUDE'}).includeorexcludeformat = format;
+    if(format !== '@NUMBER') {
+      (cards.value[index].search.multiple as {includeorexcludestartswithcontainsendswithequaltoformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO'}).includeorexcludestartswithcontainsendswithequaltoformat = 'STARTS-WITH';
+    }
+  }
   triggerRef(cards);
+  
+  emits('disable:searchphraseinputbox', true);
+  emits(
+    'show:atnumbersearchexcludenumberwindowopenerbutton',
+    (format !== '@NUMBER')? false : true
+  );
 }
 
 </script>
-
 
 <template>
   <div class="d-block" style="padding-top: 10px;">
@@ -37,27 +54,40 @@ function updateCard() {
         class="align-self-stretch"
         :class="[
           (
-            wordtypeandconcatfieldindex.wordtype === 'SINGLE'
-            &&
-            wordtypeandconcatfieldindex.concatfieldindex !== undefined
-            &&
-            (cards[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex].fixedlengthofstring !== undefined
+            concatfieldindex !== undefined
           )?
-          'flex-w-100-over-3'
+          (
+            (
+              (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].enableatnumbersearch !== undefined
+              &&
+              (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].enableatnumbersearch === true
+            )?
+            'flex-w-100-over-3'
+            :
+            'flex-w-50'
+          )
           : (
-            ((cards[index] as SingleWordStringType).fixedlengthofstring !== undefined)?
+            (
+              (cards[index] as MultipleWordsStringType | SingleWordStringType).enableatnumbersearch !== undefined
+              &&
+              (cards[index] as MultipleWordsStringType | SingleWordStringType).enableatnumbersearch == true
+            )?
             'flex-w-100-over-3'
             :
             'flex-w-50'
           )
         ]"
       >
-        <template v-if="wordtypeandconcatfieldindex.concatfieldindex === undefined">
+        <template v-if="concatfieldindex === undefined">
           <button
-            @keypress.enter="() => { format = 'INCLUDE'; (cards[index].search.multiple?.include as StringSearchType).tabclicked = true; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = false; updateCard(); emits('update:format', format); }"
-            @click="() => { format = 'INCLUDE'; (cards[index].search.multiple?.include as StringSearchType).tabclicked = true; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = false; updateCard(); emits('update:format', format); }"
+            @keypress.enter="() => {
+              updateFormat('NOT-CONCATENATED', 'INCLUDE');
+            }"
+            @click="() => { 
+              updateFormat('NOT-CONCATENATED', 'INCLUDE');
+            }"
             class="text-lowercase tab w-100" 
-            :style="((cards[index] as SingleWordStringType).search.multiple?.include as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            :style="(cards[index] as SingleWordStringType).search.multiple?.includeorexcludeformat === 'INCLUDE'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
             style="padding:5px 0;font-size:0.9em;"
           >
             include
@@ -65,10 +95,14 @@ function updateCard() {
         </template>
         <template v-else>
           <button
-            @keypress.enter="() => { format = 'INCLUDE'; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = true; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = false; updateCard(); emits('update:format', format); }"
-            @click="() => { format = 'INCLUDE'; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = true; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = false; updateCard(); emits('update:format', format); }"
+            @keypress.enter="() => {
+              updateFormat('CONCATENATED', 'INCLUDE');
+            }"
+            @click="() => {
+              updateFormat('CONCATENATED', 'INCLUDE');
+            }"
             class="text-lowercase tab w-100" 
-            :style="(((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            :style="((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number]).search?.includeorexcludeformat==='INCLUDE'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
             style="padding:5px 0;font-size:0.9em;"
           >
             include
@@ -79,27 +113,40 @@ function updateCard() {
         class="align-self-stretch"
         :class="[
           (
-            wordtypeandconcatfieldindex.wordtype === 'SINGLE'
-            &&
-            wordtypeandconcatfieldindex.concatfieldindex !== undefined
-            &&
-            (cards[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex].fixedlengthofstring !== undefined
+            concatfieldindex !== undefined
           )?
-          'flex-w-100-over-3'
+          (
+            (
+              (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].enableatnumbersearch !== undefined
+              &&
+              (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].enableatnumbersearch === true
+            )?
+            'flex-w-100-over-3'
+            :
+            'flex-w-50'
+          )
           : (
-            ((cards[index] as SingleWordStringType).fixedlengthofstring !== undefined)?
+            (
+              (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType).enableatnumbersearch !== undefined
+              &&
+              (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType).enableatnumbersearch === true
+            )?
             'flex-w-100-over-3'
             :
             'flex-w-50'
           )
         ]"
       >
-        <template v-if="wordtypeandconcatfieldindex.concatfieldindex === undefined">
+        <template v-if="concatfieldindex === undefined">
           <button
-            @keypress.enter="() => { format = 'EXCLUDE'; (cards[index].search.multiple?.include as StringSearchType).tabclicked = false; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = true; updateCard(); emits('update:format', format); }"
-            @click="() => { format = 'EXCLUDE'; (cards[index].search.multiple?.include as StringSearchType).tabclicked = false; (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = true; updateCard(); emits('update:format', format); }"
+            @keypress.enter="() => {
+              updateFormat('NOT-CONCATENATED', 'EXCLUDE');
+            }"
+            @click="() => {
+              updateFormat('NOT-CONCATENATED', 'EXCLUDE');
+            }"
             class="text-lowercase tab w-100" 
-            :style="(cards[index].search.multiple?.exclude as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            :style="cards[index].search.multiple?.includeorexcludeformat==='EXCLUDE'? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
             style="padding:5px 0;font-size:0.9em;"
           >
             exclude
@@ -107,78 +154,68 @@ function updateCard() {
         </template>
         <template v-else>
           <button
-            @keypress.enter="() => { format = 'EXCLUDE'; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = false; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = true; updateCard(); emits('update:format', format); }"
-            @click="() => { format = 'EXCLUDE'; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = false; (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = true; updateCard(); emits('update:format', format); }"
+            @keypress.enter="() => {
+              updateFormat('CONCATENATED', 'EXCLUDE');
+            }"
+            @click="() => {
+              updateFormat('CONCATENATED', 'EXCLUDE');
+            }"
             class="text-lowercase tab w-100" 
-            :style="(((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
+            :style="((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number]).search?.includeorexcludeformat==='EXCLUDE'? 'background-color:#F0E68C;' : 'background-color:lightgray;'"
             style="padding:5px 0;font-size:0.9em;"
           >
             exclude
           </button>
         </template>
       </li>
-      <template v-if="wordtypeandconcatfieldindex.wordtype === 'SINGLE'">
-        <template v-if="wordtypeandconcatfieldindex.concatfieldindex !== undefined">
-          <template v-if="(cards[index].concatenated as SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex].fixedlengthofstring !== undefined">
-            <li
-              class="align-self-stretch flex-w-100-over-3"
+      <template v-if="concatfieldindex !== undefined">
+        <template v-if="
+          (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].enableatnumbersearch !== undefined
+          &&
+          (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].enableatnumbersearch === true
+        ">
+          <li
+            class="align-self-stretch flex-w-100-over-3"
+          >
+            <button
+              :style="((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number]).search?.includeorexcludeformat==='@NUMBER'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
+              @click="() => {
+                updateFormat('CONCATENATED', '@NUMBER');
+              }"
+              @keypress.enter="() => {
+                updateFormat('CONCATENATED', '@NUMBER');
+              }"
+              class="text-lowercase tab w-100" 
+              style="padding:5px 0;font-size:0.9em;"
             >
-              <button
-                :style="format==='@NUMBER'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
-                @click="() => {
-                  format = '@NUMBER';
-                  (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search.includeorexcludeformat = format;
-                  (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = false; 
-                  (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = false; 
-                  updateCard();
-                  emits('update:format', format);
-                }"
-                @keypress.enter="() => {
-                  format = '@NUMBER';
-                  (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number].search.includeorexcludeformat = format;
-                  (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.include as StringSearchType).tabclicked = false; 
-                  (((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[wordtypeandconcatfieldindex.concatfieldindex as number]).search?.exclude as StringSearchType).tabclicked = false; 
-                  updateCard();
-                  emits('update:format', format);
-                }"
-                class="text-lowercase tab w-100" 
-                style="padding:5px 0;font-size:0.9em;"
-              >
-                @number
-              </button>
-            </li>
-          </template>
+              @number
+            </button>
+          </li>
         </template>
-        <template v-else>
-          <template v-if="(cards[index] as SingleWordStringType).fixedlengthofstring !== undefined">
-            <li
-              class="align-self-stretch flex-w-100-over-3"
+      </template>
+      <template v-else>
+        <template v-if="
+          (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType).enableatnumbersearch !== undefined
+          &&
+          (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType).enableatnumbersearch === true
+        ">
+          <li
+            class="align-self-stretch flex-w-100-over-3"
+          >
+            <button
+              :style="(cards[index] as SingleWordStringType).search.multiple?.includeorexcludeformat === '@NUMBER'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
+              @click="() => {
+                updateFormat('NOT-CONCATENATED', '@NUMBER');
+              }"
+              @keypress.enter="() => {
+                updateFormat('NOT-CONCATENATED', '@NUMBER');
+              }"
+              class="text-lowercase tab w-100" 
+              style="padding:5px 0;font-size:0.9em;"
             >
-              <button
-                :style="format==='@NUMBER'?'background-color:#F0E68C;' : 'background-color:lightgray;'"
-                @click="() => {
-                  format = '@NUMBER';
-                  cards[index].search.multiple.includeorexcludeformat = format;
-                  (cards[index].search.multiple?.include as StringSearchType).tabclicked = false; 
-                  (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = false; 
-                  updateCard();
-                  emits('update:format', format);
-                }"
-                @keypress.enter="() => {
-                  format = '@NUMBER';
-                  (cards[index].search.multiple).includeorexcludeformat = format;
-                  (cards[index].search.multiple?.include as StringSearchType).tabclicked = false; 
-                  (cards[index].search.multiple?.exclude as StringSearchType).tabclicked = false; 
-                  updateCard();
-                  emits('update:format', format);
-                }"
-                class="text-lowercase tab w-100" 
-                style="padding:5px 0;font-size:0.9em;"
-              >
-                @number
-              </button>
-            </li>
-          </template>
+              @number
+            </button>
+          </li>
         </template>
       </template>
     </ul>

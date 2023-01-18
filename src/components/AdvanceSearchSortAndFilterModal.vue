@@ -52,6 +52,7 @@ function enableACardChildrenTabIndexAndDisableOtherCardsChildrenTabIndex(index: 
 }
 
 onMounted(() => {
+  console.log(cards.value);
   (accessibility.value.refreshundoredoclosecontainerref as HTMLDivElement).focus();
 });
 

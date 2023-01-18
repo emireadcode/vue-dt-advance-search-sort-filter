@@ -1,22 +1,54 @@
 <script setup lang="ts">
-import { ref, } from "vue";
+import { ref, inject, type ShallowRef, triggerRef, } from "vue";
+import type { 
+  StringSearchType, 
+  MultipleWordsStringType, 
+  NumberStringType,
+  SingleWordStringType, 
+  MultipleWordsStringConcatenatedFieldType,
+  SingleWordStringConcatenatedFieldType,
+} from "../types/SupportedDatatypesTypeDeclaration";
 
 const 
-
-  props = defineProps<{
-    format: 'STARTS-WITH' | 'ENDS-WITH' | 'CONTAINS' | 'EQUAL-TO';
+  emits = defineEmits<{
+    (e: "disable:searchphraseinputbox", action: boolean): void;
   }>(),
 
   buttonnames = ['starts with', 'contains', 'equal to', 'ends with'],
 
-  emits = defineEmits<{
-    (e: "update:format", action: 'STARTS-WITH' | 'ENDS-WITH' | 'CONTAINS' | 'EQUAL-TO'): void;
-  }>(),
+  cards = inject("cards") as ShallowRef<(MultipleWordsStringType | SingleWordStringType | NumberStringType)[]>,
 
-  format = ref<'STARTS-WITH' | 'ENDS-WITH' | 'CONTAINS' | 'EQUAL-TO'>()
+  index = inject("index") as number,
+
+  concatfieldindex = inject("concatfieldindex") as number | undefined
 ;
 
-format.value = props.format;
+function updateFormat(format: "STARTS-WITH" | "CONTAINS" | "ENDS-WITH" | "EQUAL-TO") {
+  if(concatfieldindex === undefined) {
+    cards.value[index].search.multiple.includeorexcludestartswithcontainsendswithequaltoformat = format;
+  }
+  else {
+    ((cards.value[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search as ({
+      includeorexcludestartswithcontainsendswithequaltoformat: 'STARTS-WITH' | 'CONTAINS' | 'ENDS-WITH' | 'EQUAL-TO';
+    })).includeorexcludestartswithcontainsendswithequaltoformat = format;
+  }
+  triggerRef(cards);
+  emits(
+    'disable:searchphraseinputbox',
+    format==='STARTS-WITH'?
+    true
+    : (
+      format==='CONTAINS'?
+      false
+      : (
+        format==='ENDS-WITH'?
+        true
+        :
+        true
+      )
+    )
+  )
+}
 
 </script>
 
@@ -31,37 +63,37 @@ format.value = props.format;
         <button
           :style="
             (
-              (format==='STARTS-WITH' && name==='starts with')
+              (((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='STARTS-WITH' && name==='starts with')
               ||
-              (format==='ENDS-WITH' && name==='ends with')
+              (((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='ENDS-WITH' && name==='ends with')
               ||
-              (format==='CONTAINS' && name==='contains')
+              (((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='CONTAINS' && name==='contains')
               ||
-              (format==='EQUAL-TO' && name==='equal to')
+              (((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='EQUAL-TO' && name==='equal to')
             )?
               'background-color:#F0E68C;' 
               : 
               'background-color:lightgray;'
           "
           @keypress.enter="() => {
-            name==='starts with'? format = 'STARTS-WITH'
+            name==='starts with'? updateFormat('STARTS-WITH')
             : (
-              name==='ends with'? format = 'ENDS-WITH'
+              name==='ends with'? updateFormat('ENDS-WITH')
               : (
-                name==='contains'? format = 'CONTAINS' : format = 'EQUAL-TO'
+                name==='contains'? updateFormat('CONTAINS')
+                : updateFormat('EQUAL-TO')
               )
             );
-            emits('update:format', format);
           }"
           @click="() => {
-            name==='starts with'? format = 'STARTS-WITH'
+            name==='starts with'? updateFormat('STARTS-WITH')
             : (
-              name==='ends with'? format = 'ENDS-WITH'
+              name==='ends with'? updateFormat('ENDS-WITH')
               : (
-                name==='contains'? format = 'CONTAINS' : format = 'EQUAL-TO'
+                name==='contains'? updateFormat('CONTAINS')
+                : updateFormat('EQUAL-TO')
               )
             );
-            emits('update:format', format);
           }"
           class="text-lowercase tab w-100" 
           style="padding:5px;font-size:0.9em;border-top-right-radius: 8px;border-top-left-radius: 8px;"
