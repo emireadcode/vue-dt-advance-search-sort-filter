@@ -17,15 +17,12 @@ const
     (e: "return:newlypasteditems", action: string[][]): void;
   }>(),
   props = defineProps<{
-    breakdescription?: boolean | undefined;
+    pastearea: 'DATE-DATETIME-DD-MM-YYYY-AREA' | 'YEAR-AREA' | 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BEEN-CLICKED-BUT-WITHOUT-INCLUDE-AND-EXCLUDE' | 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BUT-NOT-YET-CLICKED-AND-WITHOUT-INCLUDE-AND-EXCLUDE' | 'WORD-DISPLAY-AREA-WITHOUT-INCLUDE-EXCLUDE-AND-ATNUMBER' | 'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER' | 'WORD-DISPLAY-AREA-WITH-INCLUDE-AND-EXCLUDE-BUT-WITHOUT-ATNUMBER' | 'ATNUMBER-INCLUSIVE-EQUAL-TO' | 'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO' | 'ATNUMBER-EXCLUSIVE-EQUAL-TO' | 'ATNUMBER-EXCLUSIVE-FROM-TO' | 'NUMBER-INCLUSIVE-EQUAL-TO' | 'NUMBER-INCLUSIVE-NOT-EQUAL-TO' | 'NUMBER-EXCLUSIVE-EQUAL-TO' | 'NUMBER-EXCLUSIVE-FROM-TO';
     receiveclosepastemodalsignal?: number | undefined;
     title: string;
-    pastebuttonfontsize: string;
     min?: string | undefined;
     max?: string | undefined;
     datatype: 'NumberFromNumberString' | 'NumberRange' | 'DateTime' | 'Date' | 'Year' | 'MultipleWordsString' | 'SingleWordString' | 'NumberString' | 'Number';
-    textAreaHeight: string;
-    descriptionfontsize?: string | undefined;
   }>()
 ;
 
@@ -458,14 +455,47 @@ onBeforeMount(() => {
       <template v-if="pastemultiplelines">
         <div
           class="w-100 position-absolute t-0 l-0 shadow-sm overflow-hidden"
-          style="background-color: #fff; border: 1px solid #fff"
+          style="background-color: #fff; border: 1px solid #fff; z-index: 1000;"
         >
           <div
             class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
-            :style="props.breakdescription !== undefined && props.breakdescription? 'height: 50px;' : 'height: 30px;'"
+            :style="
+              (
+                props.pastearea === 'ATNUMBER-INCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                || props.pastearea === 'ATNUMBER-EXCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'ATNUMBER-EXCLUSIVE-FROM-TO' 
+                || props.pastearea === 'NUMBER-INCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'NUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                || props.pastearea === 'NUMBER-EXCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'NUMBER-EXCLUSIVE-FROM-TO'
+              )? 'height: 50px;' : 'height: 30px;'
+            "
           >
-            <div class="flex-fill" :style="props.descriptionfontsize? props.descriptionfontsize: 'font-size:0.8rem;'">
-              <template v-if="props.breakdescription !== undefined && props.breakdescription">
+            <div class="flex-fill" :style="
+              (
+                props.pastearea === 'ATNUMBER-INCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                || props.pastearea === 'ATNUMBER-EXCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'ATNUMBER-EXCLUSIVE-FROM-TO' 
+                || props.pastearea === 'NUMBER-INCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'NUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                || props.pastearea === 'NUMBER-EXCLUSIVE-EQUAL-TO' 
+                || props.pastearea === 'NUMBER-EXCLUSIVE-FROM-TO'
+              )? 'font-size: 0.73rem': 'font-size: 0.85rem;'
+            ">
+              <template v-if="
+                (
+                  props.pastearea === 'ATNUMBER-INCLUSIVE-EQUAL-TO' 
+                  || props.pastearea === 'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                  || props.pastearea === 'ATNUMBER-EXCLUSIVE-EQUAL-TO' 
+                  || props.pastearea === 'ATNUMBER-EXCLUSIVE-FROM-TO' 
+                  || props.pastearea === 'NUMBER-INCLUSIVE-EQUAL-TO' 
+                  || props.pastearea === 'NUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                  || props.pastearea === 'NUMBER-EXCLUSIVE-EQUAL-TO' 
+                  || props.pastearea === 'NUMBER-EXCLUSIVE-FROM-TO'
+                )
+              ">
                 <div class="d-block" style="padding:2px;">
                   Press Ctrl + V on a PC
                 </div>
@@ -495,12 +525,59 @@ onBeforeMount(() => {
           <div class="d-block position-relative p-0 m-0">
             <div 
               class="d-block p-0 m-0" 
-              style="z-index: 800"
-              :style="props.textAreaHeight"
+              style="background-color: #fff;"
+              :style="
+                (
+                  props.pastearea === 'NUMBER-INCLUSIVE-EQUAL-TO' 
+                  || props.pastearea === 'NUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                  || props.pastearea === 'NUMBER-EXCLUSIVE-EQUAL-TO' 
+                  || props.pastearea === 'NUMBER-EXCLUSIVE-FROM-TO'
+                )? 
+                'height: 188px;'
+                : (
+                  (
+                    props.pastearea === 'ATNUMBER-INCLUSIVE-EQUAL-TO' 
+                    || props.pastearea === 'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+                  )?
+                  'height: 178px;'
+                  : (
+                    (
+                      props.pastearea === 'ATNUMBER-EXCLUSIVE-EQUAL-TO' 
+                      || props.pastearea === 'ATNUMBER-EXCLUSIVE-FROM-TO' 
+                    )?
+                    'height: 201px;'
+                    : (
+                      props.pastearea === 'DATE-DATETIME-DD-MM-YYYY-AREA'?
+                      'height: 400px;'
+                      : (
+                        props.pastearea === 'YEAR-AREA'?
+                        'height: 200px;'
+                        : (
+                          (
+                            props.pastearea === 'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER' 
+                            || props.pastearea === 'WORD-DISPLAY-AREA-WITH-INCLUDE-AND-EXCLUDE-BUT-WITHOUT-ATNUMBER'
+                          )?
+                          'height: 208px;'
+                          : (
+                            props.pastearea === 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BUT-NOT-YET-CLICKED-AND-WITHOUT-INCLUDE-AND-EXCLUDE'?
+                            'height: 333px;'
+                            : (
+                              props.pastearea === 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BEEN-CLICKED-BUT-WITHOUT-INCLUDE-AND-EXCLUDE'?
+                              'height: 362.7px;'
+                              :
+                              'height: 375px;'
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              "
             >
               <textarea
                 :ref="(el) => (pastetextarearef = el as HTMLTextAreaElement)"
-                style="border: 1px solid gray; padding: 5px; resize: none"
+                style="border: 1px solid gray; padding: 5px; resize: none; background-color: #fff;"
                 class="w-100 h-100 text-left d-inline-block overflow-auto"
                 maxlength="0"
                 v-model="pastedmultiplelinesoftext"
@@ -509,7 +586,7 @@ onBeforeMount(() => {
             </div>
             <template v-if="pasteditemloading">
               <div
-                style="padding: 26px 0px; z-index: 900"
+                style="padding: 26px 0px;"
                 class="t-0 l-0 w-100 position-absolute m-0 h-100 modal-mask-background-1"
               >
                 <img
@@ -618,16 +695,18 @@ onBeforeMount(() => {
                                     (
                                       datatype === 'Year'?
                                       (
-                                      item[1] === 'ERROR'
+                                        item[1] === 'ERROR'
                                         ? 'background-color:red;color:#fff;'
-                                        : item[1] === 'OUT-OF-YEAR-RANGE'
-                                        ? 'background-color:yellow;color:black;'
-                                        : 'background-color:#fff;'
+                                        : (
+                                          item[1] === 'OUT-OF-YEAR-RANGE'
+                                          ? 'background-color:yellow;color:black;'
+                                          : 'background-color:#fff;'
+                                        )
                                       ):
                                       (
                                         item[1] === 'ERROR'
-                                          ? 'background-color:red;color:#fff;'
-                                          : 'background-color:#fff;'
+                                        ? 'background-color:red;color:#fff;'
+                                        : 'background-color:#fff;'
                                       )
                                     )
                                   "
@@ -653,32 +732,42 @@ onBeforeMount(() => {
           </div>
         </Teleport>
       </template>
-      <template v-if="datatype === 'Date'">
-        <div class="d-block text-center" style="padding: 15.3px 0">
-          <button
-            class="btn shadow-sm w-100 font-family"
-            style="border-radius: 50px; padding: 12px; font-size: 1.2rem; background-color: #f0e68c;"
-            @keypress.enter="openPasteArea()"
-            @click="openPasteArea()"
-          >
-            Paste multiple lines of
-            <span class="text-lowercase">{{ title }}</span>
-          </button>
-        </div>
-      </template>
-      <template v-else>
-        <div class="d-block text-center">
-          <button
-            class="btn shadow-sm w-100"
-            style="padding: 2px; font-size: 0.85rem"
-            @keypress.enter="openPasteArea()"
-            @click="openPasteArea()"
-          >
-            Paste multiple lines of
-            <span class="text-lowercase">{{ title }}</span>
-          </button>
-        </div>
-      </template>
+      <div 
+        class="d-block text-center" 
+        :style="
+          props.pastearea === 'DATE-DATETIME-DD-MM-YYYY-AREA'?
+          'padding: 15.3px 0'
+          :
+          'padding: 0'
+        "
+      >
+        <button
+          class="btn shadow-sm w-100 font-family"
+          style="background-color: #f0e68c;"
+          :style="
+            props.pastearea === 'DATE-DATETIME-DD-MM-YYYY-AREA'?
+            'border-radius: 50px; padding: 12px; font-size: 1.2rem;'
+            : (
+              (
+                props.pastearea === 'YEAR-AREA' 
+                || props.pastearea === 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BEEN-CLICKED-BUT-WITHOUT-INCLUDE-AND-EXCLUDE' 
+                || props.pastearea === 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BUT-NOT-YET-CLICKED-AND-WITHOUT-INCLUDE-AND-EXCLUDE' 
+                || props.pastearea === 'WORD-DISPLAY-AREA-WITHOUT-INCLUDE-EXCLUDE-AND-ATNUMBER' 
+                || props.pastearea === 'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER' 
+                || props.pastearea === 'WORD-DISPLAY-AREA-WITH-INCLUDE-AND-EXCLUDE-BUT-WITHOUT-ATNUMBER'
+              )?
+              'padding: 4px; font-size: 0.90rem;'
+              :
+              'padding: 4px 0; font-size: 0.80rem;'
+            )
+          "
+          @keypress.enter="openPasteArea()"
+          @click="openPasteArea()"
+        >
+          Paste multiple lines of
+          <span class="text-lowercase">{{ title }}</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>

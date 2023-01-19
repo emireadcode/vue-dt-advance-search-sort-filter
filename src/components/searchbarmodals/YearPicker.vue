@@ -304,7 +304,7 @@ onMounted(() => {
       </div>
     </div>
     <Paste
-      :pastebuttonfontsize="'font-size:0.85rem;'"
+      pastearea="YEAR-AREA"
       :title="cards[index].info.name"
       :datatype="'Year'"
       :max="''+props.maxyear"

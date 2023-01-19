@@ -48,7 +48,7 @@ function updateFormat(cardtype: 'CONCATENATED' | 'NOT-CONCATENATED', format: 'IN
 </script>
 
 <template>
-  <div class="d-block" style="padding-top: 10px;">
+  <div class="d-block" style="padding: 10px 0.5rem 0 0.5rem;">
     <ul class="list-style-none flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-start align-items-center">
       <li
         class="align-self-stretch"

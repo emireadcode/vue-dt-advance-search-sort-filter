@@ -72,7 +72,7 @@ onMounted(() => {
   <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-end align-items-center">
     <div class="flex-fill" style="z-index: 860;"> 
       <div
-        style="background-color: #fff; padding: 10px 10px 0 10px;white-space: nowrap;"
+        style="background-color: #fff; padding: 10px 0.5rem 0 0.5rem;white-space: nowrap;"
         class="shadow-sm d-block overflow-x-auto"
       >
         <template v-if="!(cards[index] as MultipleWordsStringType).concatenated">

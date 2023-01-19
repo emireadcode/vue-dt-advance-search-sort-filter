@@ -15,14 +15,14 @@ import type {
   NumberType,
   NumberSearchType,
 } from "../types/SupportedDatatypesTypeDeclaration";
-import ReusableNumberSearch from "./ReusableNumberSearch.vue";
-import ExcludeNumberSearch from "./ExcludeNumberSearch.vue";
+import InclusiveNumberSearch from "./InclusiveNumberSearch.vue";
+import ExclusiveNumberSearch from "./ExclusiveNumberSearch.vue";
 import type { AccessibilityType } from "../types/accessibility";
 
 const
   index = inject("index") as number,
   accessibility = inject("accessibility") as ShallowRef<AccessibilityType>,
-  openexclude = ref(false),
+  openatnumbersearchexcludenumberwindow = ref(false),
   cards = inject("cards") as ShallowRef<NumberType[]>,
   holder = shallowRef<NumberType['search']['multiple']>()
 ;
@@ -39,7 +39,7 @@ function openExcludeWindow() {
       holder.value?.fromto?.to
     )
   ) {
-    openexclude.value = true;
+    openatnumbersearchexcludenumberwindow.value = true;
   }
 }
 
@@ -127,8 +127,8 @@ onBeforeMount(() => {
       <div class="modal-mask h-100 w-100 modal-mask-background">
         <div class="modal-wrapper text-center">
           <div class="modal-container d-block">
-            <div class="d-block" style="height: 36.855rem;">
-              <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-end align-items-center">
+            <div class="d-block" style="height: 36.855rem !important;">
+              <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
                 <div class="flex-fill" style="z-index: 860;">
                   <div
                     style="background-color: #fff;padding:  0.63rem  0.63rem 0  0.63rem;white-space: nowrap;"
@@ -161,7 +161,7 @@ onBeforeMount(() => {
               <div class="d-block position-relative">
                 <div
                   class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-                  style="padding: 0.504rem 0"
+                  style="padding: 0.504rem 0;"
                 >
                   <div class="flex-w-50">
                     <span
@@ -180,15 +180,20 @@ onBeforeMount(() => {
                     </span>
                   </div>
                 </div>
-                <ReusableNumberSearch from="NUMBER-SEARCHER-MODAL"></ReusableNumberSearch>
-                <template v-if="openexclude">
-                  <ExcludeNumberSearch @close:exclude="($val: boolean) => openexclude = $val" from="NUMBER-SEARCHER-MODAL"></ExcludeNumberSearch>
+                <InclusiveNumberSearch from="NUMBER-SEARCHER-MODAL"></InclusiveNumberSearch>
+                <template v-if="openatnumbersearchexcludenumberwindow">
+                  <div class="d-block" style="padding:0 5px;background-color: #f8f8f8;border-bottom:2px solid blue;">
+                    <ExclusiveNumberSearch 
+                      @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
+                      from="NUMBER-SEARCHER-MODAL"
+                    ></ExclusiveNumberSearch>
+                  </div>
                 </template>
               </div>
             </div>
             <div
               class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-              style="padding:  0.63rem  0.63rem 0.756rem  0.63rem;"
+              style="padding: 0.63rem 0.63rem 0.756rem 0.63rem;"
             >
               <div class="flex-w-100-over-3" style="padding-right: 0.4725rem;">
                 <button

@@ -67,7 +67,7 @@ onBeforeMount(() => {
       <div class="modal-mask h-100 w-100">
         <div class="modal-wrapper text-center">
           <div class="modal-container d-block">
-            <div class="d-block" style="height: 36.855rem;">
+            <div class="d-block" style="height: 36.855rem !important;">
               <div class="position-relative flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-end align-items-center">
                 <div class="flex-fill" style="z-index: 860;"> 
                   <div

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { triggerRef, shallowRef, type WatchStopHandle, ref, watch, inject, type Ref, type ShallowRef, computed, onMounted, onBeforeUnmount, } from "vue";
+import { triggerRef, type WatchStopHandle, watch, inject, type ShallowRef, computed, onMounted, onBeforeUnmount, } from "vue";
 import type {
   NumberType,
   SingleWordStringType,
@@ -261,15 +261,15 @@ onBeforeUnmount(() => {
 <template>
   <div 
     class="d-block" 
-    style="z-index: 8992;"
-    :style="props.from==='NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL'? 'padding: 0.3rem 0.5rem;':'padding: 0 0.5rem'"
+    style="z-index: 8000;"
+    :style="props.from==='NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL'? 'padding: 0.1rem 0.3rem;':'padding: 0 0.5rem;height:100%;'"
   >
     <div class="d-block" style="padding: 0 0 0.945rem 0">
       <div
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
       >
         <div class="flex-w-50" style="padding-right: 0.315rem">
-          <div class="d-block shadow-sm" style="padding: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem;background-color:#fff;">
             <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/greater-than.png"
@@ -290,7 +290,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div class="flex-w-50" style="padding-left: 0.315rem">
-          <div class="d-block shadow-sm" style="padding: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem;background-color:#fff;">
             <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/less-than.png"
@@ -317,7 +317,7 @@ onBeforeUnmount(() => {
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
       >
         <div class="flex-w-50" style="padding-right: 0.315rem">
-          <div class="d-block shadow-sm" style="padding: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem;background-color:#fff;">
             <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/equal-to.png"
@@ -387,15 +387,17 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <Paste
-              :pastebuttonfontsize="'font-size:0.85rem;'"
-              :breakdescription="(true as boolean)"
-              :from="props.from"
+              :pastearea="
+                (props.from === 'NUMBER-SEARCHER-MODAL')?
+                'NUMBER-INCLUSIVE-EQUAL-TO'
+                :
+                'ATNUMBER-INCLUSIVE-EQUAL-TO'
+              "
               :receiveclosepastemodalsignal="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              :text-area-height="'height:11.34rem;'"
               @return:newlypasteditems="$val => { addPastedItems($val, 'EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
@@ -420,18 +422,22 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              paginationarea="NOT-EQUAL-TO"
+              :paginationarea="
+                (props.from === 'NUMBER-SEARCHER-MODAL')?
+                'NUMBER-INCLUSIVE-EQUAL-TO'
+                :
+                'ATNUMBER-INCLUSIVE-EQUAL-TO'
+              "
               :current="[((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.signal, ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.current]"
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
-              :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
               @update:current="($val) => { ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.current = $val; triggerHolder(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
         <div class="flex-w-50" style="padding-left: 0.315rem">
-          <div class="d-block shadow-sm" style="padding: 0.315rem">
+          <div class="d-block shadow-sm" style="padding: 0.315rem;background-color:#fff;">
             <div class="d-block" style="padding-bottom: 0.315rem">
               <img
                 src="/src/assets/icons/not-equal-to.png"
@@ -506,15 +512,17 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <Paste
-              :pastebuttonfontsize="'font-size:0.85rem;'"
-              :breakdescription="(true as boolean)"
-              :from="props.from"
+              :pastearea="
+                (props.from === 'NUMBER-SEARCHER-MODAL')?
+                'NUMBER-INCLUSIVE-NOT-EQUAL-TO'
+                :
+                'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO'
+              "
               :receiveclosepastemodalsignal="((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.closepaste"
               title="numbers"
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              :text-area-height="'height:11.34rem;'"
               @return:newlypasteditems="$val => { addPastedItems($val, 'NOT-EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
@@ -543,11 +551,15 @@ onBeforeUnmount(() => {
               </template>
             </Paste>
             <PastedItemAndNewlyInputedEntryDisplayer
-              paginationarea="EQUAL-TO"
+              :paginationarea="
+                (props.from === 'NUMBER-SEARCHER-MODAL')?
+                'NUMBER-INCLUSIVE-NOT-EQUAL-TO'
+                :
+                'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO'
+              "
               :current="[((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.signal, ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.current]"
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
-              :display-area-height="'height: 9.9477rem;'"
               :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
               @update:current="($val) => {((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.current = $val; triggerHolder(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
@@ -556,7 +568,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div 
-      style="padding: 0.315rem;"
+      style="padding: 0.315rem;background-color:#fff;"
       class="shadow-sm flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
     >
       <div class="flex-grow-1 flex-shrink-1">

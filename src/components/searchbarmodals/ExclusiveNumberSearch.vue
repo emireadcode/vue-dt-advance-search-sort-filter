@@ -187,145 +187,145 @@ const excludeAddNewEqualto = computed(() => {
     :class="[
       (props.from === 'NUMBER-SEARCHER-MODAL')? ['position-absolute', 't-0', 'l-0'] : ''
     ]"
-    class="w-100" 
-    style="background-color:#fff;z-index:9000;"
+    class="w-100 h-100 shadow-sm"
+    style="z-index:9000;background-color: #f8f8f8;"
   >
-    <div class="d-block m-0 p-0">
-      <div class="d-block">
-        <div
-          class="shadow-sm d-block text-center"
-          style="background-color: blue;padding: 0 0.63rem;"
+    <div class="d-block h-100 m-0 p-0">
+      <div
+        class="shadow-sm d-block text-center"
+        style="background-color: blue;padding: 0 0.63rem;"
+      >
+        <a
+          class="underline-none cursor-pointer align-middle"
+          @click="emits('close:atnumbersearchexcludenumberwindow', false)"
+          @keypress.enter="emits('close:atnumbersearchexcludenumberwindow', false)"
         >
-          <a
-            class="underline-none cursor-pointer align-middle"
-            @click="emits('close:atnumbersearchexcludenumberwindow', false)"
-            @keypress.enter="emits('close:atnumbersearchexcludenumberwindow', false)"
-          >
-            <img
-              src="/src/assets/icons/close.png"
-              class="align-middle"
-              style="width: 2.205rem; height: 2.205rem"
-            />
-          </a>
-        </div>
-        <template v-if="props.from === 'NUMBER-SEARCHER-MODAL'">
-          <div
-            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
-            style="padding:  0.63rem 0"
-          >
-            <div class="flex-w-50">
-              <span
-                class="d-inline-block p-0 m-0 letter-spacing align-middle"
-              >
-                Max:
-                {{
-                  ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "GREATER-THAN"
-                    ? cards[index].result.max
-                    : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "LESS-THAN"
-                    ? ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.lessthan
-                    : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.fromto?.to
-                }}
-              </span>
-            </div>
-            <div class="flex-w-50">
-              <span
-                class="d-inline-block p-0 m-0 letter-spacing align-middle"
-              >
-                Min:
-                {{
-                  ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "LESS-THAN"? 
-                    cards[index].result.min
-                    : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "GREATER-THAN"? 
-                      ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.greaterthan
-                      : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.fromto?.from
-                }}
-              </span>
-            </div>
+          <img
+            src="/src/assets/icons/close.png"
+            class="align-middle"
+            style="width: 2.205rem; height: 2.205rem"
+          />
+        </a>
+      </div>
+      <template v-if="props.from === 'NUMBER-SEARCHER-MODAL'">
+        <div
+          class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+          style="padding:  0.63rem 0"
+        >
+          <div class="flex-w-50">
+            <span
+              class="d-inline-block p-0 m-0 letter-spacing align-middle"
+            >
+              Max:
+              {{
+                ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "GREATER-THAN"
+                  ? cards[index].result.max
+                  : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "LESS-THAN"
+                  ? ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.lessthan
+                  : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.fromto?.to
+              }}
+            </span>
           </div>
-        </template>
-        <div class="d-block" :style="props.from === 'NUMBER-SEARCHER-MODAL'?'':'padding: 15px 5px 0 5px;'">
-          <template
-            v-if="
-              ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === 'GREATER-THAN'
-            "
+          <div class="flex-w-50">
+            <span
+              class="d-inline-block p-0 m-0 letter-spacing align-middle"
+            >
+              Min:
+              {{
+                ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "LESS-THAN"? 
+                  cards[index].result.min
+                  : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === "GREATER-THAN"? 
+                    ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.greaterthan
+                    : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.fromto?.from
+              }}
+            </span>
+          </div>
+        </div>
+      </template>
+      <div class="d-block" :style="props.from === 'NUMBER-SEARCHER-MODAL'?'padding: 0 5px;':'padding: 15px 5px 0 5px;'">
+        <template
+          v-if="
+            ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === 'GREATER-THAN'
+          "
+        >
+          <div
+            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
+            style="padding:  0.315rem  0.63rem;background-color:#fff;"
           >
             <div
-              class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
-              style="padding:  0.315rem  0.63rem"
-            >
-              <div
-                class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
-              >
-                <img
-                  src="/src/assets/icons/greater-than.png"
-                  style="width: 1.575rem; height: 1.575rem"
-                  class="align-middle"
-                />
-              </div>
-              <div
-                class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                style="padding:  0.315rem 0 0.063rem  0.315rem"
-              >
-                {{ ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.greaterthan }}
-              </div>
-            </div>
-          </template>
-          <template
-            v-else-if="
-              ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === 'LESS-THAN'
-            "
-          >
-            <div
-              class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
-              style="padding:  0.315rem  0.63rem"
-            >
-              <div
-                class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
-              >
-                <img
-                  src="/src/assets/icons/less-than.png"
-                  style="width: 1.575rem; height: 1.575rem"
-                  class="align-middle"
-                />
-              </div>
-              <div
-                class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
-                style="padding:  0.315rem 0 0.053rem  0.315rem"
-              >
-                {{ ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.lessthan }}
-              </div>
-            </div>
-          </template>
-          <template v-else>
-            <div
-              class="d-block shadow-sm text-center"
-              style="padding:  0.315rem  0.63rem"
+              class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
             >
               <img
-                src="/src/assets/icons/range.png"
+                src="/src/assets/icons/greater-than.png"
                 style="width: 1.575rem; height: 1.575rem"
                 class="align-middle"
               />
             </div>
-          </template>
-        </div>
-        <div
-          class="d-block text-center"
-          style="padding:  0.63rem 0  0.315rem 0"
-        >
-          <span
-            class="d-inline-block letter-spacing font-bold font-0-dot-70-rem"
-          >Exclude By</span>
-        </div>
-        <div class="d-block" style="padding:  0.315rem">
-          <div class="d-block">
             <div
-              class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+              class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
+              style="padding:  0.315rem 0 0.063rem  0.315rem"
             >
-              <div
-                class="flex-w-60"
-                style="padding-right: 0.315rem"
-              >
+              {{ ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.greaterthan }}
+            </div>
+          </div>
+        </template>
+        <template
+          v-else-if="
+            ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === 'LESS-THAN'
+          "
+        >
+          <div
+            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center shadow-sm"
+            style="padding:  0.315rem  0.63rem;background-color:#fff;"
+          >
+            <div
+              class="flex-shrink-0 flex-grow-0 align-middle p-0 m-0"
+            >
+              <img
+                src="/src/assets/icons/less-than.png"
+                style="width: 1.575rem; height: 1.575rem"
+                class="align-middle"
+              />
+            </div>
+            <div
+              class="m-0 flex-shrink-0 flex-grow-0 letter-spacing font-bold align-middle"
+              style="padding:  0.315rem 0 0.053rem  0.315rem"
+            >
+              {{ ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.lessthan }}
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <div
+            class="d-block shadow-sm text-center"
+            style="padding:  0.315rem  0.63rem;background-color:#fff;"
+          >
+            <img
+              src="/src/assets/icons/range.png"
+              style="width: 1.575rem; height: 1.575rem"
+              class="align-middle"
+            />
+          </div>
+        </template>
+      </div>
+      <div
+        class="d-block text-center"
+        style="padding:  0.63rem 0  0.315rem 0"
+      >
+        <span
+          class="d-inline-block letter-spacing font-bold font-0-dot-70-rem"
+        >Exclude By</span>
+      </div>
+      <div class="d-block" style="padding:  0.315rem">
+        <div class="d-block">
+          <div
+            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+          >
+            <div
+              class="flex-w-60"
+              style="padding-right: 0.315rem;"
+            >
+              <div class="d-block" style="background-color:#fff;">
                 <div
                   class="d-block text-center shadow-sm"
                   style="padding:  0.315rem 0"
@@ -468,8 +468,12 @@ const excludeAddNewEqualto = computed(() => {
                     </div>
                   </div>
                   <Paste
-                    :pastebuttonfontsize="'font-size:0.85rem;'"
-                    :breakdescription="(true as boolean)"
+                    :pastearea="
+                      (props.from === 'NUMBER-SEARCHER-MODAL')?
+                      'NUMBER-EXCLUSIVE-FROM-TO'
+                      :
+                      'ATNUMBER-EXCLUSIVE-FROM-TO'
+                    "
                     @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
                     :receiveclosepastemodalsignal="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)?.closepaste"
                     title="none overlapping a-b range"
@@ -489,7 +493,6 @@ const excludeAddNewEqualto = computed(() => {
                         ? ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.greaterthan
                         : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.fromto?.from
                     ) as string)"
-                    :text-area-height="'height: 11.34rem;'"
                   >
                     <template v-slot:outcomeidentifier>
                       <div
@@ -513,20 +516,26 @@ const excludeAddNewEqualto = computed(() => {
                     </template>
                   </Paste>
                   <PastedItemAndNewlyInputedEntryDisplayer
-                    paginationarea="EXCLUDE-FROM-TO"
+                    :paginationarea="
+                      (props.from === 'NUMBER-SEARCHER-MODAL')?
+                      'NUMBER-EXCLUSIVE-FROM-TO'
+                      :
+                      'ATNUMBER-EXCLUSIVE-FROM-TO'
+                    "
                     :current="[(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)?.signal, (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)?.current]"
                     :tree="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)"
                     treetype="NumberSearchExcludeFromToType"
-                    :display-area-height="'height: 9.9477rem;'"
                     :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
                     @update:current="($val) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = $val; triggerHolder(); }"
                   ></PastedItemAndNewlyInputedEntryDisplayer>
                 </div>
               </div>
-              <div
-                class="flex-w-40"
-                style="padding-left: 0.315rem;"
-              >
+            </div>
+            <div
+              class="flex-w-40"
+              style="padding-left: 0.315rem;"
+            >
+              <div class="d-block" style="background-color:#fff;">
                 <div
                   class="d-block text-center shadow-sm"
                   style="padding: 0.315rem 0"
@@ -615,12 +624,16 @@ const excludeAddNewEqualto = computed(() => {
                     </div>
                   </div>
                   <Paste
-                    :pastebuttonfontsize="'font-size:0.85rem;'"
-                    :breakdescription="(true as boolean)"
+                    :pastearea="
+                      (props.from === 'NUMBER-SEARCHER-MODAL')?
+                      'NUMBER-EXCLUSIVE-EQUAL-TO'
+                      :
+                      'ATNUMBER-EXCLUSIVE-EQUAL-TO'
+                    "
                     @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
                     :receiveclosepastemodalsignal="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)?.closepaste"
                     title="numbers"
-                    :datatype="cards[index].info.datatype as 'Number'"
+                    datatype="Number"
                     :max="((
                       ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === 'GREATER-THAN'
                           ? cards[index].result.max
@@ -635,8 +648,6 @@ const excludeAddNewEqualto = computed(() => {
                         ? ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.greaterthan
                         : ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.fromto?.from
                     ) as string)"
-                    :text-area-height="'height: 11.34rem;'"
-                    :descriptionfontsize="'font-size: 0.7rem;'"
                   >
                     <template v-slot:outcomeidentifier>
                       <div
@@ -660,11 +671,15 @@ const excludeAddNewEqualto = computed(() => {
                     </template>
                   </Paste>
                   <PastedItemAndNewlyInputedEntryDisplayer
-                    paginationarea="EXCLUDE-EQUAL-TO"
+                    :paginationarea="
+                      (props.from === 'NUMBER-SEARCHER-MODAL')?
+                      'NUMBER-EXCLUSIVE-EQUAL-TO'
+                      :
+                      'ATNUMBER-EXCLUSIVE-EQUAL-TO'
+                    "
                     :current="[(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).signal, (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)?.current]"
                     :tree="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                     treetype="NumberSearchExcludeEqualToType"
-                    :display-area-height="'height: 9.9477rem;'"
                     :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
                     @update:current="($val) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = $val; triggerHolder(); }"
                   ></PastedItemAndNewlyInputedEntryDisplayer>

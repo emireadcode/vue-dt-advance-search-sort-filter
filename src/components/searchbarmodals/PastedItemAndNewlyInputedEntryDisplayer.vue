@@ -20,10 +20,9 @@ import Pagination from "./Pagination.vue";
 
 const
   props = defineProps<{
-    paginationarea: 'WORD' | 'RESULT-DISPLAYER-VERTICAL' | 'RESULT-DISPLAYER-HORIZONTAL' | 'EQUAL-TO' | 'NOT-EQUAL-TO' | 'EXCLUDE-EQUAL-TO' | 'EXCLUDE-FROM-TO';
+    paginationarea: 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BEEN-CLICKED-BUT-WITHOUT-INCLUDE-AND-EXCLUDE' | 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BUT-NOT-YET-CLICKED-AND-WITHOUT-INCLUDE-AND-EXCLUDE' | 'WORD-DISPLAY-AREA-WITHOUT-INCLUDE-EXCLUDE-AND-ATNUMBER' | 'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER' | 'WORD-DISPLAY-AREA-WITH-INCLUDE-AND-EXCLUDE-BUT-WITHOUT-ATNUMBER' | 'ATNUMBER-INCLUSIVE-EQUAL-TO' | 'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO' | 'ATNUMBER-EXCLUSIVE-EQUAL-TO' | 'ATNUMBER-EXCLUSIVE-FROM-TO' | 'NUMBER-INCLUSIVE-EQUAL-TO' | 'NUMBER-INCLUSIVE-NOT-EQUAL-TO' | 'NUMBER-EXCLUSIVE-EQUAL-TO' | 'NUMBER-EXCLUSIVE-FROM-TO';
     current: [number, number],
     treetype: 'StringSearchType' | 'NumberSearchExcludeFromToType' | 'NumberSearchExcludeEqualToType';
-    displayAreaHeight: string;
     scrollareaid: string;
     tree: StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType;
   }>(),
@@ -85,7 +84,46 @@ onBeforeUnmount(() => {
       :id="(holder as NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType | StringSearchType).current === 0 ? scrollareaid : ''"
       class="m-0 p-0 d-block overflow-y-auto overflow-x-hidden"
       style="z-index: 1000; background-color: #eee"
-      :style="displayAreaHeight"
+      :style="
+        (
+          props.paginationarea === 'NUMBER-INCLUSIVE-EQUAL-TO' 
+          || props.paginationarea === 'NUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+          || props.paginationarea === 'NUMBER-EXCLUSIVE-EQUAL-TO' 
+          || props.paginationarea === 'NUMBER-EXCLUSIVE-FROM-TO'
+        )? 
+        'height: 180px;'
+        : (
+          (
+            props.paginationarea === 'ATNUMBER-INCLUSIVE-EQUAL-TO' 
+            || props.paginationarea === 'ATNUMBER-INCLUSIVE-NOT-EQUAL-TO' 
+          )?
+          'height: 170px;'
+          : (
+            (
+              props.paginationarea === 'ATNUMBER-EXCLUSIVE-EQUAL-TO' 
+              || props.paginationarea === 'ATNUMBER-EXCLUSIVE-FROM-TO' 
+            )?
+            'height: 193px;'
+            : (
+              (
+                props.paginationarea === 'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER' 
+                || props.paginationarea === 'WORD-DISPLAY-AREA-WITH-INCLUDE-AND-EXCLUDE-BUT-WITHOUT-ATNUMBER'
+              )?
+              'height: 212px;'
+              : (
+                props.paginationarea === 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BUT-NOT-YET-CLICKED-AND-WITHOUT-INCLUDE-AND-EXCLUDE'?
+                'height: 337px;'
+                : (
+                  props.paginationarea === 'WORD-DISPLAY-AREA-WITH-ATNUMBER-BEEN-CLICKED-BUT-WITHOUT-INCLUDE-AND-EXCLUDE'?
+                  'height: 370.7px;'
+                  :
+                  'height: 380px;'
+                )
+              )
+            )
+          )
+        )
+      "
     >
       <div class="d-block overflow-x-hidden">
         <template v-if="(holder as StringSearchType | NumberSearchExcludeFromToType | NumberSearchExcludeEqualToType).pages.length > 0">

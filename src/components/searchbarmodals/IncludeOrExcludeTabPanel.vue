@@ -23,7 +23,7 @@ import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputen
 
 const
   props = defineProps<{
-    context: string;
+    context: 'DESCRIBE-INCLUDE' | 'DESCRIBE-EXCLUDE';
   }>(),
   emits = defineEmits<{
     (e: "disable:searchphraseinputbox", action: boolean): void;
@@ -90,7 +90,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="d-block" style="padding: 7px 0;">
+  <div class="d-block" style="padding: 7px 0.5rem;">
     <DescribeLabel 
       :context="context"
     ></DescribeLabel>
@@ -140,7 +140,12 @@ onBeforeMount(() => {
         </div>
       </div>
       <Paste
-        :pastebuttonfontsize="'font-size:0.85rem;'"
+        :pastearea="
+          (cards[index].enableincludeandexcludesearch !== undefined && cards[index].enableincludeandexcludesearch && cards[index].enableatnumbersearch !== undefined && cards[index].enableatnumbersearch)?
+          'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER'
+          :
+          'WORD-DISPLAY-AREA-WITH-INCLUDE-AND-EXCLUDE-BUT-WITHOUT-ATNUMBER'
+        "
         :receiveclosepastemodalsignal="(holder as StringSearchType).closepaste"
         :title="(concatfieldindex === undefined? cards[index].search.multiple :  (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex].search)?.includeorexcludestartswithcontainsendswithequaltoformat==='STARTS-WITH'?
           'starts with'
@@ -181,7 +186,12 @@ onBeforeMount(() => {
         </template>
       </Paste>
       <PastedItemAndNewlyInputedEntryDisplayer
-        paginationarea="WORD"
+        :paginationarea="
+          (cards[index].enableincludeandexcludesearch !== undefined && cards[index].enableincludeandexcludesearch && cards[index].enableatnumbersearch !== undefined && cards[index].enableatnumbersearch)?
+          'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER'
+          :
+          'WORD-DISPLAY-AREA-WITH-INCLUDE-AND-EXCLUDE-BUT-WITHOUT-ATNUMBER'
+        "
         :current="[(holder as StringSearchType).signal, (holder as StringSearchType).current]"
         :tree="(holder as StringSearchType)"
         treetype="StringSearchType"

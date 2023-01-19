@@ -24,9 +24,9 @@ const
       <div class="modal-mask h-100 w-100 modal-mask-background">
         <div class="modal-wrapper text-center">
           <div class="modal-container" style="width:550px;">
-            <div class="d-block" style="height:585px !important;">
+            <div class="d-block" style="height: 36.855rem !important;">
               <SingleOrMultipleWordsStringAttributeInfoNameTabs></SingleOrMultipleWordsStringAttributeInfoNameTabs>
-              <div class="d-block m-0 overflow-hidden" style="padding: 0 10px;">
+              <div class="d-block m-0 overflow-hidden">
                 <template v-if="!cards[index].concatenated">
                   <template v-if="cards[index].enableincludeandexcludesearch!==undefined && cards[index].enableincludeandexcludesearch === true">
                     <TabPanelWithIncludeAndExclude 

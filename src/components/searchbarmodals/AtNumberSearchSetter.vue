@@ -107,7 +107,7 @@ let addnewpatternguard = computed(() => {
 
 <template>
   <div class="d-block">
-    <div class="d-block" style="padding:0px 5px 8px 5px;">
+    <div class="d-block" style="padding:0px 0.5rem 8px 0.5rem;">
       <div class="flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
         <div class="flex-fill align-self-stretch">
           <button 
@@ -122,7 +122,7 @@ let addnewpatternguard = computed(() => {
         <slot name="closeatnumbersearch"></slot>
       </div>
     </div>
-    <div class="d-block" style="padding: 5px 5px 10px 5px;height:60px;">
+    <div class="d-block" style="padding: 5px 0.5rem 10px 0.5rem;height:60px;">
       <div class="shadow-sm flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center" style="background-color: #E8E8E8;">
         <div class="flex-fill">
           {{
@@ -134,7 +134,7 @@ let addnewpatternguard = computed(() => {
         </div>
       </div>
     </div>
-    <div class="d-block overflow-y-auto" style="padding: 5px; height:274px; background-color: #fff;">
+    <div class="d-block" style="padding: 5px 0.5rem 5px 0.5rem;">
       <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
         <div class="flex-fill align-self-stretch" style="padding-right:5px;">
           <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">

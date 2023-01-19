@@ -44,12 +44,11 @@ onBeforeMount(() => {
 <template>
   <div class="d-block" style="padding: 0 10px;">
     <Paste
-      :pastebuttonfontsize="'font-size:0.85rem;'"
+      pastearea="DATE-DATETIME-DD-MM-YYYY-AREA"
       :title="cards[index].info.name"
       :datatype="cards[index].info.datatype as 'Date' | 'Year'"
       :max="(cards[index].result.max as string)"
       :min="(cards[index].result.min as string)"
-      :text-area-height="'height:422px;'"
     >
       <template v-slot:outcomeidentifier>
         <div
