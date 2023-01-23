@@ -736,7 +736,7 @@ onBeforeMount(() => {
         class="d-block text-center" 
         :style="
           props.pastearea === 'DATE-DATETIME-DD-MM-YYYY-AREA'?
-          'padding: 15.3px 0'
+          'padding: 16.85px 0'
           :
           'padding: 0'
         "

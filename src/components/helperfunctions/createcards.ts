@@ -325,7 +325,7 @@ function getIdentityItem(item: CardInnerType, attribute: string, datatype: strin
       all: false,
       data: distinctRecords? distinctRecords[attribute].data : [],
       total: distinctRecords? distinctRecords[attribute].total : 0,
-      current: distinctRecords? distinctRecords[attribute].offset: 0,
+      current: 0,
       signal: 0,
       max:
       distinctRecords && distinctRecords[attribute].max !== undefined

@@ -242,7 +242,7 @@ onBeforeUnmount(() => {
       ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch === true
     ">
       <template v-if="showatnumbersearchexcludenumberwindowopenerbutton===false">
-        <div class="d-block" style="padding:8px 0 4px 0">
+        <div class="d-block" style="padding:8.5px 0 4.5px 0">
           <button
             :style="atnumberbuttonstyleguard?'background-color:#F0E68C;' : 'background-color:lightgray;'"
             @click="() => {
@@ -255,8 +255,8 @@ onBeforeUnmount(() => {
               showatnumbersearchexcludenumberwindowopenerbutton = true;
               emits('show:atnumbersearchexcludenumberwindowopenerbutton', true);
             }"
-            class="text-lowercase btn w-100 shadow-sm" 
-            style="padding:5px 0;font-size:0.9em;"
+            class="letter-spacing text-lowercase btn w-100 shadow-sm font-bold" 
+            style="padding:4px 0;font-size:0.9em;background-color: blue;color:#fff;"
           >
             @number
           </button>

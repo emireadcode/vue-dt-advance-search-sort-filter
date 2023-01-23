@@ -22,10 +22,13 @@ const
   }>(),
 
   emits = defineEmits<{
-    (e: "update:excludedates", action: boolean): void;
+    (e: "enable:excludebutton", action: boolean): void;
+    (e: "update:excludedates", action: {action: boolean; format: 'RANGE' | 'MULTIPLE-OR-SINGLE';}): void;
   }>(),
 
-  selectionformat = ref()
+  selectionformat = ref<'RANGE' | 'MULTIPLE-OR-SINGLE'>(),
+
+  resetcalendarsignal = ref(0)
 
 ;
 
@@ -91,8 +94,8 @@ onBeforeMount(() => {
     >
       <div class="flex-w-50 align-self-stretch">
         <a
-          @keypress.enter="() => { selectionformat = 'RANGE'; emits('update:excludedates', false); }"
-          @click="() => { selectionformat = 'RANGE'; emits('update:excludedates', false); }"
+          @keypress.enter="() => { resetcalendarsignal++; selectionformat = 'RANGE'; emits('update:excludedates', {action:false, format: 'RANGE'}); }"
+          @click="() => { resetcalendarsignal++; selectionformat = 'RANGE'; emits('update:excludedates', {action:false, format: 'RANGE'}); }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
           :style="selectionformat === 'RANGE'
             ? 'background-color:green;'
@@ -105,8 +108,8 @@ onBeforeMount(() => {
       </div>
       <div class="flex-w-50 align-self-stretch">
         <a
-          @keypress.enter="() => { selectionformat = 'MULTIPLE-OR-SINGLE'; emits('update:excludedates', true); }"
-          @click="() => { selectionformat = 'MULTIPLE-OR-SINGLE'; emits('update:excludedates', true); }"
+          @keypress.enter="() => { resetcalendarsignal++; selectionformat = 'MULTIPLE-OR-SINGLE'; emits('update:excludedates', {action: false, format: 'MULTIPLE-OR-SINGLE'}); }"
+          @click="() => { resetcalendarsignal++; selectionformat = 'MULTIPLE-OR-SINGLE'; emits('update:excludedates', {action: false, format: 'MULTIPLE-OR-SINGLE'}); }"
           class="font-family letter-spacing cursor-pointer d-block underline-none"
           :style="selectionformat === 'MULTIPLE-OR-SINGLE'
               ? 'background-color:green;'
@@ -120,7 +123,9 @@ onBeforeMount(() => {
     </div>
     <div class="d-block" style="padding-bottom:2px;">
       <VisibleCalendarDatePicker
-        :selectionformat="selectionformat"
+        @enable:excludebutton="$val => emits('enable:excludebutton', $val)"
+        :resetcalendarsignal="resetcalendarsignal"
+        :selectionformat="selectionformat as 'RANGE' | 'MULTIPLE-OR-SINGLE'"
         :excludedates="props.excludedates"
         :isoweek="cards[index].isoweek"
         :selections="cards[index].search.dd_mm_yyyy.dates"

@@ -40,7 +40,9 @@ const
 
   holder = inject("cards") as ShallowRef<DateType[]>,
 
-  cards = shallowRef<DateType[]>()
+  cards = shallowRef<DateType[]>(),
+
+  disableexcludebutton = ref(true)
 
 ;
 
@@ -146,8 +148,8 @@ onBeforeMount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @keypress.enter="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
-                      @click="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; updateCards(); }"
+                      @keypress.enter="() => { disableexcludebutton = true; excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; ((cards as DateType[])[index] as DateType).search.dd_mm_yyyy.format = 'RANGE'; updateCards(); }"
+                      @click="() => { disableexcludebutton = true; excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'DD/MM/YYYY'; ((cards as DateType[])[index] as DateType).search.dd_mm_yyyy.format = 'RANGE'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 0.063rem solid rgba(0, 0, 0, 0.2);padding: 0.126rem 0;"
                       :style="((cards as DateType[])[index] as DateType).search.format === 'DD/MM/YYYY'
@@ -160,8 +162,8 @@ onBeforeMount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch">
                     <a
-                      @keypress.enter="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
-                      @click="() => { excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
+                      @keypress.enter="() => { disableexcludebutton = true; excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
+                      @click="() => { disableexcludebutton = true; excludedates = false; (((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') = 'Day(s), Month(s), Year(s)'; updateCards(); }"
                       class="font-family date-format align-middle underline-none d-block cursor-pointer m-0"
                       style="outline: 0.063rem solid rgba(0, 0, 0, 0.2);padding: 0.126rem 0;"
                       :style="
@@ -179,12 +181,14 @@ onBeforeMount(() => {
                 >
                   <template v-if="(((cards as DateType[])[index] as DateType).search.format as 'DD/MM/YYYY' | 'Day(s), Month(s), Year(s)') ===  'DD/MM/YYYY'">
                     <SearchByDDMMYYYYFormat
+                      @enable:excludebutton="$val => disableexcludebutton = $val"
                       :excludedates="(excludedates as boolean)"
-                      @update:excludedates="$val => excludedates = $val"
+                      @update:excludedates="($val) => { excludedates = $val.action; ((cards as DateType[])[index] as DateType).search.dd_mm_yyyy.format = $val.format; updateCards(); disableexcludebutton = true; }"
                     ></SearchByDDMMYYYYFormat>
                   </template>
                   <template v-else>
                     <SearchByDaysMonthsYearsFormat
+                      @enable:excludebutton="$val => disableexcludebutton = $val"
                       :excludedates="(excludedates as boolean)"
                     ></SearchByDaysMonthsYearsFormat>
                   </template>
@@ -195,7 +199,16 @@ onBeforeMount(() => {
               style="padding: 0.63rem 0.63rem 0.756rem 0.63rem;"
               class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center"
             >
-              <div class="flex-w-100-over-3 align-self-stretch" style="padding-right: 0.4725rem;">
+              <div 
+                class="align-self-stretch" 
+                style="padding-right: 0.4725rem;"
+                :class="[
+                  ((((cards as DateType[])[index] as DateType).search.format === 'DD/MM/YYYY' && ((cards as DateType[])[index] as DateType).search.dd_mm_yyyy.format === 'RANGE') || ((cards as DateType[])[index] as DateType).search.format === 'Day(s), Month(s), Year(s)')?
+                  'flex-w-100-over-3'
+                  :
+                  'flex-w-50'
+                ]"
+              >
                 <button
                   class="btn shadow-sm w-100 font-family"
                   style="padding: 0.378rem; font-size: 1rem;color: #fff;background-color: gray;"
@@ -203,22 +216,32 @@ onBeforeMount(() => {
                   Search
                 </button>
               </div>
-              <div
-                class="flex-w-100-over-3 align-self-stretch"
-                style="padding-right: 0.1575rem;"
-              >
-                <button
-                  @click="excludedates = true"
-                  @keypress.enter="excludedates = true"
-                  class="btn shadow-sm w-100 font-family"
-                  style="padding: 0.378rem; font-size: 1rem;color:#fff;background-color: gray;"
+              <template v-if="(((cards as DateType[])[index] as DateType).search.format === 'DD/MM/YYYY' && ((cards as DateType[])[index] as DateType).search.dd_mm_yyyy.format === 'RANGE') || ((cards as DateType[])[index] as DateType).search.format === 'Day(s), Month(s), Year(s)'">
+                <div
+                  class="flex-w-100-over-3 align-self-stretch"
+                  style="padding-right: 0.1575rem;"
                 >
-                  Exclude dates
-                </button>
-              </div>
+                  <button
+                    :style="disableexcludebutton?'background-color: #E8E8E8;color:gray;' : 'color:#fff;background-color: blue;'"
+                    :aria-disabled="disableexcludebutton"
+                    @click="!disableexcludebutton? excludedates = true : excludedates = false"
+                    @keypress.enter="!disableexcludebutton? excludedates = true : excludedates = false"
+                    class="btn shadow-sm w-100 font-family"
+                    style="padding: 0.378rem; font-size: 1rem;"
+                  >
+                    Exclude dates
+                  </button>
+                </div>
+              </template>
               <div
-                class="flex-w-100-over-3 align-self-stretch"
+                class="align-self-stretch"
                 style="padding-left: 0.315rem;"
+                :class="[
+                  ((((cards as DateType[])[index] as DateType).search.format === 'DD/MM/YYYY' && ((cards as DateType[])[index] as DateType).search.dd_mm_yyyy.format === 'RANGE') || ((cards as DateType[])[index] as DateType).search.format === 'Day(s), Month(s), Year(s)')?
+                  'flex-w-100-over-3'
+                  :
+                  'flex-w-50'
+                ]"
               >
                 <button
                   class="btn shadow-sm w-100 font-family"

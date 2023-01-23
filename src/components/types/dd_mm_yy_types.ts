@@ -10,7 +10,7 @@ export type YearMonthClickable<T> = {
         [key: number]: (T & {
           status?: 'ENABLE' | 'DISABLE' | undefined;
           readonlystatus?: 'ENABLE' | 'DISABLE' | undefined;
-          selected?: "SELECTED" | "DESELECTED" | "HIGHLIGHTED" | undefined;
+          selected?: "SELECTED" | "DESELECTED" | "HIGHLIGHTED" | "LOCKED" | undefined;
           date: string;
           day: number;
         });
