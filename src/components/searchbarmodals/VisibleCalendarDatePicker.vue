@@ -32,8 +32,7 @@ import {
   handleDateSelectHighlightDeselect,
   weekHasEnable,
   selectOrDeselectDaysInWeekForMultipleSelection,
-  highlightOrDeselectWeekWithoutRangeFirstOrLastSelection,
-  highlightOrDeselectWeekWithRangeFirstOrLastSelection,
+  highlightOrDeselectDaysInWeekForRangeSelection,
   fillVisibleCalendarArray,
   resetSelections,
 } from "../utility/dd_mm_yy_utility_fns";
@@ -120,68 +119,16 @@ function weekCheckboxClicked(checked: boolean, weekindex: string, vcalendartype:
     month in (visiblecalendar.value as VisibleCalendarType).selections[year]
   ) {
     nextTick(() => {
-      if(
-        year === rangeselectionparams.value.rangefirstselection.year && month === rangeselectionparams.value.rangefirstselection.month && week === rangeselectionparams.value.rangefirstselection.week
-        ||
-        year === rangeselectionparams.value.rangelastselection.year && month === rangeselectionparams.value.rangelastselection.month && week === rangeselectionparams.value.rangelastselection.week
-      ) {
-        if(
-          year === rangeselectionparams.value.rangefirstselection.year && month === rangeselectionparams.value.rangefirstselection.month && week === rangeselectionparams.value.rangefirstselection.week
-        ) {
-          highlightOrDeselectWeekWithRangeFirstOrLastSelection(
-            checked as boolean,
-            year,
-            month,
-            week,
-            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
-            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
-            visiblecalendar as ShallowRef<VisibleCalendarType>,
-            'WEEK-BOX'
-          );
-          alert('a');
-        }
-        else {
-          highlightOrDeselectWeekWithRangeFirstOrLastSelection(
-            checked as boolean,
-            year,
-            month,
-            week,
-            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
-            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
-            visiblecalendar as ShallowRef<VisibleCalendarType>,
-            'WEEK-BOX'
-          );
-          alert('b');
-        }
-      }
-      else {
-        if(rangeselectionparams.value.rangefirstselection.year <= rangeselectionparams.value.rangelastselection.year) {
-          highlightOrDeselectWeekWithoutRangeFirstOrLastSelection(
-            checked as boolean,
-            year,
-            month,
-            week,
-            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
-            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
-            visiblecalendar as ShallowRef<VisibleCalendarType>,
-            'WEEK-BOX'
-          );
-          alert('c');
-        }
-        else {
-          highlightOrDeselectWeekWithoutRangeFirstOrLastSelection(
-            checked as boolean,
-            year,
-            month,
-            week,
-            rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
-            rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
-            visiblecalendar as ShallowRef<VisibleCalendarType>,
-            'WEEK-BOX'
-          );
-          alert('d');
-        }
-      }
+      highlightOrDeselectDaysInWeekForRangeSelection(
+        checked as boolean,
+        year,
+        month,
+        week,
+        rangeselectionparams.value.rangefirstselection as RangeFirstAndLastSelectionType,
+        rangeselectionparams.value.rangelastselection as RangeFirstAndLastSelectionType,
+        visiblecalendar as ShallowRef<VisibleCalendarType>,
+        'WEEK-BOX'
+      );
     });
   }
   else {
