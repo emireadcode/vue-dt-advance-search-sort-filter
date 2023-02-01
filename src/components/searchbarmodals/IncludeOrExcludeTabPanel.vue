@@ -162,7 +162,7 @@ onBeforeMount(() => {
         "
         :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
         :text-area-height="'height:197px;'"
-        @return:newlypasteditems="$val => { addPastedItems($val, 'WORD'); }"
+        @return:newlypasteditems="($val: string[][]) => { addPastedItems($val, 'WORD'); }"
       >
         <template v-slot:outcomeidentifier>
           <div
@@ -197,7 +197,7 @@ onBeforeMount(() => {
         treetype="StringSearchType"
         :display-area-height="'height: 185.9px;'"
         :scrollareaid="cards[index].scroll.areaid+'-search'"
-        @update:current="($val) => {(holder as StringSearchType).current = $val; triggerHolder();}"
+        @update:current="($val: number) => {(holder as StringSearchType).current = $val; triggerHolder();}"
       ></PastedItemAndNewlyInputedEntryDisplayer>
     </div>
   </div>

@@ -32,7 +32,7 @@ const
                     <TabPanelWithIncludeAndExclude 
                       :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
                       @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
-                      @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
+                      @enable:atnumbersearchwindowopenerbutton="($val: boolean) => enableatnumbersearchwindowopenerbutton = $val"
                       @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
                     ></TabPanelWithIncludeAndExclude>
                   </template>
@@ -41,7 +41,7 @@ const
                       :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
                       @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
                       @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
-                      @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
+                      @enable:atnumbersearchwindowopenerbutton="($val: boolean) => enableatnumbersearchwindowopenerbutton = $val"
                     ></TabPanelWithoutIncludeAndExclude>
                   </template>
                 </template>
@@ -54,7 +54,7 @@ const
                             :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
                             @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
                             @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
-                            @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
+                            @enable:atnumbersearchwindowopenerbutton="($val: boolean) => enableatnumbersearchwindowopenerbutton = $val"
                             :concatfieldindex="(parseInt(''+cindex) as number)"
                           ></TabPanelWithIncludeAndExclude>
                         </template>
@@ -66,7 +66,7 @@ const
                             :openatnumbersearchexcludenumberwindow="openatnumbersearchexcludenumberwindow"
                             @close:atnumbersearchexcludenumberwindow="($val: boolean) => openatnumbersearchexcludenumberwindow = $val"
                             @show:atnumbersearchexcludenumberwindowopenerbutton="($val: boolean) => showatnumbersearchexcludenumberwindowopenerbutton = $val"
-                            @enable:atnumbersearchwindowopenerbutton="$val => enableatnumbersearchwindowopenerbutton = $val"
+                            @enable:atnumbersearchwindowopenerbutton="($val: boolean) => enableatnumbersearchwindowopenerbutton = $val"
                           ></TabPanelWithoutIncludeAndExclude>
                          </template>
                       </template>

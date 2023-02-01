@@ -474,7 +474,7 @@ const excludeAddNewEqualto = computed(() => {
                       :
                       'ATNUMBER-EXCLUSIVE-FROM-TO'
                     "
-                    @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
+                    @return:newlypasteditems="($val: string[][]) => { addPastedItems($val, 'EXCLUDE-FROM-TO'); }"
                     :receiveclosepastemodalsignal="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)?.closepaste"
                     title="none overlapping a-b range"
                     :datatype="'NumberRange'"
@@ -526,7 +526,7 @@ const excludeAddNewEqualto = computed(() => {
                     :tree="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType)"
                     treetype="NumberSearchExcludeFromToType"
                     :scrollareaid="cards[index].scroll.areaid+'-exclude-from-to'"
-                    @update:current="($val) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = $val; triggerHolder(); }"
+                    @update:current="($val: number) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.fromto as NumberSearchExcludeFromToType).current = $val; triggerHolder(); }"
                   ></PastedItemAndNewlyInputedEntryDisplayer>
                 </div>
               </div>
@@ -630,7 +630,7 @@ const excludeAddNewEqualto = computed(() => {
                       :
                       'ATNUMBER-EXCLUSIVE-EQUAL-TO'
                     "
-                    @return:newlypasteditems="$val => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
+                    @return:newlypasteditems="($val: string[][]) => { addPastedItems($val, 'EXCLUDE-EQUAL-TO'); }"
                     :receiveclosepastemodalsignal="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)?.closepaste"
                     title="numbers"
                     datatype="Number"
@@ -681,7 +681,7 @@ const excludeAddNewEqualto = computed(() => {
                     :tree="(((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType)"
                     treetype="NumberSearchExcludeEqualToType"
                     :scrollareaid="cards[index].scroll.areaid+'-exclude-equal-to'"
-                    @update:current="($val) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = $val; triggerHolder(); }"
+                    @update:current="($val: number) => { (((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).current = $val; triggerHolder(); }"
                   ></PastedItemAndNewlyInputedEntryDisplayer>
                 </div>
               </div>

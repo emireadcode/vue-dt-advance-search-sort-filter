@@ -581,7 +581,7 @@ onBeforeMount(() => {
                 class="w-100 h-100 text-left d-inline-block overflow-auto"
                 maxlength="0"
                 v-model="pastedmultiplelinesoftext"
-                @paste="(e) => pasteMultilineWordsCopiedFromSomewhere(e)"
+                @paste="(e: ClipboardEvent) => pasteMultilineWordsCopiedFromSomewhere(e)"
               ></textarea>
             </div>
             <template v-if="pasteditemloading">

@@ -39,13 +39,14 @@ import {
 
 const 
   props = defineProps<{
-    resetcalendarsignal: number;
-    selections: DateType['search']['dd_mm_yyyy']['dates'];
-    excludedates: boolean;
+    resetcalendarsignal?: number | undefined;
+    selections: DateType['search']['dd_mm_yyyy']['dates'] | DateType['search']['days_months_years']['dates'];
+    excludedates?: boolean | undefined;
     isoweek: boolean;
     selectionformat: 'RANGE' | 'MULTIPLE-OR-SINGLE';
     mindate: string;
     maxdate: string;
+    from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY'
   }>(),
   emits = defineEmits<{
     (e: "enable:excludebutton", action: boolean): void;
@@ -86,7 +87,7 @@ const
     },
     rangeselectcount: 0,
     inselectionmode: true,
-    excludedates: props.excludedates,
+    excludedates: props.excludedates as boolean,
   })
 ;
 
@@ -98,6 +99,10 @@ let
   maxdate = '',
   mindate = ''
 ;
+
+function triggerVisibleCalendar() {
+  triggerRef(visiblecalendar);
+}
 
 function weekCheckboxClicked(checked: boolean, weekindex: string, vcalendartype: 'PREVIOUS' | 'CURRENT') {
   let 
@@ -116,7 +121,7 @@ function weekCheckboxClicked(checked: boolean, weekindex: string, vcalendartype:
     &&
     year in (visiblecalendar.value as VisibleCalendarType).selections
     &&
-    month in (visiblecalendar.value as VisibleCalendarType).selections[year]
+    month in (visiblecalendar.value as VisibleCalendarType).selections[year].months
   ) {
     nextTick(() => {
       highlightOrDeselectDaysInWeekForRangeSelection(
@@ -146,7 +151,7 @@ function weekCheckboxClicked(checked: boolean, weekindex: string, vcalendartype:
   }
 }
 
-function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'][number]['days'][number]) {
+function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]['days'][number]) {
   if(day.status === 'ENABLE') {
     if(!(rangeselectionparams.value as RangeSelectionParamsType).inselectionmode) {
       (rangeselectionparams.value as RangeSelectionParamsType).inselectionmode = true;
@@ -294,7 +299,7 @@ const previousyearandmonthinselections = computed(() => {
     if (
       !(
         (visiblecalendar.value as VisibleCalendarType).previous.month in
-        (visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year]
+        (visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months
       )
     ) {
       return false;
@@ -311,7 +316,7 @@ const currentyearandmonthinselections = computed(() => {
     if (
       !(
         (visiblecalendar.value as VisibleCalendarType).current.month in
-        (visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year]
+        (visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months
       )
     ) {
       return false;
@@ -324,7 +329,7 @@ const currentyearandmonthinselections = computed(() => {
 onBeforeMount(() => {
   (maxdate as string) = props.maxdate;
   (mindate as string) = props.mindate;
-  ((rangeselectionparams.value as RangeSelectionParamsType).excludedates as boolean) = props.excludedates;
+  ((rangeselectionparams.value as RangeSelectionParamsType).excludedates as boolean) = props.excludedates as boolean;
   triggerRef(rangeselectionparams);
   visiblecalendar.value = fillVisibleCalendarArray(
     maxdate,
@@ -333,32 +338,34 @@ onBeforeMount(() => {
   );
   (visiblecalendar.value as VisibleCalendarType).selections = props.selections as VisibleCalendarType['selections'];
   triggerRef(visiblecalendar);
+
+  console.log(visiblecalendar.value);
 });
 
 onMounted(() => {
   unwatchresetcalendarsignal = watch(
-    () => props.resetcalendarsignal,
+    () => (props.resetcalendarsignal as number),
     (x) => {
-      for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar) {
-        for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days) {
-          if((visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-            (visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days[day].status = "ENABLE";
+      for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+        for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days) {
+          if((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
           }
         }
-        (visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].checked = false;
+        (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].checked = false;
       }
-      for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar) {
-        for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days) {
-          if((visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-            (visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days[day].status = "ENABLE";
+      for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+        for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days) {
+          if((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+            (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
           }
         }
-        (visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].checked = false;
+        (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].checked = false;
       }
       for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-        for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
-          for (let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-            ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+        for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+          for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+            ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = false;
             triggerRef(visiblecalendar);
           }
         }
@@ -368,7 +375,7 @@ onMounted(() => {
     }
   );
   unwatchexcludedates = watch(
-    () => props.excludedates,
+    () => (props.excludedates as boolean),
     (x) => {
       (rangeselectionparams.value as RangeSelectionParamsType).excludedates = x;
       triggerRef(rangeselectionparams);
@@ -377,8 +384,8 @@ onMounted(() => {
         if((rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year === (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year) {
           if((rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month === (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month) {
             for(let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-              for(let month in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
-                for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
+              for(let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+                for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
                   if(
                     (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.year
                     === parseInt(year) 
@@ -386,13 +393,13 @@ onMounted(() => {
                     (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month
                     === parseInt(month)
                   ) {
-                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                       if(
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                         ||
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                       ) {
-                        ((visiblecalendar.value as VisibleCalendarType).selections[parseInt(year)][parseInt(month)][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                        ((visiblecalendar.value as VisibleCalendarType).selections[parseInt(year)].months[parseInt(month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                         triggerRef(visiblecalendar);
                         break;
                       }
@@ -409,24 +416,24 @@ onMounted(() => {
                 i<=(rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month;
                 i++
               ){
-                for(let week in (visiblecalendar.value as VisibleCalendarType).selections[
-                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year][i]
+                for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year].months[i] as YearMonthClickable<{}>['calendar']).weeks
                 ) {
                   for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[
                     (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                  ][i] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                  ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                     if(
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                      ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                       ||
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                      ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                     ) {
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                      ][i][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                      ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                       triggerRef(visiblecalendar);
                       break;
                     }
@@ -440,24 +447,24 @@ onMounted(() => {
                 i<=(rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month;
                 i++
               ){
-                for(let week in (visiblecalendar.value as VisibleCalendarType).selections[
-                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year][i]
+                for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[
+                  (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year].months[i] as YearMonthClickable<{}>['calendar']).weeks
                 ) {
                   for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[
                     (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                  ][i] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                  ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                     if(
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                      ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                       ||
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                      ][i][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                      ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                     ) {
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.year
-                      ][i][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                      ].months[i] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                       triggerRef(visiblecalendar);
                       break;
                     }
@@ -487,14 +494,14 @@ onMounted(() => {
                     month < 12;
                     month++
                   ) {
-                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                    for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                         if(
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                           ||
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                         ) {
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                           triggerRef(visiblecalendar);
                           break;
                         }
@@ -510,14 +517,14 @@ onMounted(() => {
                     month <= (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection.month;
                     month++
                   ) {
-                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                    for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                         if(
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                           ||
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                         ) {
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                           triggerRef(visiblecalendar);
                           break;
                         }
@@ -528,14 +535,14 @@ onMounted(() => {
               }
               else {
                 for(let month = 0; month < 12; month++) {
-                  for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                  for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                       if(
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                         ||
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                       ) {
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                         triggerRef(visiblecalendar);
                         break;
                       }
@@ -564,14 +571,14 @@ onMounted(() => {
                     month <= (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection.month;
                     month++
                   ) {
-                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                    for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                         if(
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                           ||
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                         ) {
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                           triggerRef(visiblecalendar);
                           break;
                         }
@@ -587,14 +594,14 @@ onMounted(() => {
                     month < 12;
                     month++
                   ) {
-                    for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                    for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                      for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                         if(
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                           ||
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                         ) {
-                          ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                           triggerRef(visiblecalendar);
                           break;
                         }
@@ -605,14 +612,14 @@ onMounted(() => {
               }
               else {
                 for(let month = 0; month < 12; month++) {
-                  for(let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+                  for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                       if(
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'SELECTED'
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'SELECTED'
                         ||
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === 'HIGHLIGHTED'
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === 'HIGHLIGHTED'
                       ) {
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month][parseInt(week)] as YearMonthClickable<{}>['calendar'][number]).checked = true;
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = true;
                         triggerRef(visiblecalendar);
                         break;
                       }
@@ -645,26 +652,26 @@ onMounted(() => {
         if (x === 1) {
           emits('enable:excludebutton', true);
           trackVisibleCalendarMouseMovement();
-          for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar) {
-            for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days) {
-              if((visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-                (visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days[day].status = "ENABLE";
+          for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+            for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days) {
+              if((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
               }
             }
           }
-          for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar) {
-            for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days) {
-              if((visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-                (visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days[day].status = "ENABLE";
+          for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+            for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days) {
+              if((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+                (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
               }
             }
           }
           for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-            for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
-              for (let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days) {
-                  if(((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].readonlystatus === "ENABLE") {
-                    ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].status = "ENABLE";
+            for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+              for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+                  if(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].readonlystatus === "ENABLE") {
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status = "ENABLE";
                   }
                 }
               }
@@ -710,26 +717,26 @@ onMounted(() => {
           else {
             if(x === 0) {
               emits('enable:excludebutton', true);
-              for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar) {
-                for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days) {
-                  if((visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-                    (visiblecalendar.value as VisibleCalendarType).previous.calendar[parseInt(''+week)].days[day].status = "ENABLE";
+              for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+                for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days) {
+                  if((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+                    (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
                   }
                 }
               }
-              for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar) {
-                for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days) {
-                  if((visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-                    (visiblecalendar.value as VisibleCalendarType).current.calendar[parseInt(''+week)].days[day].status = "ENABLE";
+              for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+                for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days) {
+                  if((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+                    (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
                   }
                 }
               }
               for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-                for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
-                  for (let week in (visiblecalendar.value as VisibleCalendarType).selections[year][month]) {
-                    for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days) {
-                      if(((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].readonlystatus === "ENABLE") {
-                        ((visiblecalendar.value as VisibleCalendarType).selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].status = "ENABLE";
+                for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+                  for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                    for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+                      if(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].readonlystatus === "ENABLE") {
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status = "ENABLE";
                       }
                     }
                   }
@@ -760,7 +767,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    style="height: 341.2px;"
+    :style="from==='DD-MM-YYYY'? 'height: 341.2px;' : 'height: 425px;'"
     class="shadow-sm flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
   >
     <div class="flex-w-50 align-self-stretch" style="padding: 0 2px">
@@ -804,7 +811,82 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </div>
+      <template v-if="from === 'DAYS-MONTHS-YEARS'">
+        <div
+          class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
+        >
+          <template v-if="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
+            <div
+              class="flex-w-12-dot-5 align-self-stretch"
+            ></div>
+          </template>
+          <div class="flex-fill align-self-stretch">
+            <div
+              class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
+            >
+              <div
+                class="flex-w-14-dot-285714"
+                v-for="(ty, tyindex) in (visiblecalendar as VisibleCalendarType).previous.ty"
+                :key="'ty-'+(visiblecalendar as VisibleCalendarType).previous.month +'-'+(visiblecalendar as VisibleCalendarType).previous.year+'-'+tyindex"
+              >
+                <div class="d-block m-0" style="padding: 3px 0;">
+                  <div class="d-block m-0 p-0" style="font-size:0.8rem;">
+                    TY
+                  </div>
+                  <div class="d-block p-0 m-0">
+                    <input
+                      v-model="(visiblecalendar as VisibleCalendarType).previous.ty[tyindex]"
+                      class="m-0 p-0 border w-100"
+                      type="checkbox"
+                      style="float: left; line-height: 1.2rem; height: 1.2rem;"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
+            >
+              <div
+                class="flex-w-14-dot-285714"
+                v-for="(tm, tmindex) in ((visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm"
+                :key="'tm-'+(visiblecalendar as VisibleCalendarType).previous.month +'-'+(visiblecalendar as VisibleCalendarType).previous.year+'-'+tmindex"
+              >
+                <div class="d-block" style="padding: 5px 0 8px 0;">
+                  <div class="d-block m-0 p-0" style="font-size:0.8rem;">
+                    TM
+                  </div>
+                  <div class="d-block p-0 m-0">
+                    <template v-if="previousyearandmonthinselections">
+                      <input
+                        v-model="((visiblecalendar as VisibleCalendarType).selections[
+                          (visiblecalendar as VisibleCalendarType).previous.year
+                        ].months[
+                          (visiblecalendar as VisibleCalendarType).previous.month
+                        ] as YearMonthClickable<{}>['calendar']).tm[tmindex]
+                        "
+                        class="m-0 p-0 border w-100"
+                        type="checkbox"
+                        style="float: left; line-height: 1.2rem; height: 1.2rem;"
+                      />
+                    </template>
+                    <template v-else>
+                      <input
+                        v-model="((visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm[tmindex]"
+                        class="m-0 p-0 border w-100"
+                        type="checkbox"
+                        style="float: left; line-height: 1.2rem; height: 1.2rem;"
+                      />
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
       <div
+        style="padding: 5px 0 0 0;"
         class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
       >
         <template v-if="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
@@ -813,7 +895,7 @@ onBeforeUnmount(() => {
           ></div>
         </template>
         <div
-          :class="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')? 'flex-w-12-dot-5' : 'flex-w-14-dot-285714'"
+          :class="((props.excludedates!==undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')? 'flex-w-12-dot-5' : 'flex-w-14-dot-285714'"
           class="overflow-hidden"
           v-for="(_day, dayindex) in props.isoweek ? isodays : days"
           :key="'dayname' + dayindex"
@@ -825,12 +907,12 @@ onBeforeUnmount(() => {
         id="previousvisiblecalendarbox"
         class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
       >
-        <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).previous.calendar">
+        <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).previous.calendar.weeks">
           <div class="flex-w-100">
             <div
               class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
             >
-              <template v-if="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
+              <template v-if="((props.excludedates !== undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
                 <div
                   class="flex-w-12-dot-5 overflow-hidden m-0 align-self-stretch" style="padding:0 2px 0 0;"
                 >
@@ -840,21 +922,21 @@ onBeforeUnmount(() => {
                   >
                     <template v-if="previousyearandmonthinselections">
                       <input v-model="(
-                          (visiblecalendar as VisibleCalendarType)['selections'][
+                          (visiblecalendar as VisibleCalendarType).selections[
                             (visiblecalendar as VisibleCalendarType).previous.year
-                          ][
+                          ].months[
                             (visiblecalendar as VisibleCalendarType).previous.month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[weekindex].checked"
+                        ).weeks[weekindex].checked"
                         class="m-0 p-0 border flex-w-100"
                         :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
                         @change="weekCheckboxClicked((
-                          (visiblecalendar as VisibleCalendarType)['selections'][
+                          (visiblecalendar as VisibleCalendarType).selections[
                             (visiblecalendar as VisibleCalendarType).previous.year
-                          ][
+                          ].months[
                             (visiblecalendar as VisibleCalendarType).previous.month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[weekindex].checked, ''+weekindex, 'PREVIOUS')"
+                        ).weeks[weekindex].checked, ''+weekindex, 'PREVIOUS')"
                         :disabled="weekHasEnable(week)"
                         type="checkbox"
                         style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
@@ -863,12 +945,12 @@ onBeforeUnmount(() => {
                     <template v-else>
                       <input v-model="(
                           (visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                        )[weekindex].checked"
+                        ).weeks[weekindex].checked"
                         class="m-0 p-0 border flex-w-100"
                         :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
                         @change="weekCheckboxClicked((
                           (visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                        )[weekindex].checked, ''+weekindex,'PREVIOUS')"
+                        ).weeks[weekindex].checked, ''+weekindex,'PREVIOUS')"
                         :disabled="weekHasEnable(week)"
                         type="checkbox"
                         style="float: left; line-height: 2.805em; height: 2.805em;"
@@ -879,7 +961,7 @@ onBeforeUnmount(() => {
               </template>
               <div
                 :class="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')? 'flex-w-12-dot-5' : 'flex-w-14-dot-285714'"
-                class="overflow-hidden"
+                class="align-self-stretch"
                 v-for="(day, dayindex) in week.days"
                 :key="
                   'dayprev' +
@@ -891,7 +973,7 @@ onBeforeUnmount(() => {
                   'yearprev' +
                   (visiblecalendar as VisibleCalendarType).previous.year
                 "
-                style="float: left; outline: 1px solid #fff;"
+                style="float: left;"
               >
                 <label
                   :ref="
@@ -901,7 +983,7 @@ onBeforeUnmount(() => {
                   @click="handleDateClick(day)"
                   :disabled="day.status === 'DISABLE' ? true : false"
                   class="w-100"
-                  style="float: left; line-height: 2.805em; height: 2.805em;"
+                  style="float: left; line-height: 2.805em; height: 2.805em; border: 1px solid #fff;"
                 >
                   <input
                     @keypress.enter.stop=""
@@ -913,42 +995,41 @@ onBeforeUnmount(() => {
                   />
                   <template v-if="previousyearandmonthinselections">
                     <span
-                      :class="[day.status === 'ENABLE'? 'cursor-pointer' : '']"
-                      class="font-family text-center d-block letter-spacing"
-                      style="font-size: 1rem; line-height: 2.805em; height: 2.805em; outline: 1px solid #fff;"
+                      class="h-100 font-family text-center d-block letter-spacing"
+                      style="font-size: 1rem;"
                       :style="
                         day.day ===
-                          ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                          ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                             (visiblecalendar as VisibleCalendarType).previous.month
-                          ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].day &&
-                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                           (visiblecalendar as VisibleCalendarType).previous.month
-                        ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].selected === 'SELECTED' &&
-                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
+                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                           (visiblecalendar as VisibleCalendarType).previous.month
-                        ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].status === 'ENABLE'
+                        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
                           ? 'background-color:green;color: #fff !important'
                           : day.day ===
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                                 (visiblecalendar as VisibleCalendarType).previous.month
-                              ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].day &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                               (visiblecalendar as VisibleCalendarType).previous.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].selected === 'DESELECTED' &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                               (visiblecalendar as VisibleCalendarType).previous.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].status === 'ENABLE'
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
                           ? 'color: black !important;text-shadow:none'
                           : day.day ===
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                                 (visiblecalendar as VisibleCalendarType).previous.month
-                              ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].day &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                               (visiblecalendar as VisibleCalendarType).previous.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year][
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                               (visiblecalendar as VisibleCalendarType).previous.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].status === 'ENABLE'
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
                           ? 'background-color:grey;color: #fff !important'
                           : 'color: gray !important;text-shadow:none'
                       "
@@ -958,9 +1039,8 @@ onBeforeUnmount(() => {
                   </template>
                   <template v-else>
                     <span
-                      :class="[day.status === 'ENABLE'? 'cursor-pointer' : '']"
-                      class="font-family text-center d-block letter-spacing"
-                      style="font-size: 1rem; line-height: 2.805em; height: 2.805em; outline: 1px solid #fff;"
+                      class="h-100 font-family text-center d-block letter-spacing"
+                      style="font-size: 1rem;"
                       :style="
                         day.status === 'DISABLE'
                           ? 'color: gray !important;text-shadow:none'
@@ -1018,7 +1098,82 @@ onBeforeUnmount(() => {
           </a>
         </div>
       </div>
+      <template v-if="from === 'DAYS-MONTHS-YEARS'">
+        <div
+          class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
+        >
+          <template v-if="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
+            <div
+              class="flex-w-12-dot-5 align-self-stretch"
+            ></div>
+          </template>
+          <div class="flex-fill align-self-stretch">
+            <div
+              class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
+            >
+              <div
+                class="flex-w-14-dot-285714"
+                v-for="(ty, tyindex) in (visiblecalendar as VisibleCalendarType).previous.ty"
+                :key="'ty-'+(visiblecalendar as VisibleCalendarType).current.month +'-'+(visiblecalendar as VisibleCalendarType).previous.year+'-'+tyindex"
+              >
+                <div class="d-block m-0" style="padding: 3px 0;">
+                  <div class="d-block m-0 p-0" style="font-size:0.8rem;">
+                    TY
+                  </div>
+                  <div class="d-block p-0 m-0">
+                    <input
+                      v-model="(visiblecalendar as VisibleCalendarType).current.ty[tyindex]"
+                      class="m-0 p-0 border w-100"
+                      type="checkbox"
+                      style="float: left; line-height: 1.2rem; height: 1.2rem;"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
+            >
+              <div
+                class="flex-w-14-dot-285714"
+                v-for="(tm, tmindex) in ((visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm"
+                :key="'tm-'+(visiblecalendar as VisibleCalendarType).current.month +'-'+(visiblecalendar as VisibleCalendarType).previous.year+'-'+tmindex"
+              >
+                <div class="d-block" style="padding: 5px 0 8px 0;">
+                  <div class="d-block m-0 p-0" style="font-size:0.8rem;">
+                    TM
+                  </div>
+                  <div class="d-block p-0 m-0">
+                    <template v-if="currentyearandmonthinselections">
+                      <input
+                        v-model="((visiblecalendar as VisibleCalendarType).selections[
+                          (visiblecalendar as VisibleCalendarType).current.year
+                        ].months[
+                          (visiblecalendar as VisibleCalendarType).current.month
+                        ] as YearMonthClickable<{}>['calendar']).tm[tmindex]
+                        "
+                        class="m-0 p-0 border w-100"
+                        type="checkbox"
+                        style="float: left; line-height: 1.2rem; height: 1.2rem;"
+                      />
+                    </template>
+                    <template v-else>
+                      <input
+                        v-model="((visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm[tmindex]"
+                        class="m-0 p-0 border w-100"
+                        type="checkbox"
+                        style="float: left; line-height: 1.2rem; height: 1.2rem;"
+                      />
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
       <div
+        style="padding: 5px 0 0 0;"
         class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
       >
         <template v-if="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
@@ -1040,7 +1195,7 @@ onBeforeUnmount(() => {
         id="currentvisiblecalendarbox"
         class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
       >
-        <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).current.calendar">
+        <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).current.calendar.weeks">
           <div class="flex-w-100">
             <div
               class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
@@ -1054,21 +1209,21 @@ onBeforeUnmount(() => {
                   >
                     <template v-if="currentyearandmonthinselections">
                       <input v-model="(
-                          (visiblecalendar as VisibleCalendarType)['selections'][
+                          (visiblecalendar as VisibleCalendarType).selections[
                             (visiblecalendar as VisibleCalendarType).current.year
-                          ][
+                          ].months[
                             (visiblecalendar as VisibleCalendarType).current.month
                           ] as YearMonthClickable<PositionTrackerType>['calendar']
-                        )[weekindex].checked"
+                        ).weeks[weekindex].checked"
                         class="m-0 p-0 border flex-w-100"
                         :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
                         @change="weekCheckboxClicked((
-                          (visiblecalendar as VisibleCalendarType)['selections'][
+                          (visiblecalendar as VisibleCalendarType).selections[
                             (visiblecalendar as VisibleCalendarType).current.year
-                          ][
+                          ].months[
                             (visiblecalendar as VisibleCalendarType).current.month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[weekindex].checked, ''+weekindex, 'CURRENT')"
+                        ).weeks[weekindex].checked, ''+weekindex, 'CURRENT')"
                         :disabled="weekHasEnable(week)"
                         type="checkbox"
                         style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
@@ -1076,14 +1231,17 @@ onBeforeUnmount(() => {
                     </template>
                     <template v-else>
                       <input v-model="(
-                          (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                        )[weekindex].checked"
+                            (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                          ).weeks[weekindex].checked
+                        "
                         class="m-0 p-0 border flex-w-100" 
                         :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
                         @change="weekCheckboxClicked((
-                          (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                        )[weekindex].checked, ''+weekindex, 'CURRENT')"
-                        :disabled="weekHasEnable(week)" type="checkbox"
+                            (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                          ).weeks[weekindex].checked, ''+weekindex, 'CURRENT')
+                        "
+                        :disabled="weekHasEnable(week)"
+                        type="checkbox"
                         style="float: left; line-height: 2.805em !important; height: 2.805em !important;"
                       />
                     </template>
@@ -1092,7 +1250,7 @@ onBeforeUnmount(() => {
               </template>
               <div
                 :class="(props.excludedates || props.selectionformat === 'MULTIPLE-OR-SINGLE')? 'flex-w-12-dot-5' : 'flex-w-14-dot-285714'"
-                class="overflow-hidden align-self-stretch"
+                class="align-self-stretch"
                 v-for="(day, dayindex) in week.days"
                 :key="
                   'daycur' +
@@ -1104,7 +1262,7 @@ onBeforeUnmount(() => {
                   'yearcur' +
                   (visiblecalendar as VisibleCalendarType).current.year
                 "
-                style="float: left; outline: 1px solid #fff;"
+                style="float: left;"
               >
                 <label
                   :ref="
@@ -1114,7 +1272,7 @@ onBeforeUnmount(() => {
                   @click="handleDateClick(day)"
                   :disabled="day.status === 'DISABLE' ? true : false"
                   class="w-100"
-                  style="float: left; line-height: 2.805em; height: 2.805em;"
+                  style="float: left; line-height: 2.805em; height: 2.805em; border: 1px solid #fff;"
                 >
                   <input
                     @keypress.enter.stop=""
@@ -1126,42 +1284,41 @@ onBeforeUnmount(() => {
                   />
                   <template v-if="currentyearandmonthinselections">
                     <span
-                      :class="[day.status === 'ENABLE'? 'cursor-pointer' : '']"
-                      class="font-family text-center d-block letter-spacing"
-                      style="font-size: 1rem; line-height: 2.805em; height: 2.805em; outline: 1px solid #fff;"
+                      class="h-100 font-family text-center d-block letter-spacing"
+                      style="font-size: 1rem;"
                       :style="
                         day.day ===
-                          ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                          ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                             (visiblecalendar as VisibleCalendarType).current.month
-                          ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].day &&
-                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                           (visiblecalendar as VisibleCalendarType).current.month
-                        ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].selected === 'SELECTED' &&
-                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
+                        ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                           (visiblecalendar as VisibleCalendarType).current.month
-                        ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].status === 'ENABLE'
+                        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
                           ? 'background-color:green;color: #fff !important'
                           : day.day ===
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                                 (visiblecalendar as VisibleCalendarType).current.month
-                              ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].day &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                               (visiblecalendar as VisibleCalendarType).current.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].selected === 'DESELECTED' &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                               (visiblecalendar as VisibleCalendarType).current.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].status === 'ENABLE'
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
                           ? 'color: black !important;text-shadow:none'
                           : day.day ===
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                                 (visiblecalendar as VisibleCalendarType).current.month
-                              ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].day &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                               (visiblecalendar as VisibleCalendarType).current.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
-                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year][
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
+                            ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                               (visiblecalendar as VisibleCalendarType).current.month
-                            ] as YearMonthClickable<{}>['calendar'])[weekindex].days[dayindex].status === 'ENABLE'
+                            ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
                           ? 'background-color:grey;color: #fff !important'
                           : 'color: gray !important;text-shadow:none'
                       "
@@ -1171,9 +1328,8 @@ onBeforeUnmount(() => {
                   </template>
                   <template v-else>
                     <span
-                      :class="[day.status === 'ENABLE'? 'cursor-pointer' : '']"
-                      class="font-family text-center d-block letter-spacing"
-                      style="font-size: 1rem; line-height: 2.805em; height: 2.805em; outline: 1px solid #fff;"
+                      class="h-100 font-family text-center d-block letter-spacing"
+                      style="font-size: 1rem;"
                       :style="
                         day.status === 'DISABLE'
                           ? 'color: gray !important;text-shadow:none'

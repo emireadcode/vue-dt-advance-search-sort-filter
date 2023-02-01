@@ -279,7 +279,7 @@ onBeforeUnmount(() => {
       :title="((props.concatfieldindex === undefined)? cards[index].info : ((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[props.concatfieldindex as number])).name"
       :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
       :text-area-height="'height:357px;'"
-      @return:newlypasteditems="($val) => { addPastedItems($val, 'WORD'); showatnumbersearchexcludenumberwindowopenerbutton = false; emits('show:atnumbersearchexcludenumberwindowopenerbutton', false); }"
+      @return:newlypasteditems="($val: string[][]) => { addPastedItems($val, 'WORD'); showatnumbersearchexcludenumberwindowopenerbutton = false; emits('show:atnumbersearchexcludenumberwindowopenerbutton', false); }"
     >
       <template v-slot:outcomeidentifier>
         <div
@@ -357,7 +357,7 @@ onBeforeUnmount(() => {
         :tree="(holder as StringSearchType)"
         treetype="StringSearchType"
         :scrollareaid="cards[index].scroll.areaid+'-pasted-and-newinputentry'"
-        @update:current="($val) => { (holder as StringSearchType).current = $val; triggerHolder();}"
+        @update:current="($val: number) => { (holder as StringSearchType).current = $val; triggerHolder();}"
       ></PastedItemAndNewlyInputedEntryDisplayer>
     </template>
     <template v-if="((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.openatnumbersearchwindow">

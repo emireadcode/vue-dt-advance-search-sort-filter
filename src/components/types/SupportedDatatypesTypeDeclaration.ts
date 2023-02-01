@@ -227,10 +227,10 @@ export type DateInnerType = {
                       selected: boolean;
                       date: string;
                       day: number;
-                    }[];
-                  }[];
-                }[];
-              }[];
+                    };
+                  };
+                };
+              };
             }
           | {};
       };
@@ -243,7 +243,7 @@ export type DateInnerType = {
               selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
               index: number;
               name: "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
-            }[];
+            };
           } | {};
         };
         months: {
@@ -253,7 +253,7 @@ export type DateInnerType = {
               selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
               index: number;
               name: "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec";
-            }[];
+            };
           } | {};
         };
         years: {
@@ -263,9 +263,29 @@ export type DateInnerType = {
           years: {
             [key: string | number]: {
               selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-            }[];
+            };
           } | {};
         };
+        dates:
+          | {
+              //key is years
+              [key: string | number]: {
+                //key is months
+                [key: string | number]: {
+                  //key is week number
+                  [key: string | number]: {
+                    //key is day number in a week 0 - 6
+                    [key: string | number]: {
+                      status: boolean;
+                      selected: boolean;
+                      date: string;
+                      day: number;
+                    };
+                  };
+                };
+              };
+            }
+          | {};
       };
 };
   

@@ -398,7 +398,7 @@ onBeforeUnmount(() => {
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              @return:newlypasteditems="$val => { addPastedItems($val, 'EQUAL-TO'); }"
+              @return:newlypasteditems="($val: string[][]) => { addPastedItems($val, 'EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
                 <div
@@ -432,7 +432,7 @@ onBeforeUnmount(() => {
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).equalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
               :scrollareaid="cards[index].scroll.areaid+'-equal-to'"
-              @update:current="($val) => { ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.current = $val; triggerHolder(); }"
+              @update:current="($val: number) => { ((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).equalto.current = $val; triggerHolder(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>
@@ -523,7 +523,7 @@ onBeforeUnmount(() => {
               :datatype="props.from === 'NUMBER-SEARCHER-MODAL'? 'Number' : 'NumberFromNumberString'"
               :max="(cards[index].result.max as string)"
               :min="(cards[index].result.min as string)"
-              @return:newlypasteditems="$val => { addPastedItems($val, 'NOT-EQUAL-TO'); }"
+              @return:newlypasteditems="($val: string[][]) => { addPastedItems($val, 'NOT-EQUAL-TO'); }"
             >
               <template v-slot:outcomeidentifier>
                 <div
@@ -561,7 +561,7 @@ onBeforeUnmount(() => {
               :tree="((((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : (holder as AtNumber<NumberSearchType>).search) as NumberSearchType).notequalto as NumberSearchExcludeEqualToType)"
               treetype="NumberSearchExcludeEqualToType"
               :scrollareaid="cards[index].scroll.areaid+'-not-equal-to'"
-              @update:current="($val) => {((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.current = $val; triggerHolder(); }"
+              @update:current="($val: number) => {((props.from === 'NUMBER-SEARCHER-MODAL')? (holder as NumberType['search']['multiple']) : (holder as AtNumber<NumberSearchType>).search).notequalto.current = $val; triggerHolder(); }"
             ></PastedItemAndNewlyInputedEntryDisplayer>
           </div>
         </div>

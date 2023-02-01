@@ -14,9 +14,9 @@ export type YearSelectionType = {
         year: number,
         status: "ENABLE" | "DISABLE",
         selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-      }[];
-    }[];
-  }[];
+      };
+    };
+  };
 };
 
 export type MonthSelectionType = {
@@ -30,8 +30,8 @@ export type MonthSelectionType = {
       selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
       monthnumber: number,
       monthname: "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec";
-    }[];
-  }[];
+    };
+  };
 }
 
 export type DaySelectionType = {
@@ -43,7 +43,7 @@ export type DaySelectionType = {
     y1: number;
     x2: number;
     y2: number;
-  }[]
+  }
 };
 
 export type YearRangeFirstSelectionType = {
@@ -68,7 +68,7 @@ export type DaySelectionFormat = {
         selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
         index: number;
         name: "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
-      }[];
+      };
     } | {};
 };
 
@@ -79,7 +79,7 @@ export type MonthSelectionFormat = {
         selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
         index: number;
         name: "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec";
-      }[];
+      };
     } | {};
   };
 
@@ -89,6 +89,6 @@ export type YearSelectionFormat = {
     years: {
       [key: string | number]: {
         selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-      }[];
+      };
     } | number | {};
   };

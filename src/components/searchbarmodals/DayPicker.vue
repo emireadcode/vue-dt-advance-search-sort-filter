@@ -15,30 +15,37 @@ import type { DaySelectionFormat, DaySelectionType, DayRangeFirstSelectionType }
 import { getDayDimensions, fillDayArray } from "../utility/days_months_years_utility_fns";
 
 let 
-  dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  isodayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  format = ref(),
-  days = shallowRef(),
-  rangecount = ref(0),
-  multipleselectcount = ref(0),
-  rangefirstselection = ref<DayRangeFirstSelectionType>(),
-  loadingMovement = ref(false),
   unwatchrangecount: WatchStopHandle,
   unwatchmultipleselectcount: WatchStopHandle,
   unwatchformat: WatchStopHandle
 ;
 
-const props = defineProps<{
-  dayselectionandformat: DaySelectionFormat;
-  isoweek: boolean;
-}>();
+const 
+  props = defineProps<{
+    dayselectionandformat: DaySelectionFormat;
+    isoweek: boolean;
+  }>(),
+  emits = defineEmits<{
+    (e: "update:dayselectionandformat", action: DaySelectionFormat): void;
+    (e: "signal:readyforexclude", action: boolean): void;
+  }>(),
+  holder = shallowRef<DaySelectionFormat>(),
+  days = shallowRef<DaySelectionType>(),
+  rangecount = ref(0),
+  multipleselectcount = ref(0),
+  rangefirstselection = ref<DayRangeFirstSelectionType>(),
+  loadingMovement = ref(false)
+;
 
+function triggerHolder() {
+  triggerRef(holder);
+}
 
 function addDay(day: number) {
-  if(format.value === 'RANGE') {
+  if((holder.value as DaySelectionFormat).format === 'RANGE') {
     if(rangecount.value < 2) {
-      if(days.value[day].selected === 'DESELECTED' || days.value[day].selected === 'HIGHLIGHTED') {
-        days.value[day].selected = 'SELECTED';
+      if((days.value as DaySelectionType)[day].selected === 'DESELECTED' || (days.value as DaySelectionType)[day].selected === 'HIGHLIGHTED') {
+        (days.value as DaySelectionType)[day].selected = 'SELECTED';
         rangecount.value++;
         if(rangecount.value === 1) {
           rangefirstselection.value = { day };
@@ -50,7 +57,7 @@ function addDay(day: number) {
         }
       }
       else {
-        days.value[day].selected = 'DESELECTED';
+        ((days.value as DaySelectionType)[day] as DaySelectionType[number]).selected = 'DESELECTED';
         rangefirstselection.value = { day: -1 };
         rangecount.value = 0;
         unTrackDayBoxMouseMovement();
@@ -59,18 +66,18 @@ function addDay(day: number) {
     else {
       deselectAll();
       rangecount.value = 1;
-      days.value[day].selected = 'SELECTED';
+      (days.value as DaySelectionType)[day].selected = 'SELECTED';
       rangefirstselection.value = { day };
       trackDayBoxMouseMovement();
     }
   }
   else {
-    if(days.value[day].selected === 'DESELECTED') {
-      days.value[day].selected = 'SELECTED';
+    if((days.value as DaySelectionType)[day].selected === 'DESELECTED') {
+      (days.value as DaySelectionType)[day].selected = 'SELECTED';
       multipleselectcount.value++;
     }
     else {
-      days.value[day].selected = 'DESELECTED';
+      ((days.value as DaySelectionType) as DaySelectionType)[day].selected = 'DESELECTED';
       multipleselectcount.value--;
     }
   }
@@ -78,18 +85,18 @@ function addDay(day: number) {
 }
 
 function deselectAll() {
-  for(let day in days.value) {
-    days.value[day].selected = 'DESELECTED';
+  for(let day in (days.value as DaySelectionType)) {
+    (days.value as DaySelectionType)[day].selected = 'DESELECTED';
   }
 }
 
 function whereisMouse(pointx: number, pointy: number) {
   let result = {day: -1}, found = false;
-  for(let day in days.value) {
+  for(let day in (days.value as DaySelectionType)) {
     if(
-      pointx >= parseFloat(days.value[day].x1)
+      pointx >= parseFloat(''+(days.value as DaySelectionType)[day].x1)
       &&
-      pointx <= parseFloat(days.value[day].x2)
+      pointx <= parseFloat(''+(days.value as DaySelectionType)[day].x2)
     ){
       result = {
         day: parseInt(day),
@@ -105,28 +112,28 @@ function mouseMovement(event: { pageX: number; pageY: number; }) {
   nextTick(() => {
     if(loadingMovement.value === false) {
       loadingMovement.value = true;
-      if (format.value === "RANGE") {
+      if ((holder.value as DaySelectionFormat).format === "RANGE") {
         if ((rangefirstselection.value as DayRangeFirstSelectionType).day > -1) {
           let mousePointed = whereisMouse(event.pageX, event.pageY);
-          for(let day in days.value) {
+          for(let day in (days.value as DaySelectionType)) {
             if(parseInt(day) > (rangefirstselection.value as DayRangeFirstSelectionType).day) {
               if(parseInt(day) <= mousePointed.day) {
-                days.value[day].selected = 'HIGHLIGHTED';
+                (days.value as DaySelectionType)[day].selected = 'HIGHLIGHTED';
               }
               else {
-                if(days.value[day].selected === 'HIGHLIGHTED') {
-                  days.value[day].selected = 'DESELECTED';
+                if((days.value as DaySelectionType)[day].selected === 'HIGHLIGHTED') {
+                  (days.value as DaySelectionType)[day].selected = 'DESELECTED';
                 }
               }
             }
             else {
               if(parseInt(day) < (rangefirstselection.value as DayRangeFirstSelectionType).day) {
                 if(parseInt(day) >= mousePointed.day) {
-                  days.value[day].selected = 'HIGHLIGHTED';
+                  (days.value as DaySelectionType)[day].selected = 'HIGHLIGHTED';
                 }
                 else {
-                  if(days.value[day].selected === 'HIGHLIGHTED') {
-                    days.value[day].selected = 'DESELECTED';
+                  if((days.value as DaySelectionType)[day].selected === 'HIGHLIGHTED') {
+                    (days.value as DaySelectionType)[day].selected = 'DESELECTED';
                   }
                 }
               }
@@ -166,16 +173,19 @@ onBeforeUnmount(() => {
   unTrackDayBoxMouseMovement();
   unwatchformat();
   unwatchrangecount();
+  unwatchmultipleselectcount();
 });
 
 onMounted(() => {
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {
-      if(format.value === "MULTIPLE-OR-SINGLE") {
+      if((holder.value as DaySelectionFormat).format === "MULTIPLE-OR-SINGLE") {
         if(x > 0) {
+          emits('signal:readyforexclude', true);
         }
         else {
+          emits('signal:readyforexclude', false);
         }
       }
     }
@@ -183,18 +193,20 @@ onMounted(() => {
   unwatchrangecount = watch(
     () => rangecount.value,
     (x) => {
-      if (format.value === "RANGE") {
+      if ((holder.value as DaySelectionFormat).format === "RANGE") {
         if(x === 2) {
+          emits('signal:readyforexclude', true);
         }
         else {
+          emits('signal:readyforexclude', false);
         }
       }
     }
   );
   unwatchformat = watch(
-    () => format.value,
+    () => (holder.value as DaySelectionFormat).format,
     (x) => {
-      format.value = x;
+      (holder.value as DaySelectionFormat).format = x;
       deselectAll();
       unTrackDayBoxMouseMovement();
       rangefirstselection.value = { day: -1 };
@@ -207,8 +219,9 @@ onMounted(() => {
 });
 
 onBeforeMount(() => {
-  format.value = props.dayselectionandformat.format;
-  days.value = (fillDayArray(props.isoweek, format) as ShallowRef<DaySelectionType>).value;
+  holder.value = JSON.parse(JSON.stringify(props.dayselectionandformat));
+  triggerHolder();
+  (days.value as DaySelectionType) = (fillDayArray(props.isoweek, (holder.value as DaySelectionFormat).format) as ShallowRef<DaySelectionType>).value as DaySelectionType;
   rangefirstselection.value = { day: -1 };
   triggerRef(days);
 });
@@ -222,10 +235,10 @@ onBeforeMount(() => {
     >
       <div class="flex-w-50">
         <button
-          @keypress.enter="format = 'RANGE'"
-          @click="format = 'RANGE'"
+          @keypress.enter="() => { (holder as DaySelectionFormat).format = 'RANGE'; triggerHolder(); }"
+          @click="() => { (holder as DaySelectionFormat).format = 'RANGE'; triggerHolder(); }"
           :style="
-            format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
+            (holder as DaySelectionFormat).format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
           "
           class="font-family letter-spacing cursor-pointer btn w-100"
           style="color: #fff; padding: 2px 0;border-right: 1px solid #fff"
@@ -235,10 +248,10 @@ onBeforeMount(() => {
       </div>
       <div class="flex-w-50">
         <button
-          @keypress.enter="format = 'MULTIPLE-OR-SINGLE'"
-          @click="format = 'MULTIPLE-OR-SINGLE'"
+          @keypress.enter="() => { (holder as DaySelectionFormat).format = 'MULTIPLE-OR-SINGLE'; triggerHolder(); }"
+          @click="() => { (holder as DaySelectionFormat).format = 'MULTIPLE-OR-SINGLE'; triggerHolder(); }"
           :style="
-            format === 'MULTIPLE-OR-SINGLE'
+            (holder as DaySelectionFormat).format === 'MULTIPLE-OR-SINGLE'
               ? 'background-color:green;'
               : 'background-color:gray;'
           "
@@ -260,8 +273,8 @@ onBeforeMount(() => {
           >
             <label
               :ref="(el) => day.ref = el as HTMLLabelElement"
-              @keypress.enter="() => { format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? addDay(dindex) : ''; }"
-              @click="() => { format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? addDay(dindex) : ''; }"
+              @keypress.enter="() => { (holder as DaySelectionFormat).format==='RANGE' || (holder as DaySelectionFormat).format==='MULTIPLE-OR-SINGLE'? addDay(parseInt(''+dindex)) : ''; }"
+              @click="() => { (holder as DaySelectionFormat).format==='RANGE' || (holder as DaySelectionFormat).format==='MULTIPLE-OR-SINGLE'? addDay(parseInt(''+dindex)) : ''; }"
               class="w-100"
               style="float: left; line-height: 2em; height: 2em;"
             >
@@ -276,7 +289,7 @@ onBeforeMount(() => {
               <span
                 class="font-family text-center d-block letter-spacing"
                 style="font-size: 1rem; line-height: 2em; height: 2em;"
-                :class="[format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? 'cursor-pointer' : '']"
+                :class="[(holder as DaySelectionFormat).format==='RANGE' || (holder as DaySelectionFormat).format==='MULTIPLE-OR-SINGLE'? 'cursor-pointer' : '']"
                 :style="
                   day.selected === 'SELECTED'?
                   'background-color: green; color: #fff;'

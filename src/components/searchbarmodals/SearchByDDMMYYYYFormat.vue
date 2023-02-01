@@ -32,7 +32,7 @@ const
 
 ;
 
-function updateCards() {
+function triggerCard() {
   nextTick(() => {
     triggerRef(cards);
   });
@@ -123,7 +123,8 @@ onBeforeMount(() => {
     </div>
     <div class="d-block" style="padding-bottom:2px;">
       <VisibleCalendarDatePicker
-        @enable:excludebutton="$val => emits('enable:excludebutton', $val)"
+        :from="'DD-MM-YYYY'"
+        @enable:excludebutton="($val: boolean) => emits('enable:excludebutton', $val)"
         :resetcalendarsignal="resetcalendarsignal"
         :selectionformat="selectionformat as 'RANGE' | 'MULTIPLE-OR-SINGLE'"
         :excludedates="props.excludedates"
@@ -131,7 +132,7 @@ onBeforeMount(() => {
         :selections="cards[index].search.dd_mm_yyyy.dates"
         :maxdate="(cards[index].result.max as string)"
         :mindate="(cards[index].result.min as string)"
-        @update:selections="($val: DateType['search']['dd_mm_yyyy']['dates']) => { cards[index].search.dd_mm_yyyy.dates = $val; updateCards(); }"
+        @update:selections="($val: DateType['search']['dd_mm_yyyy']['dates']) => { cards[index].search.dd_mm_yyyy.dates = $val; triggerCard(); }"
       ></VisibleCalendarDatePicker>
     </div>
   </div>

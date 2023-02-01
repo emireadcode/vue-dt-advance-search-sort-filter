@@ -145,32 +145,34 @@ async function isAlreadyInPageArray(
         j++
       ) {
         if(inputtype==='WORD' || inputtype==='EQUAL-TO' || inputtype==='NOT-EQUAL-TO' || inputtype==='EXCLUDE-EQUAL-TO') {
-          if(newinputentry === (
-            inputtype==='WORD'?
-            (holder.value as StringSearchType).pages[i][j]
-            : (
-              inputtype==='EQUAL-TO'?
-              (
-                (
-                  (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
-                  holder.value as NumberType['search']['multiple'] : 
-                  (holder.value as AtNumber<NumberSearchType>).search
-                )?.equalto as NumberSearchExcludeEqualToType
-              ).pages[i][j]
+          if(
+            newinputentry === (
+              inputtype==='WORD'?
+              (holder.value as StringSearchType).pages[i][j]
               : (
-                inputtype==='NOT-EQUAL-TO'?
+                inputtype==='EQUAL-TO'?
                 (
                   (
                     (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
                     holder.value as NumberType['search']['multiple'] : 
                     (holder.value as AtNumber<NumberSearchType>).search
-                  )?.notequalto as NumberSearchExcludeEqualToType
+                  )?.equalto as NumberSearchExcludeEqualToType
                 ).pages[i][j]
-                : 
-                (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]
+                : (
+                  inputtype==='NOT-EQUAL-TO'?
+                  (
+                    (
+                      (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                      holder.value as NumberType['search']['multiple'] : 
+                      (holder.value as AtNumber<NumberSearchType>).search
+                    )?.notequalto as NumberSearchExcludeEqualToType
+                  ).pages[i][j]
+                  : 
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : ((holder.value as AtNumber<NumberSearchType>).search))?.exclude?.equalto as NumberSearchExcludeEqualToType).pages[i][j]
+                )
               )
             )
-          )) {
+          ) {
             pageindex = i;
             pos = j;
             inpage = true;
@@ -197,24 +199,15 @@ async function isAlreadyInPageArray(
               )
               ||
               (
-                parseFloat(newinputentry[0]) <= parseFloat(
-                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0]
-                )
-                &&
                 (
-                  parseFloat(newinputentry[1]) >= parseFloat(
-                    (
-                      (
-                        holder.value as NumberType['search']['multiple']
-                      )?.exclude?.fromto as NumberSearchExcludeFromToType
-                    ).pages[i][j][1]
-                  )
-                  ||
                   (
                     parseFloat(newinputentry[1]) <= parseFloat(
                       (
                         (
-                          holder.value as NumberType['search']['multiple']
+                          (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                          holder.value as NumberType['search']['multiple'] 
+                          : 
+                          ((holder.value as AtNumber<NumberSearchType>).search)
                         )?.exclude?.fromto as NumberSearchExcludeFromToType
                       ).pages[i][j][1]
                     )
@@ -222,11 +215,29 @@ async function isAlreadyInPageArray(
                     parseFloat(newinputentry[1]) >= parseFloat(
                       (
                         (
-                          holder.value as NumberType['search']['multiple']
+                          (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                          holder.value as NumberType['search']['multiple'] 
+                          : 
+                          ((holder.value as AtNumber<NumberSearchType>).search)
                         )?.exclude?.fromto as NumberSearchExcludeFromToType
                       ).pages[i][j][0]
                     )
                   )
+                  ||
+                  parseFloat(newinputentry[1]) >= parseFloat(
+                    (
+                      (
+                        (from === "NUMBER-SEARCHER-MODAL" || from === undefined)? 
+                        holder.value as NumberType['search']['multiple'] 
+                        : 
+                        ((holder.value as AtNumber<NumberSearchType>).search)
+                      )?.exclude?.fromto as NumberSearchExcludeFromToType
+                    ).pages[i][j][1]
+                  )
+                )
+                &&
+                parseFloat(newinputentry[0]) <= parseFloat(
+                  (((from === "NUMBER-SEARCHER-MODAL" || from === undefined)? holder.value as NumberType['search']['multiple'] : (holder.value as AtNumber<NumberSearchType>).search)?.exclude?.fromto as NumberSearchExcludeFromToType).pages[i][j][0]
                 )
               )
             )

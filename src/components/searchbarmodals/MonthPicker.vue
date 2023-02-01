@@ -14,31 +14,41 @@ import {
 import type { MonthSelectionFormat, MonthSelectionType, MonthRangeFirstSelectionType } from "../types/days_months_years_types";
 import { getMonthDimensions, fillMonthArray } from "../utility/days_months_years_utility_fns";
 
-let
-  format = ref(),
-  months = shallowRef(),
+const 
+  props = defineProps<{
+    monthselectionandformat: MonthSelectionFormat;
+  }>(),
+  emits = defineEmits<{
+    (e: "update:monthselectionandformat", action: MonthSelectionFormat): void;
+    (e: "signal:readyforexclude", action: boolean): void;
+  }>(),
+  loadingMovement = ref(false),
+  holder = shallowRef<MonthSelectionFormat>(),
+  months = shallowRef<MonthSelectionType>(),
   rangecount = ref(0),
   multipleselectcount = ref(0),
-  rangefirstselection = ref<MonthRangeFirstSelectionType>(),
-  loadingMovement = ref(false),
+  rangefirstselection = ref<MonthRangeFirstSelectionType>()
+;
+
+let
   unwatchrangecount: WatchStopHandle,
   unwatchmultipleselectcount: WatchStopHandle,
   unwatchformat: WatchStopHandle
 ;
 
-const props = defineProps<{
-  monthselectionandformat: MonthSelectionFormat;
-}>();
+function triggerHolder() {
+  triggerRef(holder);
+}
 
 function addMonth(month: number) {
   let found = false;
-  for(let row in months.value) {
-    for(let col in months.value[row]) {
-      if(months.value[row][col].monthnumber === month) {
-        if(format.value === 'RANGE') {
+  for(let row in (months.value as MonthSelectionType)) {
+    for(let col in (months.value as MonthSelectionType)[row]) {
+      if((months.value as MonthSelectionType)[row][col].monthnumber === month) {
+        if((holder.value as MonthSelectionFormat).format === 'RANGE') {
           if(rangecount.value < 2) {
-            if(months.value[row][col].selected === 'DESELECTED' || months.value[row][col].selected === 'HIGHLIGHTED') {
-              months.value[row][col].selected = 'SELECTED';
+            if((months.value as MonthSelectionType)[row][col].selected === 'DESELECTED' || (months.value as MonthSelectionType)[row][col].selected === 'HIGHLIGHTED') {
+              (months.value as MonthSelectionType)[row][col].selected = 'SELECTED';
               rangecount.value++;
               if(rangecount.value === 1) {
                 rangefirstselection.value = { month };
@@ -50,7 +60,7 @@ function addMonth(month: number) {
               }
             }
             else {
-              months.value[row][col].selected = 'DESELECTED';
+              (months.value as MonthSelectionType)[row][col].selected = 'DESELECTED';
               rangefirstselection.value = { month: -1 };
               rangecount.value = 0;
               unTrackMonthBoxMouseMovement();
@@ -59,18 +69,18 @@ function addMonth(month: number) {
           else {
             deselectAll();
             rangecount.value = 1;
-            months.value[row][col].selected = 'SELECTED';
+            (months.value as MonthSelectionType)[row][col].selected = 'SELECTED';
             rangefirstselection.value = { month };
             trackMonthBoxMouseMovement();
           }
         }
         else {
-          if(months.value[row][col].selected === 'DESELECTED') {
-            months.value[row][col].selected = 'SELECTED';
+          if((months.value as MonthSelectionType)[row][col].selected === 'DESELECTED') {
+            (months.value as MonthSelectionType)[row][col].selected = 'SELECTED';
             multipleselectcount.value++;
           }
           else {
-            months.value[row][col].selected = 'DESELECTED';
+            (months.value as MonthSelectionType)[row][col].selected = 'DESELECTED';
             multipleselectcount.value--;
           }
         }
@@ -81,57 +91,56 @@ function addMonth(month: number) {
     if(found) break;
   }
   triggerRef(months);
-  
 }
 
 function deselectAll() {
-  for(let row in months.value) {
-    for(let col in months.value[row]) {
-      months.value[row][col].selected = 'DESELECTED';
+  for(let row in (months.value as MonthSelectionType)) {
+    for(let col in (months.value as MonthSelectionType)[row]) {
+      (months.value as MonthSelectionType)[row][col].selected = 'DESELECTED';
     }
   }
 }
 
 function whereisMouse(pointx: number, pointy: number) {
   let result = {month: -1, row: -1, col: -1}, found = false;
-  for(let row in months.value) {
-    for(let col in months.value[row]) {
+  for(let row in (months.value as MonthSelectionType)) {
+    for(let col in (months.value as MonthSelectionType)[row]) {
       if(
         (
           parseInt(row) === 0
           && (
-            pointy <= parseFloat(months.value[row][col].y1)
+            pointy <= parseFloat(''+(months.value as MonthSelectionType)[row][col].y1)
             &&
-            pointx >= parseFloat(months.value[row][col].x1)
+            pointx >= parseFloat(''+(months.value as MonthSelectionType)[row][col].x1)
             &&
-            pointx <= parseFloat(months.value[row][col].x2)
+            pointx <= parseFloat(''+(months.value as MonthSelectionType)[row][col].x2)
           )
         )
         ||
         (
-          (parseInt(row) === Object.keys(months.value).length - 1)
+          (parseInt(row) === Object.keys((months.value as MonthSelectionType)).length - 1)
           && (
-            pointx >= parseFloat(months.value[row][col].x1)
+            pointx >= parseFloat(''+(months.value as MonthSelectionType)[row][col].x1)
             &&
-            pointx <= parseFloat(months.value[row][col].x2)
+            pointx <= parseFloat(''+(months.value as MonthSelectionType)[row][col].x2)
           )
         )
         ||
         (
-          (parseInt(row) !== Object.keys(months.value).length - 1)
+          (parseInt(row) !== Object.keys((months.value as MonthSelectionType)).length - 1)
           && (
-            pointx >= parseFloat(months.value[row][col].x1)
+            pointx >= parseFloat(''+(months.value as MonthSelectionType)[row][col].x1)
             &&
-            pointx <= parseFloat(months.value[row][col].x2)
+            pointx <= parseFloat(''+(months.value as MonthSelectionType)[row][col].x2)
             &&
-            pointy >= parseFloat(months.value[row][col].y1)
+            pointy >= parseFloat(''+(months.value as MonthSelectionType)[row][col].y1)
             &&
-            pointy <= parseFloat(months.value[row][col].y2)
+            pointy <= parseFloat(''+(months.value as MonthSelectionType)[row][col].y2)
           )
         )
       ) {
         result = {
-          month: parseInt(months.value[row][col].monthnumber),
+          month: parseInt(''+(months.value as MonthSelectionType)[row][col].monthnumber),
           row: parseInt(row),
           col: parseInt(col),
         };
@@ -148,29 +157,29 @@ function mouseMovement(event: { pageX: number; pageY: number; }) {
   nextTick(() => {
     if(loadingMovement.value === false) {
       loadingMovement.value = true;
-      if (format.value === "RANGE") {
+      if ((holder.value as MonthSelectionFormat).format === "RANGE") {
         if ((rangefirstselection.value as MonthRangeFirstSelectionType).month > -1) {
           let mousePointed = whereisMouse(event.pageX, event.pageY);
-          for(let row in months.value) {
-            for(let col in months.value[row]) {
-              if(parseInt(months.value[row][col].monthnumber) > (rangefirstselection.value as MonthRangeFirstSelectionType).month) {
-                if(parseInt(months.value[row][col].monthnumber) <= mousePointed.month) {
-                  months.value[row][col].selected = 'HIGHLIGHTED';
+          for(let row in (months.value as MonthSelectionType)) {
+            for(let col in (months.value as MonthSelectionType)[row]) {
+              if(parseInt(''+(months.value as MonthSelectionType)[row][col].monthnumber) > (rangefirstselection.value as MonthRangeFirstSelectionType).month) {
+                if(parseInt(''+(months.value as MonthSelectionType)[row][col].monthnumber) <= mousePointed.month) {
+                  (months.value as MonthSelectionType)[row][col].selected = 'HIGHLIGHTED';
                 }
                 else {
-                  if(months.value[row][col].selected === 'HIGHLIGHTED') {
-                    months.value[row][col].selected = 'DESELECTED';
+                  if((months.value as MonthSelectionType)[row][col].selected === 'HIGHLIGHTED') {
+                    (months.value as MonthSelectionType)[row][col].selected = 'DESELECTED';
                   }
                 }
               }
               else {
-                if(parseInt(months.value[row][col].monthnumber) < (rangefirstselection.value as MonthRangeFirstSelectionType).month) {
-                  if(parseInt(months.value[row][col].monthnumber) >= mousePointed.month) {
-                    months.value[row][col].selected = 'HIGHLIGHTED';
+                if(parseInt(''+(months.value as MonthSelectionType)[row][col].monthnumber) < (rangefirstselection.value as MonthRangeFirstSelectionType).month) {
+                  if(parseInt(''+(months.value as MonthSelectionType)[row][col].monthnumber) >= mousePointed.month) {
+                    (months.value as MonthSelectionType)[row][col].selected = 'HIGHLIGHTED';
                   }
                   else {
-                    if(months.value[row][col].selected === 'HIGHLIGHTED') {
-                      months.value[row][col].selected = 'DESELECTED';
+                    if((months.value as MonthSelectionType)[row][col].selected === 'HIGHLIGHTED') {
+                      (months.value as MonthSelectionType)[row][col].selected = 'DESELECTED';
                     }
                   }
                 }
@@ -218,10 +227,12 @@ onMounted(() => {
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {
-      if(format.value === "MULTIPLE-OR-SINGLE") {
+      if((holder.value as MonthSelectionFormat).format === "MULTIPLE-OR-SINGLE") {
         if(x > 0) {
+          emits('signal:readyforexclude', true);
         }
         else {
+          emits('signal:readyforexclude', false);
         }
       }
     }
@@ -229,16 +240,18 @@ onMounted(() => {
   unwatchrangecount = watch(
     () => rangecount.value,
     (x) => {
-      if (format.value === "RANGE") {
+      if ((holder.value as MonthSelectionFormat).format === "RANGE") {
         if(x === 2) {
+          emits('signal:readyforexclude', true);
         }
         else {
+          emits('signal:readyforexclude', false);
         }
       }
     }
   );
   unwatchformat = watch(
-    () => format.value,
+    () => (holder.value as MonthSelectionFormat).format,
     (x) => {
       deselectAll();
       unTrackMonthBoxMouseMovement();
@@ -252,8 +265,10 @@ onMounted(() => {
 });
 
 onBeforeMount(() => {
-  format.value = props.monthselectionandformat.format;
-  months.value = (fillMonthArray(format) as ShallowRef<MonthSelectionType>).value;
+  holder.value = JSON.parse(JSON.stringify(props.monthselectionandformat)) as MonthSelectionFormat;
+  (holder.value as MonthSelectionFormat).format = props.monthselectionandformat.format;
+  triggerHolder();
+  (months.value as MonthSelectionType) = (fillMonthArray((holder.value as MonthSelectionFormat).format) as ShallowRef<MonthSelectionType>).value;
   rangefirstselection.value = { month: -1 };
   triggerRef(months);
 });
@@ -267,10 +282,10 @@ onBeforeMount(() => {
     >
       <div class="flex-w-50">
         <button
-          @keypress.enter="format = 'RANGE'"
-          @click="format = 'RANGE'"
+          @keypress.enter="() => { (holder as MonthSelectionFormat).format = 'RANGE'; triggerHolder(); }"
+          @click="() => { (holder as MonthSelectionFormat).format = 'RANGE'; triggerHolder(); }"
           :style="
-            format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
+          (holder as MonthSelectionFormat).format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
           "
           class="font-family letter-spacing cursor-pointer btn w-100"
           style="color: #fff; padding: 2px 0;border-right: 1px solid #fff"
@@ -280,10 +295,10 @@ onBeforeMount(() => {
       </div>
       <div class="flex-w-50">
         <button
-          @keypress.enter="format = 'MULTIPLE-OR-SINGLE'"
-          @click="format = 'MULTIPLE-OR-SINGLE'"
+          @keypress.enter="() => { (holder as MonthSelectionFormat).format = 'MULTIPLE-OR-SINGLE'; triggerHolder(); }"
+          @click="() => { (holder as MonthSelectionFormat).format = 'MULTIPLE-OR-SINGLE'; triggerHolder(); }"
           :style="
-            format === 'MULTIPLE-OR-SINGLE'
+            (holder as MonthSelectionFormat).format === 'MULTIPLE-OR-SINGLE'
               ? 'background-color:green;'
               : 'background-color:gray;'
           "
@@ -305,9 +320,9 @@ onBeforeMount(() => {
               style="float: left; outline: 1px solid #fff;"
             >
               <label
-                :ref="(el) => months[rindex][cindex].ref = el as HTMLLabelElement"
-                @keypress.enter="() => { format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? addMonth(months[rindex][cindex].monthnumber) : ''; }"
-                @click="() => { format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? addMonth(months[rindex][cindex].monthnumber) : ''; }"
+                :ref="(el) => (months as MonthSelectionType)[rindex][cindex].ref = el as HTMLLabelElement"
+                @keypress.enter="() => { (holder as MonthSelectionFormat).format==='RANGE' || (holder as MonthSelectionFormat).format==='MULTIPLE-OR-SINGLE'? addMonth((months as MonthSelectionType)[rindex][cindex].monthnumber) : ''; }"
+                @click="() => { (holder as MonthSelectionFormat).format==='RANGE' || (holder as MonthSelectionFormat).format==='MULTIPLE-OR-SINGLE'? addMonth((months as MonthSelectionType)[rindex][cindex].monthnumber) : ''; }"
                 class="w-100"
                 style="float: left; line-height: 2em; height: 2em;"
               >
@@ -315,23 +330,23 @@ onBeforeMount(() => {
                   @keypress.enter.stop=""
                   @click.stop=""
                   type="checkbox"
-                  :value="months[rindex][cindex].monthnumber"
+                  :value="(months as MonthSelectionType)[rindex][cindex].monthnumber"
                   class="position-absolute d-none"
                   style="pointer-events: auto;"
                 />
                 <span
                   class="font-family text-center d-block letter-spacing"
                   style="font-size: 1rem; line-height: 2em; height: 2em;"
-                  :class="[format==='RANGE' || format==='MULTIPLE-OR-SINGLE'? 'cursor-pointer' : '']"
+                  :class="[(holder as MonthSelectionFormat).format==='RANGE' || (holder as MonthSelectionFormat).format==='MULTIPLE-OR-SINGLE'? 'cursor-pointer' : '']"
                   :style="
-                    months[rindex][cindex].selected === 'SELECTED'?
+                    (months as MonthSelectionType)[rindex][cindex].selected === 'SELECTED'?
                     'background-color: green; color: #fff;'
-                    : months[rindex][cindex].selected === 'DESELECTED'?
+                    : (months as MonthSelectionType)[rindex][cindex].selected === 'DESELECTED'?
                       'background-color: #E8E8E8; color: black; text-shadow:none'
                       : 'background-color: gray; color: #fff;'
                   "
                 >
-                  {{ months[rindex][cindex].monthname }}
+                  {{ (months as MonthSelectionType)[rindex][cindex].monthname }}
                 </span>
               </label>
             </div>

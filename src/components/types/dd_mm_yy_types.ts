@@ -3,20 +3,24 @@ import type { DateType } from "./SupportedDatatypesTypeDeclaration";
 export type YearMonthClickable<T> = {
   month: number;
   year: number;
+  ty: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
   clickable: boolean;
   calendar: {
-    [key: number]: {
-      days: {
-        [key: number]: (T & {
-          status?: 'ENABLE' | 'DISABLE' | undefined;
-          readonlystatus?: 'ENABLE' | 'DISABLE' | undefined;
-          selected?: "SELECTED" | "DESELECTED" | "HIGHLIGHTED" | "LOCKED" | undefined;
-          date: string;
-          day: number;
-        });
+    weeks: {
+      [key: number]: {
+        days: {
+          [key: number]: (T & {
+            status?: 'ENABLE' | 'DISABLE' | undefined;
+            readonlystatus?: 'ENABLE' | 'DISABLE' | undefined;
+            selected?: "SELECTED" | "DESELECTED" | "HIGHLIGHTED" | "LOCKED" | undefined;
+            date: string;
+            day: number;
+          });
+        };
+        checked: false | true;
       };
-      checked: false | true;
     };
+    tm: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
   };
 };
 
@@ -44,9 +48,12 @@ export type VisibleCalendarType = {
   selections: {
     //key is years
     [key: number]: {
-      //key is months
-      [key: number]: YearMonthClickable<{}>['calendar'];
-    }[];
+      months: {
+        //key is months
+        [key: number]: YearMonthClickable<{}>['calendar'];
+      };
+      ty: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
+    };
   };
 };
 

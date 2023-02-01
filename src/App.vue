@@ -2,6 +2,7 @@
 import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.vue";
 
 //npm install --save ol
+//npm i date-fns
 </script>
 
 <template>
@@ -438,12 +439,6 @@ button {
 [role="button"] {
   cursor: pointer;
 }
-button,
-[type="button"],
-[type="reset"],
-[type="submit"] {
-  -webkit-appearance: button;
-}
 button:not(:disabled),
 [type="button"]:not(:disabled),
 [type="reset"]:not(:disabled),
@@ -469,7 +464,6 @@ input[type="checkbox"] {
 }
 [type="search"] {
   outline-offset: -2px;
-  -webkit-appearance: none;
 }
 [type="search"]::-webkit-search-decoration {
   -webkit-appearance: none;

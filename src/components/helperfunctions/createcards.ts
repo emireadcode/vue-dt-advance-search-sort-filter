@@ -51,7 +51,6 @@ function formConcatenatedSearch(
     | SingleWordStringConcatenatedFieldType
 ) {
   let concatcopy = JSON.parse(JSON.stringify(concatenated));
-  console.log(concatcopy);
   for (let i in concatcopy) {
     concatcopy[i] = {
       name: concatcopy[i].name,
@@ -672,6 +671,7 @@ function getDateTypeObject(item: CardInnerType & DateFormat & { isoweek: boolean
           format: "RANGE",
           years: {},
         },
+        dates: {}
       },
     },
     searchFrom: "SERVER",
@@ -710,6 +710,7 @@ function getDateTimeObject(item: CardInnerType & DateFormat & TimeFormat & { iso
           format: "RANGE",
           years: {},
         },
+        dates: {},
       },
     },
     searchFrom: "SERVER",

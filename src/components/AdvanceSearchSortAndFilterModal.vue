@@ -52,7 +52,6 @@ function enableACardChildrenTabIndexAndDisableOtherCardsChildrenTabIndex(index: 
 }
 
 onMounted(() => {
-  console.log(cards.value);
   (accessibility.value.refreshundoredoclosecontainerref as HTMLDivElement).focus();
 });
 
@@ -93,7 +92,7 @@ onBeforeMount(() => {
               <RefreshUndoRedoCloseButton btn-img-name="redo.png" btn-title="Redo"></RefreshUndoRedoCloseButton> 
             </div>
             <div class="flex-w-25 align-self-stretch border text-center p-1">
-              <RefreshUndoRedoCloseButton @modal:close="$val => emits('modal:close', $val)" btn-img-name="close.png" btn-title="Close"></RefreshUndoRedoCloseButton> 
+              <RefreshUndoRedoCloseButton @modal:close="($val: boolean) => emits('modal:close', $val)" btn-img-name="close.png" btn-title="Close"></RefreshUndoRedoCloseButton> 
             </div>
           </div>
         </div>

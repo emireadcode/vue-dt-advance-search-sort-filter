@@ -23,7 +23,11 @@ import {
 } from "vue";
 import type { RangeSelectionParamsType, VisibleCalendarType, PositionTrackerType, YearMonthClickable, RangeFirstAndLastSelectionType} from "../types/dd_mm_yy_types";
 
-const loadingMovement = ref(false);
+const 
+  loadingMovement = ref(false),
+  xpoint = ref(),
+  ypoint = ref()
+;
 
 export function removeDelimiters(item: string) {
   let newItem = item;
@@ -193,14 +197,17 @@ export function getYearMonthAndDate(isoweek: boolean, pastedorclickeddate: strin
 }
 
 export function deselectAll(visiblecalendar: ShallowRef<VisibleCalendarType>) {
-  for (let year in visiblecalendar.value.selections) {
-    for (let month in visiblecalendar.value.selections[year]) {
-      for (let week in visiblecalendar.value.selections[year][month]) {
-        for (let day in (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days) {
-          if((visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].status === 'ENABLE') {
-            (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].selected = "DESELECTED";
+  for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
+    for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+      for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+        for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+          if(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].readonlystatus === 'ENABLE') {
+            ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected = "DESELECTED";
           }
         }
+        (
+          (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].checked = false;
       }
     }
   }
@@ -217,7 +224,10 @@ export function buildCalendar(
   visiblecalendar: ShallowRef<VisibleCalendarType>
 ) {
   let
-    calendar = {} as YearMonthClickable<PositionTrackerType>['calendar'] | YearMonthClickable<{}>['calendar'],
+    calendar = {
+      weeks: {},
+      tm: [false, false, false, false, false, false, false]
+    } as YearMonthClickable<PositionTrackerType>['calendar'] | YearMonthClickable<{}>['calendar'],
     diffBtwWkStartAndMnthStart,
     startDate,
     counter = 0,
@@ -241,21 +251,21 @@ export function buildCalendar(
 
   for (let j = 0; j < weeksInMonth; j++) {
     let newWeekDate = 0;
-    if (!(j in calendar)) {
+    if (!(j in calendar.weeks)) {
       if (j === 0) {
-        calendar = {
+        calendar.weeks = {
           [j]: {
             days: {},
             checked: false
-          } as YearMonthClickable<PositionTrackerType>['calendar'][number] | YearMonthClickable<{}>['calendar'][number]
-        } as YearMonthClickable<PositionTrackerType>['calendar'] | YearMonthClickable<{}>['calendar'];
+          } as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number] | YearMonthClickable<{}>['calendar']['weeks'][number]
+        }
       } else {
-        calendar = {
-          ...calendar,
+        calendar.weeks = {
+          ...calendar.weeks,
           [j]: {
             days: {},
             checked: false
-          } as YearMonthClickable<PositionTrackerType>['calendar'][number] | YearMonthClickable<{}>['calendar'][number]
+          } as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number] | YearMonthClickable<{}>['calendar']['weeks'][number]
         } as YearMonthClickable<PositionTrackerType>['calendar'] | YearMonthClickable<{}>['calendar'];
       }
     }
@@ -263,9 +273,9 @@ export function buildCalendar(
     for (let k = 0; k < 7; k++) {
       if (j === 0) {
         if (k < diffBtwWkStartAndMnthStart) {
-          let sDate = startDate + k, mm = (month-1)<0? 11 : (month<10? "0"+month : month), yy = (month-1)<0? year-1 : year;
+          let sDate = startDate + k, mm = (month-1)<0? 12 : (month<10? "0"+month : month), yy = (month-1)<0? year-1 : year;
           if(k === 0) {
-            calendar[j].days = {
+            calendar.weeks[j].days = {
               [k]: {
                 status: "DISABLE",
                 readonlystatus: "DISABLE",
@@ -275,8 +285,8 @@ export function buildCalendar(
             };
           }
           else {
-            calendar[j].days = {
-              ...calendar[j].days,
+            calendar.weeks[j].days = {
+              ...calendar.weeks[j].days,
               [k]: {
                 status: "DISABLE",
                 readonlystatus: "DISABLE",
@@ -287,8 +297,8 @@ export function buildCalendar(
           }
         } else {
           counter++;
-          calendar[j].days = {
-            ...calendar[j].days,
+          calendar.weeks[j].days = {
+            ...calendar.weeks[j].days,
             [k]: {
               status: differenceInCalendarDays(
                 isoweek
@@ -325,19 +335,19 @@ export function buildCalendar(
           }
         }
         if (holdertype === "PREVIOUS-OR-CURRENT") {
-          calendar[j].days[k] = {
-            ...calendar[j].days[k],
+          calendar.weeks[j].days[k] = {
+            ...calendar.weeks[j].days[k],
             ref: undefined,
             x1: 0,
             y1: 0,
             x2: 0,
             y2: 0,
-          } as YearMonthClickable<PositionTrackerType>['calendar'][number]['days'][number];
+          } as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]['days'][number];
         }
         else {
           if(holdertype === 'SELECTIONS') {
-            calendar[j].days[k] = {
-              ...calendar[j].days[k],
+            calendar.weeks[j].days[k] = {
+              ...calendar.weeks[j].days[k],
               selected: "DESELECTED",
             };
           }
@@ -345,8 +355,8 @@ export function buildCalendar(
       } else {
         counter++;
         if (counter <= daysInMonth) {
-          calendar[j].days = {
-            ...calendar[j].days,
+          calendar.weeks[j].days = {
+            ...calendar.weeks[j].days,
             [k]: {
               status: differenceInCalendarDays(
                 isoweek
@@ -383,8 +393,8 @@ export function buildCalendar(
           };
 
           if (holdertype === "PREVIOUS-OR-CURRENT") {
-            calendar[j].days[k] = {
-              ...calendar[j].days[k],
+            calendar.weeks[j].days[k] = {
+              ...calendar.weeks[j].days[k],
               ref: undefined,
               x1: 0,
               y1: 0,
@@ -394,8 +404,8 @@ export function buildCalendar(
           }
           else {
             if(holdertype === 'SELECTIONS') {
-              calendar[j].days[k] = {
-                ...calendar[j].days[k],
+              calendar.weeks[j].days[k] = {
+                ...calendar.weeks[j].days[k],
                 selected: "DESELECTED",
               };
             }
@@ -403,8 +413,8 @@ export function buildCalendar(
         } else {
           newWeekDate++;
           let yy = month+2 > 12? year+1 : year, mm = month+2 > 12? '01' : (month+2 < 10? '0'+(month+2) : month+2);
-          calendar[j].days = {
-            ...calendar[j].days,
+          calendar.weeks[j].days = {
+            ...calendar.weeks[j].days,
             [k]: {
               status: "DISABLE",
               readonlystatus: "DISABLE",
@@ -413,8 +423,8 @@ export function buildCalendar(
             },
           };
           if (holdertype === "PREVIOUS-OR-CURRENT") {
-            calendar[j].days[k] = {
-              ...calendar[j].days[k],
+            calendar.weeks[j].days[k] = {
+              ...calendar.weeks[j].days[k],
               ref: undefined,
               x1: 0,
               y1: 0,
@@ -424,16 +434,16 @@ export function buildCalendar(
           }
           else {
             if(holdertype === 'SELECTIONS') {
-              calendar[j].days[k] = {
-                ...calendar[j].days[k],
+              calendar.weeks[j].days[k] = {
+                ...calendar.weeks[j].days[k],
                 selected: "DESELECTED",
               };
             }
           }
 
           if (newWeekDate === 7 && j == weeksInMonth - 1) {
-            if (calendar[j].days[0].day === 1 && calendar[j].days[6].day === 7) {
-              delete calendar[j];
+            if (calendar.weeks[j].days[0].day === 1 && calendar.weeks[j].days[6].day === 7) {
+              delete calendar.weeks[j];
             }
           }
         }
@@ -455,17 +465,17 @@ export function buildCalendar(
 
 export function getDimensions(visiblecalendar: ShallowRef<VisibleCalendarType>) {
   nextTick(() => {
-    for (let w in visiblecalendar.value.previous.calendar) {
-      for (let d in visiblecalendar.value.previous.calendar[w].days) {
-        if (w in visiblecalendar.value.previous.calendar) {
-          if (d in visiblecalendar.value.previous.calendar[w].days) {
-            if (visiblecalendar.value.previous.calendar[w].days[d].ref as HTMLLabelElement) {
-              let offset = getOffset(visiblecalendar.value.previous.calendar[w].days[d].ref as HTMLLabelElement);
+    for (let w in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+      for (let d in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days) {
+        if (w in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+          if (d in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days) {
+            if ((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement) {
+              let offset = getOffset((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement);
               if (offset) {
-                visiblecalendar.value.previous.calendar[w].days[d].x1 = offset.x1;
-                visiblecalendar.value.previous.calendar[w].days[d].y1 = offset.y1;
-                visiblecalendar.value.previous.calendar[w].days[d].x2 = offset.x2;
-                visiblecalendar.value.previous.calendar[w].days[d].y2 = offset.y2;
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].x1 = offset.x1;
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].y1 = offset.y1;
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].x2 = offset.x2;
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].y2 = offset.y2;
               }
             } else {
               break;
@@ -476,17 +486,17 @@ export function getDimensions(visiblecalendar: ShallowRef<VisibleCalendarType>) 
         }
       }
     }
-    for (let w in visiblecalendar.value.current.calendar) {
-      for (let d in visiblecalendar.value.current.calendar[w].days) {
-        if (w in visiblecalendar.value.current.calendar) {
-          if (d in visiblecalendar.value.current.calendar[w].days) {
-            if (visiblecalendar.value.current.calendar[w].days[d].ref as HTMLLabelElement) {
-              let offset = getOffset(visiblecalendar.value.current.calendar[w].days[d].ref as HTMLLabelElement);
+    for (let w in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+      for (let d in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days) {
+        if (w in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+          if (d in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days) {
+            if ((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement) {
+              let offset = getOffset((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement);
               if (offset) {
-                visiblecalendar.value.current.calendar[w].days[d].x1 = offset.x1;
-                visiblecalendar.value.current.calendar[w].days[d].y1 = offset.y1;
-                visiblecalendar.value.current.calendar[w].days[d].x2 = offset.x2;
-                visiblecalendar.value.current.calendar[w].days[d].y2 = offset.y2;
+                (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].x1 = offset.x1;
+                (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].y1 = offset.y1;
+                (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].x2 = offset.x2;
+                (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].y2 = offset.y2;
               }
             } else {
               break;
@@ -518,6 +528,7 @@ function resetYearMonthDayCalendarHolder(holder: YearMonthClickable<PositionTrac
     month: holder.month,
     year: holder.year,
     clickable: holder.clickable,
+    ty: [false, false, false, false, false, false, false],
     calendar: calendar,
   } as typeof holder;
 }
@@ -531,9 +542,9 @@ function handleMultipleSelectionByPaste(
   visiblecalendar: ShallowRef<VisibleCalendarType>
 ) {
   if (
-    (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].selected === "DESELECTED"
+    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[week].days[day].selected === "DESELECTED"
   ) {
-    (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days[day].selected = "SELECTED";
+    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[week].days[day].selected = "SELECTED";
     multipleselectcount.value++;
   }
 }
@@ -551,18 +562,18 @@ function handleMultipleSelectionByClick(
 ) {
   if (
     (
-      visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-    )[week].days[day].selected === "DESELECTED"
+      (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+    ).weeks[week].days[day].selected === "DESELECTED"
   ) {
     (
-      visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-    )[week].days[day].selected = "SELECTED";
+      (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+    ).weeks[week].days[day].selected = "SELECTED";
     multipleselectcount.value++;
   }
   else {
     (
-      visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-    )[week].days[day].selected = "DESELECTED";
+      (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+    ).weeks[week].days[day].selected = "DESELECTED";
     multipleselectcount.value--;
   }
   triggerRef(visiblecalendar);
@@ -593,11 +604,11 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
   maxdate: string
 ) {
   let deselected = false, deselectedcount = 0;
-  if (Object.keys(visiblecalendar.value.selections).length > 0) {
-    if(year in visiblecalendar.value.selections) {
-      if(!(month in visiblecalendar.value.selections[year])) {
-        visiblecalendar.value.selections[year] = {
-          ...visiblecalendar.value.selections[year],
+  if (Object.keys((visiblecalendar.value as VisibleCalendarType).selections).length > 0) {
+    if(year in (visiblecalendar.value as VisibleCalendarType).selections) {
+      if(!(month in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+        (visiblecalendar.value as VisibleCalendarType).selections[year].months = {
+          ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
           [month]: buildCalendar(
             year,
             month,
@@ -611,27 +622,30 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         triggerRef(visiblecalendar);
         if(month === 0) {
           if(week === 0) {
-            if(!((year-1) in visiblecalendar.value.selections)) {
-              visiblecalendar.value.selections  = {
-                ...visiblecalendar.value.selections,
+            if(!((year-1) in (visiblecalendar.value as VisibleCalendarType).selections)) {
+              (visiblecalendar.value as VisibleCalendarType).selections  = {
+                ...(visiblecalendar.value as VisibleCalendarType).selections,
                 [year-1]: {
-                  [11]: buildCalendar(
-                    year-1,
-                    11,
-                    "SELECTIONS",
-                    isoweek,
-                    mindate,
-                    maxdate,
-                    visiblecalendar
-                  ),
+                  months: {
+                    [11]: buildCalendar(
+                      year-1,
+                      11,
+                      "SELECTIONS",
+                      isoweek,
+                      mindate,
+                      maxdate,
+                      visiblecalendar
+                    ),
+                  },
+                  ty: [false, false, false, false, false, false, false],
                 },
               } as VisibleCalendarType['selections'];
               triggerRef(visiblecalendar);
             }
             else {
-              if(!(11 in visiblecalendar.value.selections[year - 1])) {
-                visiblecalendar.value.selections[year-1]  = {
-                  ...visiblecalendar.value.selections[year-1],
+              if(!(11 in (visiblecalendar.value as VisibleCalendarType).selections[year - 1].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year-1].months = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year-1].months,
                   [11]: buildCalendar(
                     year-1,
                     11,
@@ -641,23 +655,23 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                     maxdate,
                     visiblecalendar
                   ),
-                }
+                };
                 triggerRef(visiblecalendar);
               }
             }
           }
           else {
             if (week === Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
               if(!((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ])) {
-                visiblecalendar.value.selections[year] = {
-                  ...visiblecalendar.value.selections[year],
+              ].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                   [month+1]: buildCalendar(
                     year,
                     month+1,
@@ -676,32 +690,35 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         else {
           if(month === 11) {
             if(week === Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if(!((year+1) in visiblecalendar.value.selections)) {
-                visiblecalendar.value.selections = {
-                  ...visiblecalendar.value.selections,
+              if(!((year+1) in (visiblecalendar.value as VisibleCalendarType).selections)) {
+                (visiblecalendar.value as VisibleCalendarType).selections = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections,
                   [year+1]: {
-                    [0]: buildCalendar(
-                      year+1,
-                      0,
-                      "SELECTIONS",
-                      isoweek,
-                      mindate,
-                      maxdate,
-                      visiblecalendar
-                    ),
+                    months: {
+                      [0]: buildCalendar(
+                        year+1,
+                        0,
+                        "SELECTIONS",
+                        isoweek,
+                        mindate,
+                        maxdate,
+                        visiblecalendar
+                      ),
+                    },
+                    ty: [false, false, false, false, false, false, false]
                   }
                 } as VisibleCalendarType['selections'];
                 triggerRef(visiblecalendar);
               }
               else {
-                if(!(0 in visiblecalendar.value.selections[year+1])) {
-                  visiblecalendar.value.selections[year+1] = {
-                    ...visiblecalendar.value.selections[year+1],
+                if(!(0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[year+1].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[year+1].months,
                     [0]: buildCalendar(
                       year+1,
                       0,
@@ -718,9 +735,9 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             }
             else {
               if(week === 0) {
-                if(!((month - 1) in visiblecalendar.value.selections[year])) {
-                  visiblecalendar.value.selections[year]  = {
-                    ...visiblecalendar.value.selections[year],
+                if(!((month - 1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                     [month - 1]: buildCalendar(
                       year,
                       month - 1,
@@ -738,14 +755,14 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           }
           else {
             if (week === Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if(!((month+1) in visiblecalendar.value.selections[year])) {
-                visiblecalendar.value.selections[year]  = {
-                  ...visiblecalendar.value.selections[year],
+              if(!((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                   [month+1]: buildCalendar(
                     year,
                     month+1,
@@ -761,9 +778,9 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             }
             else {
               if(week === 0) {
-                if(!((month-1) in visiblecalendar.value.selections[year])) {
-                  visiblecalendar.value.selections[year] = {
-                    ...visiblecalendar.value.selections[year],
+                if(!((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                     [month-1]: buildCalendar(
                       year,
                       month-1,
@@ -784,27 +801,30 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
       else {
         if(month === 0) {
           if(week === 0) {
-            if(!((year-1) in visiblecalendar.value.selections)) {
-              visiblecalendar.value.selections  = {
-                ...visiblecalendar.value.selections,
+            if(!((year-1) in (visiblecalendar.value as VisibleCalendarType).selections)) {
+              (visiblecalendar.value as VisibleCalendarType).selections  = {
+                ...(visiblecalendar.value as VisibleCalendarType).selections,
                 [year-1]: {
-                  [11]: buildCalendar(
-                    year-1,
-                    11,
-                    "SELECTIONS",
-                    isoweek,
-                    mindate,
-                    maxdate,
-                    visiblecalendar
-                  ),
+                  months: {
+                    [11]: buildCalendar(
+                      year-1,
+                      11,
+                      "SELECTIONS",
+                      isoweek,
+                      mindate,
+                      maxdate,
+                      visiblecalendar
+                    ),
+                  },
+                  ty: [false, false, false, false, false, false, false],
                 },
               } as VisibleCalendarType['selections'];
               triggerRef(visiblecalendar);
             }
             else {
-              if(!(11 in visiblecalendar.value.selections[year - 1])) {
-                visiblecalendar.value.selections[year-1]  = {
-                  ...visiblecalendar.value.selections[year-1],
+              if(!(11 in (visiblecalendar.value as VisibleCalendarType).selections[year - 1].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year-1].months  = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year-1].months,
                   [11]: buildCalendar(
                     year-1,
                     11,
@@ -821,16 +841,16 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           }
           else {
             if (week === Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
               if(!((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ])) {
-                visiblecalendar.value.selections[year] = {
-                  ...visiblecalendar.value.selections[year],
+              ].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                   [month+1]: buildCalendar(
                     year,
                     month+1,
@@ -849,32 +869,35 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         else {
           if(month === 11) {
             if(week === Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if(!((year+1) in visiblecalendar.value.selections)) {
-                visiblecalendar.value.selections = {
-                  ...visiblecalendar.value.selections,
+              if(!((year+1) in (visiblecalendar.value as VisibleCalendarType).selections)) {
+                (visiblecalendar.value as VisibleCalendarType).selections = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections,
                   [year+1]: {
-                    [0]: buildCalendar(
-                      year+1,
-                      0,
-                      "SELECTIONS",
-                      isoweek,
-                      mindate,
-                      maxdate,
-                      visiblecalendar
-                    ),
+                    months: {
+                      [0]: buildCalendar(
+                        year+1,
+                        0,
+                        "SELECTIONS",
+                        isoweek,
+                        mindate,
+                        maxdate,
+                        visiblecalendar
+                      ),
+                    },
+                    ty: [false, false, false, false, false, false, false]
                   }
                 } as VisibleCalendarType['selections'];
                 triggerRef(visiblecalendar);
               }
               else {
-                if(!(0 in visiblecalendar.value.selections[year+1])) {
-                  visiblecalendar.value.selections[year+1] = {
-                    ...visiblecalendar.value.selections[year+1],
+                if(!(0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[year+1].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[year+1].months,
                     [0]: buildCalendar(
                       year+1,
                       0,
@@ -891,9 +914,9 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             }
             else {
               if(week === 0) {
-                if(!((month - 1) in visiblecalendar.value.selections[year])) {
-                  visiblecalendar.value.selections[year]  = {
-                    ...visiblecalendar.value.selections[year],
+                if(!((month - 1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                     [month - 1]: buildCalendar(
                       year,
                       month - 1,
@@ -911,14 +934,14 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           }
           else {
             if (week === Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if(!((month+1) in visiblecalendar.value.selections[year])) {
-                visiblecalendar.value.selections[year]  = {
-                  ...visiblecalendar.value.selections[year],
+              if(!((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                   [month+1]: buildCalendar(
                     year,
                     month+1,
@@ -934,9 +957,9 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             }
             else {
               if(week === 0) {
-                if(!((month-1) in visiblecalendar.value.selections[year])) {
-                  visiblecalendar.value.selections[year] = {
-                    ...visiblecalendar.value.selections[year],
+                if(!((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                     [month-1]: buildCalendar(
                       year,
                       month-1,
@@ -956,44 +979,50 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
       }
     }
     else {
-      visiblecalendar.value.selections = {
-        ...visiblecalendar.value.selections,
+      (visiblecalendar.value as VisibleCalendarType).selections = {
+        ...(visiblecalendar.value as VisibleCalendarType).selections,
         [year]: {
-          [month]: buildCalendar(
-            year,
-            month,
-            "SELECTIONS",
-            isoweek,
-            mindate,
-            maxdate,
-            visiblecalendar
-          ),
-        },
+          months: {
+            [month]: buildCalendar(
+              year,
+              month,
+              "SELECTIONS",
+              isoweek,
+              mindate,
+              maxdate,
+              visiblecalendar
+            ),
+          },
+          ty: [false, false, false, false, false, false, false],
+        }
       } as VisibleCalendarType['selections'];
       triggerRef(visiblecalendar);
       if(month === 0) {
         if(week === 0) {
-          if(!((year-1) in visiblecalendar.value.selections)) {
-            visiblecalendar.value.selections  = {
-              ...visiblecalendar.value.selections,
+          if(!((year-1) in (visiblecalendar.value as VisibleCalendarType).selections)) {
+            (visiblecalendar.value as VisibleCalendarType).selections  = {
+              ...(visiblecalendar.value as VisibleCalendarType).selections,
               [year-1]: {
-                [11]: buildCalendar(
-                  year-1,
-                  11,
-                  "SELECTIONS",
-                  isoweek,
-                  mindate,
-                  maxdate,
-                  visiblecalendar
-                ),
+                months: {
+                  [11]: buildCalendar(
+                    year-1,
+                    11,
+                    "SELECTIONS",
+                    isoweek,
+                    mindate,
+                    maxdate,
+                    visiblecalendar
+                  ),
+                },
+                ty: [false, false, false, false, false, false, false]
               },
             } as VisibleCalendarType['selections'];
             triggerRef(visiblecalendar);
           }
           else {
-            if(!(11 in visiblecalendar.value.selections[year-1])) {
-              visiblecalendar.value.selections[year-1]  = {
-                ...visiblecalendar.value.selections[year-1],
+            if(!(11 in (visiblecalendar.value as VisibleCalendarType).selections[year-1].months)) {
+              (visiblecalendar.value as VisibleCalendarType).selections[year-1].months  = {
+                ...(visiblecalendar.value as VisibleCalendarType).selections[year-1].months,
                 [11]: buildCalendar(
                   year-1,
                   11,
@@ -1010,14 +1039,14 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         }
         else {
           if (week === Object.values(
-              (visiblecalendar.value as VisibleCalendarType).selections[
+              ((visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
             ).length - 1
           ) {
-            if(!((month+1) in visiblecalendar.value.selections[year])) {
-              visiblecalendar.value.selections[year]  = {
-                ...visiblecalendar.value.selections[year],
+            if(!((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+              (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                 [month+1]: buildCalendar(
                   year,
                   month+1,
@@ -1036,32 +1065,35 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
       else {
         if(month === 11) {
           if (week === Object.values(
-              (visiblecalendar.value as VisibleCalendarType).selections[
+              ((visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
             ).length - 1
           ) {
-            if(!((year+1) in visiblecalendar.value.selections)) {
-              visiblecalendar.value.selections  = {
-                ...visiblecalendar.value.selections,
+            if(!((year+1) in (visiblecalendar.value as VisibleCalendarType).selections)) {
+              (visiblecalendar.value as VisibleCalendarType).selections  = {
+                ...(visiblecalendar.value as VisibleCalendarType).selections,
                 [year+1]: {
-                  [0]: buildCalendar(
-                    year+1,
-                    0,
-                    "SELECTIONS",
-                    isoweek,
-                    mindate,
-                    maxdate,
-                    visiblecalendar
-                  ),
+                  months: {
+                    [0]: buildCalendar(
+                      year+1,
+                      0,
+                      "SELECTIONS",
+                      isoweek,
+                      mindate,
+                      maxdate,
+                      visiblecalendar
+                    ),
+                  },
+                  ty: [false, false, false, false, false, false, false],
                 },
               } as VisibleCalendarType['selections'];
               triggerRef(visiblecalendar);
             }
             else {
-              if(!(0 in visiblecalendar.value.selections[year+1])) {
-                visiblecalendar.value.selections[year+1]  = {
-                  ...visiblecalendar.value.selections[year+1],
+              if(!(0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year+1].months  = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year+1].months,
                   [0]: buildCalendar(
                     year+1,
                     0,
@@ -1078,9 +1110,9 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           }
           else {
             if(week === 0) {
-              if(!((month-1) in visiblecalendar.value.selections[year])) {
-                visiblecalendar.value.selections[year]  = {
-                  ...visiblecalendar.value.selections[year],
+              if(!((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                   [month - 1]: buildCalendar(
                     year,
                     month - 1,
@@ -1098,14 +1130,14 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         }
         else {
           if (week === Object.values(
-              (visiblecalendar.value as VisibleCalendarType).selections[
+              ((visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
             ).length - 1
           ) {
-            if(!((month+1) in visiblecalendar.value.selections[year])) {
-              visiblecalendar.value.selections[year]  = {
-                ...visiblecalendar.value.selections[year],
+            if(!((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+              (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                 [month+1]: buildCalendar(
                   year,
                   month+1,
@@ -1121,9 +1153,9 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           }
           else {
             if(week === 0) {
-              if(!((month-1) in visiblecalendar.value.selections[year])) {
-                visiblecalendar.value.selections[year]  = {
-                  ...visiblecalendar.value.selections[year],
+              if(!((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
                   [month-1]: buildCalendar(
                     year,
                     month-1,
@@ -1143,47 +1175,53 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
     }
   }
   else {
-    visiblecalendar.value.selections = {
+    (visiblecalendar.value as VisibleCalendarType).selections = {
       [year]: {
-        [month]: buildCalendar(
-          year,
-          month,
-          "SELECTIONS",
-          isoweek,
-          mindate,
-          maxdate,
-          visiblecalendar
-        ),
+        months: {
+          [month]: buildCalendar(
+            year,
+            month,
+            "SELECTIONS",
+            isoweek,
+            mindate,
+            maxdate,
+            visiblecalendar
+          ),
+        },
+        ty: [false, false, false, false, false, false, false]
       },
     } as unknown as VisibleCalendarType['selections'];
     triggerRef(visiblecalendar);
     if(month === 0) {
       if(week === 0) {
-        visiblecalendar.value.selections  = {
-          ...visiblecalendar.value.selections,
+        (visiblecalendar.value as VisibleCalendarType).selections  = {
+          ...(visiblecalendar.value as VisibleCalendarType).selections,
           [year-1]: {
-            [11]: buildCalendar(
-              year-1,
-              11,
-              "SELECTIONS",
-              isoweek,
-              mindate,
-              maxdate,
-              visiblecalendar
-            ),
+            months: {
+              [11]: buildCalendar(
+                year-1,
+                11,
+                "SELECTIONS",
+                isoweek,
+                mindate,
+                maxdate,
+                visiblecalendar
+              ),
+            },
+            ty: [false, false, false, false, false, false, false]
           },
         } as VisibleCalendarType['selections'];
         triggerRef(visiblecalendar);
       }
       else {
         if (week === Object.values(
-            (visiblecalendar.value as VisibleCalendarType).selections[
+            ((visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
           ).length - 1
         ) {
-          visiblecalendar.value.selections[year]  = {
-            ...visiblecalendar.value.selections[year],
+          (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+            ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
             [month+1]: buildCalendar(
               year,
               month+1,
@@ -1201,31 +1239,34 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
     else {
       if(month === 11) {
         if (week === Object.values(
-            (visiblecalendar.value as VisibleCalendarType).selections[
+            ((visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
           ).length - 1
         ) {
-          visiblecalendar.value.selections  = {
-            ...visiblecalendar.value.selections,
+          (visiblecalendar.value as VisibleCalendarType).selections  = {
+            ...(visiblecalendar.value as VisibleCalendarType).selections,
             [year+1]: {
-              [0]: buildCalendar(
-                year+1,
-                0,
-                "SELECTIONS",
-                isoweek,
-                mindate,
-                maxdate,
-                visiblecalendar
-              ),
+              months: {
+                [0]: buildCalendar(
+                  year+1,
+                  0,
+                  "SELECTIONS",
+                  isoweek,
+                  mindate,
+                  maxdate,
+                  visiblecalendar
+                ),
+              },
+              ty: [false, false, false, false, false, false, false]
             },
           } as VisibleCalendarType['selections'];
           triggerRef(visiblecalendar);
         }
         else {
           if(week === 0) {
-            visiblecalendar.value.selections[year]  = {
-              ...visiblecalendar.value.selections[year],
+            (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+              ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
               [month - 1]: buildCalendar(
                 year,
                 month - 1,
@@ -1242,13 +1283,13 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
       }
       else {
         if (week === Object.values(
-            (visiblecalendar.value as VisibleCalendarType).selections[
+            ((visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
           ).length - 1
         ) {
-          visiblecalendar.value.selections[year]  = {
-            ...visiblecalendar.value.selections[year],
+          (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+            ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
             [month+1]: buildCalendar(
               year,
               month+1,
@@ -1263,8 +1304,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         }
         else {
           if(week === 0) {
-            visiblecalendar.value.selections[year]  = {
-              ...visiblecalendar.value.selections[year],
+            (visiblecalendar.value as VisibleCalendarType).selections[year].months  = {
+              ...(visiblecalendar.value as VisibleCalendarType).selections[year].months,
               [month-1]: buildCalendar(
                 year,
                 month-1,
@@ -1297,20 +1338,20 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         (
           (visiblecalendar.value as VisibleCalendarType).selections[
             year
-          ][month] as YearMonthClickable<{}>['calendar']
-        )[week].days[0].day !== 1
+          ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].days[0].day !== 1
       ) {
         if((year-1) in (visiblecalendar.value as VisibleCalendarType).selections) {
-          if(11 in (visiblecalendar.value as VisibleCalendarType).selections[year-1]) {
+          if(11 in (visiblecalendar.value as VisibleCalendarType).selections[year-1].months) {
             deselectedcount = loopThroughWeekForMultipleSelection(
               checked,
               year-1,
               11,
               (
                 Object.values(
-                  (visiblecalendar.value as VisibleCalendarType).selections[
+                  ((visiblecalendar.value as VisibleCalendarType).selections[
                     year-1
-                  ][11] as YearMonthClickable<{}>['calendar']
+                  ].months[11] as YearMonthClickable<{}>['calendar']).weeks
                 ).length - 1
               ),
               'COUNTER',
@@ -1322,20 +1363,20 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = false;
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year-1
-                ][11] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[11] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 (
                   Object.values(
-                    (visiblecalendar.value as VisibleCalendarType).selections[
+                    ((visiblecalendar.value as VisibleCalendarType).selections[
                       year-1
-                    ][11] as YearMonthClickable<{}>['calendar']
+                    ].months[11] as YearMonthClickable<{}>['calendar']).weeks
                   ).length - 1
                 )
               ].checked = false;
@@ -1344,20 +1385,20 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = true;
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year-1
-                ][11] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[11] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 (
                   Object.values(
-                    (visiblecalendar.value as VisibleCalendarType).selections[
+                    ((visiblecalendar.value as VisibleCalendarType).selections[
                       year-1
-                    ][11] as YearMonthClickable<{}>['calendar']
+                    ].months[11] as YearMonthClickable<{}>['calendar']).weeks
                   ).length - 1
                 )
               ].checked = true;
@@ -1369,8 +1410,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = false;
             }
@@ -1378,8 +1419,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = true;
             }
@@ -1391,8 +1432,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
           }
@@ -1400,8 +1441,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
           }
@@ -1413,8 +1454,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = false;
         }
@@ -1422,8 +1463,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = true;
         }
@@ -1434,14 +1475,13 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
       if(week === 
         (
           Object.values(
-            (visiblecalendar.value as VisibleCalendarType).selections[
+            ((visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
           ).length - 1
         )
       ) {
-        if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
-          
+        if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
           deselectedcount = loopThroughWeekForMultipleSelection(
             checked,
             year,
@@ -1456,29 +1496,29 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month+1] as YearMonthClickable<{}>['calendar']
-            )[0].checked = false;
+              ].months[month+1] as YearMonthClickable<{}>['calendar']
+            ).weeks[0].checked = false;
           }
           else {
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month+1] as YearMonthClickable<{}>['calendar']
-            )[0].checked = true;
+              ].months[month+1] as YearMonthClickable<{}>['calendar']
+            ).weeks[0].checked = true;
           }
           triggerRef(visiblecalendar);
         }
@@ -1487,8 +1527,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
           }
@@ -1496,8 +1536,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
           }
@@ -1509,8 +1549,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = false;
         }
@@ -1518,8 +1558,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = true;
         }
@@ -1533,19 +1573,19 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         (
           (visiblecalendar.value as VisibleCalendarType).selections[
             year
-          ][month] as YearMonthClickable<{}>['calendar']
-        )[week].days[0].day !== 1
+          ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].days[0].day !== 1
       ) {
-        if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+        if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
           deselectedcount = loopThroughWeekForMultipleSelection(
             checked,
             year,
             month-1,
             (
               Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month-1] as YearMonthClickable<{}>['calendar']
+                ].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ),
             'COUNTER',
@@ -1557,20 +1597,20 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month-1] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[month-1] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               (
                 Object.values(
-                  (visiblecalendar.value as VisibleCalendarType).selections[
+                  ((visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][month-1] as YearMonthClickable<{}>['calendar']
+                  ].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                 ).length - 1
               )
             ].checked = false;
@@ -1579,20 +1619,20 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month-1] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[month-1] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               (
                 Object.values(
-                  (visiblecalendar.value as VisibleCalendarType).selections[
+                  ((visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][month-1] as YearMonthClickable<{}>['calendar']
+                  ].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                 ).length - 1
               )
             ].checked = true;
@@ -1604,8 +1644,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
           }
@@ -1613,8 +1653,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
           }
@@ -1626,8 +1666,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = false;
         }
@@ -1635,8 +1675,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = true;
         }
@@ -1647,14 +1687,14 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
       if(week === 
         (
           Object.values(
-            (visiblecalendar.value as VisibleCalendarType).selections[
+            ((visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
           ).length - 1
         )
       ) {
         if((year+1) in (visiblecalendar.value as VisibleCalendarType).selections) {
-          if(0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1]) {
+          if(0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1].months) {
             deselectedcount = loopThroughWeekForMultipleSelection(
               checked,
               year+1,
@@ -1669,29 +1709,29 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = false;
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year+1
-                ][0] as YearMonthClickable<{}>['calendar']
-              )[0].checked = false;
+                ].months[0] as YearMonthClickable<{}>['calendar']
+              ).weeks[0].checked = false;
             }
             else {
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = true;
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year+1
-                ][0] as YearMonthClickable<{}>['calendar']
-              )[0].checked = true;
+                ].months[0] as YearMonthClickable<{}>['calendar']
+              ).weeks[0].checked = true;
             }
             triggerRef(visiblecalendar);
           }
@@ -1700,8 +1740,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = false;
             }
@@ -1709,8 +1749,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = true;
             }
@@ -1722,8 +1762,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
           }
@@ -1731,8 +1771,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
           }
@@ -1744,8 +1784,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = false;
         }
@@ -1753,8 +1793,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = true;
         }
@@ -1768,19 +1808,19 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
         (
           (visiblecalendar.value as VisibleCalendarType).selections[
             year
-          ][month] as YearMonthClickable<{}>['calendar']
-        )[week].days[0].day !== 1
+          ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].days[0].day !== 1
       ) {
-        if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+        if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
           deselectedcount = loopThroughWeekForMultipleSelection(
             checked,
             year,
             month-1,
             (
               Object.values(
-                (visiblecalendar.value as VisibleCalendarType).selections[
+                ((visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month-1] as YearMonthClickable<{}>['calendar']
+                ].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ),
             'COUNTER',
@@ -1792,20 +1832,20 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month-1] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[month-1] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               (
                 Object.values(
-                  (visiblecalendar.value as VisibleCalendarType).selections[
+                  ((visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][month-1] as YearMonthClickable<{}>['calendar']
+                  ].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                 ).length - 1
               )
             ].checked = false;
@@ -1814,20 +1854,20 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month-1] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[month-1] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               (
                 Object.values(
-                  (visiblecalendar.value as VisibleCalendarType).selections[
+                  ((visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][month-1] as YearMonthClickable<{}>['calendar']
+                  ].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                 ).length - 1
               )
             ].checked = true;
@@ -1839,8 +1879,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
           }
@@ -1848,8 +1888,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
           }
@@ -1861,8 +1901,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = false;
         }
@@ -1870,8 +1910,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = true;
         }
@@ -1882,9 +1922,9 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
       if(week === 
         (
           Object.values(
-            (visiblecalendar.value as VisibleCalendarType).selections[
+            ((visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
           ).length - 1
         )
       ) {
@@ -1892,10 +1932,10 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month+1] as YearMonthClickable<{}>['calendar']
-          )[0].days[0].day !== 1
+            ].months[month+1] as YearMonthClickable<{}>['calendar']
+          ).weeks[0].days[0].day !== 1
         ) {
-          if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year]) {
+          if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
             deselectedcount = loopThroughWeekForMultipleSelection(
               checked,
               year,
@@ -1910,29 +1950,29 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = false;
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month+1] as YearMonthClickable<{}>['calendar']
-              )[0].checked = false;
+                ].months[month+1] as YearMonthClickable<{}>['calendar']
+              ).weeks[0].checked = false;
             }
             else {
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = true;
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month+1] as YearMonthClickable<{}>['calendar']
-              )[0].checked = true;
+                ].months[month+1] as YearMonthClickable<{}>['calendar']
+              ).weeks[0].checked = true;
             }
             triggerRef(visiblecalendar);
           }
@@ -1941,8 +1981,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = false;
             }
@@ -1950,8 +1990,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][month] as YearMonthClickable<{}>['calendar']
-              )[
+                ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[
                 week
               ].checked = true;
             }
@@ -1963,8 +2003,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = false;
           }
@@ -1972,8 +2012,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][month] as YearMonthClickable<{}>['calendar']
-            )[
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[
               week
             ].checked = true;
           }
@@ -1985,8 +2025,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = false;
         }
@@ -1994,8 +2034,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][month] as YearMonthClickable<{}>['calendar']
-          )[
+            ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[
             week
           ].checked = true;
         }
@@ -2018,20 +2058,20 @@ function loopThroughWeekForMultipleSelection(
   for(let d in (
       (visiblecalendar.value as VisibleCalendarType).selections[
         year
-      ][
+      ].months[
         month
       ] as YearMonthClickable<{}>['calendar']
-    )[week].days
+    ).weeks[week].days
   ) {
     if(week === 0) {
       if(
         (
           (visiblecalendar.value as VisibleCalendarType).selections[
             year
-          ][
+          ].months[
             month
           ] as YearMonthClickable<{}>['calendar']
-        )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
+        ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
       ) {
         if(boxtype === 'WEEK-BOX') {
           if(typeof checked === 'boolean') {
@@ -2039,10 +2079,10 @@ function loopThroughWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected = "SELECTED";
+              ).weeks[week].days[d].selected = "SELECTED";
               if(returnType === "COUNTER") {
                 deselectedcount = 0;
               }
@@ -2054,10 +2094,10 @@ function loopThroughWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected = "DESELECTED";
+              ).weeks[week].days[d].selected = "DESELECTED";
               if(returnType === "COUNTER") {
                 deselectedcount = 1;
               }
@@ -2072,18 +2112,18 @@ function loopThroughWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected === "DESELECTED"
+            ).weeks[week].days[d].selected === "DESELECTED"
             &&
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].status === "ENABLE"
+            ).weeks[week].days[d].status === "ENABLE"
           ) {
             if(returnType === "COUNTER") {
               deselectedcount++;
@@ -2097,20 +2137,20 @@ function loopThroughWeekForMultipleSelection(
       }
     }
     else if(week === (
-      Object.values((visiblecalendar.value as VisibleCalendarType).selections[
+      Object.values(((visiblecalendar.value as VisibleCalendarType).selections[
         year
-      ][
+      ].months[
         month
-      ] as YearMonthClickable<{}>['calendar']).length - 1
+      ] as YearMonthClickable<{}>['calendar']).weeks).length - 1
     )) {
       if(
         !((
           (visiblecalendar.value as VisibleCalendarType).selections[
             year
-          ][
+          ].months[
             month
           ] as YearMonthClickable<{}>['calendar']
-        )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
+        ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
       ) {
         if(boxtype === 'WEEK-BOX') {
           if(typeof checked === 'boolean') {
@@ -2118,10 +2158,10 @@ function loopThroughWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected = "SELECTED";
+              ).weeks[week].days[d].selected = "SELECTED";
               if(returnType === "COUNTER") {
                 deselectedcount = 0;
               }
@@ -2133,10 +2173,10 @@ function loopThroughWeekForMultipleSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected = "DESELECTED";
+              ).weeks[week].days[d].selected = "DESELECTED";
               if(returnType === "COUNTER") {
                 deselectedcount = 1;
               }
@@ -2151,18 +2191,18 @@ function loopThroughWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected === "DESELECTED"
+            ).weeks[week].days[d].selected === "DESELECTED"
             &&
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].status === "ENABLE"
+            ).weeks[week].days[d].status === "ENABLE"
           ) {
             if(returnType === "COUNTER") {
               deselectedcount++;
@@ -2182,10 +2222,10 @@ function loopThroughWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected = "SELECTED";
+            ).weeks[week].days[d].selected = "SELECTED";
             if(returnType === "COUNTER") {
               deselectedcount = 0;
             }
@@ -2197,10 +2237,10 @@ function loopThroughWeekForMultipleSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].selected = "DESELECTED";
+            ).weeks[week].days[d].selected = "DESELECTED";
             if(returnType === "COUNTER") {
               deselectedcount = 1;
             }
@@ -2215,18 +2255,18 @@ function loopThroughWeekForMultipleSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][
+            ].months[
               month
             ] as YearMonthClickable<{}>['calendar']
-          )[week].days[d].selected === "DESELECTED"
+          ).weeks[week].days[d].selected === "DESELECTED"
           &&
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][
+            ].months[
               month
             ] as YearMonthClickable<{}>['calendar']
-          )[week].days[d].status === "ENABLE"
+          ).weeks[week].days[d].status === "ENABLE"
         ) {
           if(returnType === "COUNTER") {
             deselectedcount++;
@@ -2261,10 +2301,10 @@ function loopThroughWeekForRangeSelection(
   for(let d in (
       (visiblecalendar.value as VisibleCalendarType).selections[
         year
-      ][
+      ].months[
         month
       ] as YearMonthClickable<{}>['calendar']
-    )[week].days
+    ).weeks[week].days
   ) {
     if(typeof rules === 'string') {
       if(rules === '') {
@@ -2273,10 +2313,10 @@ function loopThroughWeekForRangeSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
+            ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
           ) {
             if(boxtype === 'WEEK-BOX') {
               if(typeof checked === 'boolean') {
@@ -2284,10 +2324,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "HIGHLIGHTED";
+                  ).weeks[week].days[d].selected = "HIGHLIGHTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 0;
                   }
@@ -2299,10 +2339,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "DESELECTED";
+                  ).weeks[week].days[d].selected = "DESELECTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 1;
                   }
@@ -2317,10 +2357,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected === "DESELECTED"
+                ).weeks[week].days[d].selected === "DESELECTED"
               ) {
                 if(returnType === "COUNTER") {
                   deselectedcount++;
@@ -2334,20 +2374,20 @@ function loopThroughWeekForRangeSelection(
           }
         }
         else if(week === (
-          Object.values((visiblecalendar.value as VisibleCalendarType).selections[
+          Object.values(((visiblecalendar.value as VisibleCalendarType).selections[
             year
-          ][
+          ].months[
             month
-          ] as YearMonthClickable<{}>['calendar']).length - 1
+          ] as YearMonthClickable<{}>['calendar']).weeks).length - 1
         )) {
           if(
             !((
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
+            ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
           ) {
             if(boxtype === 'WEEK-BOX') {
               if(typeof checked === 'boolean') {
@@ -2355,10 +2395,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "HIGHLIGHTED";
+                  ).weeks[week].days[d].selected = "HIGHLIGHTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 0;
                   }
@@ -2370,10 +2410,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "DESELECTED";
+                  ).weeks[week].days[d].selected = "DESELECTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 1;
                   }
@@ -2388,10 +2428,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected === "DESELECTED"
+                ).weeks[week].days[d].selected === "DESELECTED"
               ) {
                 if(returnType === "COUNTER") {
                   deselectedcount++;
@@ -2401,7 +2441,7 @@ function loopThroughWeekForRangeSelection(
                 }
                 break;
               }
-            } 
+            }
           }
         }
         else {
@@ -2411,10 +2451,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "HIGHLIGHTED";
+                ).weeks[week].days[d].selected = "HIGHLIGHTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 0;
                 }
@@ -2426,10 +2466,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "DESELECTED";
+                ).weeks[week].days[d].selected = "DESELECTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 1;
                 }
@@ -2444,10 +2484,10 @@ function loopThroughWeekForRangeSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
+              ).weeks[week].days[d].selected === "DESELECTED"
             ) {
               if(returnType === "COUNTER") {
                 deselectedcount++;
@@ -2466,10 +2506,10 @@ function loopThroughWeekForRangeSelection(
             (
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
+            ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
             &&
             (
               rules === '>=rangelastselection.day'?
@@ -2477,10 +2517,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
               )
               : (
                 rules === '<=rangelastselection.day'?
@@ -2488,10 +2528,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
+                  ).weeks[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
                 )
                 : (
                   rules === '<=rangefirstselection.day'?
@@ -2499,20 +2539,20 @@ function loopThroughWeekForRangeSelection(
                     (
                       (visiblecalendar.value as VisibleCalendarType).selections[
                         year
-                      ][
+                      ].months[
                         month
                       ] as YearMonthClickable<{}>['calendar']
-                    )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
+                    ).weeks[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
                   )
                   :
                   (
                     (
                       (visiblecalendar.value as VisibleCalendarType).selections[
                         year
-                      ][
+                      ].months[
                         month
                       ] as YearMonthClickable<{}>['calendar']
-                    )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
+                    ).weeks[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
                   )
                 )
               )
@@ -2524,10 +2564,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "HIGHLIGHTED";
+                  ).weeks[week].days[d].selected = "HIGHLIGHTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 0;
                   }
@@ -2539,10 +2579,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "DESELECTED";
+                  ).weeks[week].days[d].selected = "DESELECTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 1;
                   }
@@ -2557,10 +2597,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected === "DESELECTED"
+                ).weeks[week].days[d].selected === "DESELECTED"
               ) {
                 if(returnType === "COUNTER") {
                   deselectedcount++;
@@ -2574,58 +2614,58 @@ function loopThroughWeekForRangeSelection(
           }
         }
         else if(week === (
-          Object.values((visiblecalendar.value as VisibleCalendarType).selections[
+          Object.values(((visiblecalendar.value as VisibleCalendarType).selections[
             year
-          ][
+          ].months[
             month
-          ] as YearMonthClickable<{}>['calendar']).length - 1
+          ] as YearMonthClickable<{}>['calendar']).weeks).length - 1
         )) {
           if(
             !((
               (visiblecalendar.value as VisibleCalendarType).selections[
                 year
-              ][
+              ].months[
                 month
               ] as YearMonthClickable<{}>['calendar']
-            )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
+            ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
             &&
             (
               rules === '>=rangelastselection.day'?
                 ((
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day)
+                ).weeks[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day)
                 :
                 (
                   rules === '<=rangelastselection.day'?
                     ((
                       (visiblecalendar.value as VisibleCalendarType).selections[
                         year
-                      ][
+                      ].months[
                         month
                       ] as YearMonthClickable<{}>['calendar']
-                    )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day)
+                    ).weeks[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day)
                     :
                     (
                       rules === '<=rangefirstselection.day'?
                         ((
                           (visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        ).weeks[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day)
                         :
                         ((
                           (visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        ).weeks[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day)
                     )
                 )
             )
@@ -2636,10 +2676,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "HIGHLIGHTED";
+                  ).weeks[week].days[d].selected = "HIGHLIGHTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 0;
                   }
@@ -2651,10 +2691,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "DESELECTED";
+                  ).weeks[week].days[d].selected = "DESELECTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 1;
                   }
@@ -2669,10 +2709,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected === "DESELECTED"
+                ).weeks[week].days[d].selected === "DESELECTED"
               ) {
                 if(returnType === "COUNTER") {
                   deselectedcount++;
@@ -2682,7 +2722,7 @@ function loopThroughWeekForRangeSelection(
                 }
                 break;
               }
-            } 
+            }
           }
         }
         else {
@@ -2692,38 +2732,38 @@ function loopThroughWeekForRangeSelection(
                 ((
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day)
+                ).weeks[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day)
                 :
                 (
                   rules === '<=rangelastselection.day'?
                     ((
                       (visiblecalendar.value as VisibleCalendarType).selections[
                         year
-                      ][
+                      ].months[
                         month
                       ] as YearMonthClickable<{}>['calendar']
-                    )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day)
+                    ).weeks[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day)
                     :
                     (
                       rules === '<=rangefirstselection.day'?
                         ((
                           (visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        ).weeks[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day)
                         :
                         ((
                           (visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month
                           ] as YearMonthClickable<{}>['calendar']
-                        )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day)
+                        ).weeks[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day)
                     )
                 )
             )
@@ -2734,10 +2774,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "HIGHLIGHTED";
+                  ).weeks[week].days[d].selected = "HIGHLIGHTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 0;
                   }
@@ -2749,10 +2789,10 @@ function loopThroughWeekForRangeSelection(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
                       year
-                    ][
+                    ].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']
-                  )[week].days[d].selected = "DESELECTED";
+                  ).weeks[week].days[d].selected = "DESELECTED";
                   if(returnType === "COUNTER") {
                     deselectedcount = 1;
                   }
@@ -2767,10 +2807,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected === "DESELECTED"
+                ).weeks[week].days[d].selected === "DESELECTED"
               ) {
                 if(returnType === "COUNTER") {
                   deselectedcount++;
@@ -2791,10 +2831,10 @@ function loopThroughWeekForRangeSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][
+            ].months[
               month
             ] as YearMonthClickable<{}>['calendar']
-          )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
+          ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7]
           &&
           (
             (rules[0] === '<=rangefirstselection.day' && rules[1] === '>=rangelastselection.day') ?
@@ -2802,18 +2842,18 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
               :
               (
@@ -2822,18 +2862,18 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
           )
         ) {
@@ -2843,10 +2883,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "HIGHLIGHTED";
+                ).weeks[week].days[d].selected = "HIGHLIGHTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 0;
                 }
@@ -2858,10 +2898,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "DESELECTED";
+                ).weeks[week].days[d].selected = "DESELECTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 1;
                 }
@@ -2876,10 +2916,10 @@ function loopThroughWeekForRangeSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
+              ).weeks[week].days[d].selected === "DESELECTED"
             ) {
               if(returnType === 'COUNTER') {
                 deselectedcount++;
@@ -2893,20 +2933,20 @@ function loopThroughWeekForRangeSelection(
         }
       }
       else if(week === (
-        Object.values((visiblecalendar.value as VisibleCalendarType).selections[
+        Object.values(((visiblecalendar.value as VisibleCalendarType).selections[
           year
-        ][
+        ].months[
           month
-        ] as YearMonthClickable<{}>['calendar']).length - 1
+        ] as YearMonthClickable<{}>['calendar']).weeks).length - 1
       )) {
         if(
           !((
             (visiblecalendar.value as VisibleCalendarType).selections[
               year
-            ][
+            ].months[
               month
             ] as YearMonthClickable<{}>['calendar']
-          )[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
+          ).weeks[week].days[d].day in [1, 2, 3, 4, 5, 6, 7, 7])
           &&
           (
             (rules[0] === '<=rangefirstselection.day' && rules[1] === '>=rangelastselection.day') ?
@@ -2914,18 +2954,18 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
               :
               (
@@ -2934,18 +2974,18 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
           )
         ) {
@@ -2955,10 +2995,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "HIGHLIGHTED";
+                ).weeks[week].days[d].selected = "HIGHLIGHTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 0;
                 }
@@ -2970,10 +3010,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "DESELECTED";
+                ).weeks[week].days[d].selected = "DESELECTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 1;
                 }
@@ -2988,10 +3028,10 @@ function loopThroughWeekForRangeSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
+              ).weeks[week].days[d].selected === "DESELECTED"
             ) {
               if(returnType === 'COUNTER') {
                 deselectedcount++;
@@ -3012,18 +3052,18 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day > (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day < (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
               :
               (
@@ -3032,18 +3072,18 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day < (rangelastselection as RangeFirstAndLastSelectionType).day
                 &&
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
+                ).weeks[week].days[d].day > (rangefirstselection as RangeFirstAndLastSelectionType).day
               )
           )
         ) {
@@ -3053,10 +3093,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "HIGHLIGHTED";
+                ).weeks[week].days[d].selected = "HIGHLIGHTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 0;
                 }
@@ -3068,10 +3108,10 @@ function loopThroughWeekForRangeSelection(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
                     year
-                  ][
+                  ].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']
-                )[week].days[d].selected = "DESELECTED";
+                ).weeks[week].days[d].selected = "DESELECTED";
                 if(returnType === "COUNTER") {
                   deselectedcount = 1;
                 }
@@ -3086,10 +3126,10 @@ function loopThroughWeekForRangeSelection(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
                   year
-                ][
+                ].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']
-              )[week].days[d].selected === "DESELECTED"
+              ).weeks[week].days[d].selected === "DESELECTED"
             ) {
               if(returnType === 'COUNTER') {
                 deselectedcount++;
@@ -3156,10 +3196,10 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
       boxtype
     ) as number;
     if(deselectedcount > 0) {
-      (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[week].checked = false;
     }
     else {
-      (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[week].checked = true;
     }
     triggerRef(visiblecalendar);
   }
@@ -3233,10 +3273,10 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
         ) as number;
       }
       if(deselectedcount > 0) {
-        (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = false;
+        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[week].checked = false;
       }
       else {
-        (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].checked = true;
+        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[week].checked = true;
       }
       triggerRef(visiblecalendar);
     }
@@ -3319,16 +3359,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
           if(week === 0) {
             if(
               (
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-              )[week].days[0].day !== 1
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[week].days[0].day !== 1
             ) {
-              if((month-1) >= 0 && (month-1) in visiblecalendar.value.selections[year]) {
+              if((month-1) >= 0 && (month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                 if(
                   ( 
                     (month-1) === rangelastselection.month 
                     &&
                     rangelastselection.week === Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1
                   )
                   ||
@@ -3336,7 +3376,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     (month-1) === rangefirstselection.month
                     &&
                     rangefirstselection.week === Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1
                   )
                 ) {
@@ -3353,7 +3393,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     year,
                     month-1,
                     (Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -3369,7 +3409,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     year,
                     month-1,
                     (Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -3378,42 +3418,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month - 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     (
                       Object.values(
-                        (visiblecalendar.value as VisibleCalendarType).selections[
+                        ((visiblecalendar.value as VisibleCalendarType).selections[
                           year
-                        ][
+                        ].months[
                           month - 1
-                        ] as YearMonthClickable<{}>['calendar']
+                        ] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ].checked = false;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month - 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     (
                       Object.values(
-                        (visiblecalendar.value as VisibleCalendarType).selections[
+                        ((visiblecalendar.value as VisibleCalendarType).selections[
                           year
-                        ][
+                        ].months[
                           month - 1
-                        ] as YearMonthClickable<{}>['calendar']
+                        ] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ].checked = true;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -3421,16 +3461,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -3439,16 +3479,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -3457,14 +3497,14 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
           }
           else if(
             week === Object.values(
-              visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+              ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
             ).length - 1
           ) {
-            if((month+1) <= 11 && (month+1) in visiblecalendar.value.selections[year]) {
+            if((month+1) <= 11 && (month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month+1] as YearMonthClickable<{}>['calendar']
-                )[0].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[month+1] as YearMonthClickable<{}>['calendar']
+                ).weeks[0].days[0].day !== 1
               ) {
                 if(
                   ( 
@@ -3512,26 +3552,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month + 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     0
                   ].checked = false;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month + 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     0
                   ].checked = true;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -3539,16 +3579,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -3557,16 +3597,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -3575,16 +3615,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
           }
           else {
             if(deselected) {
-              (visiblecalendar.value.selections[year][
+              ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                 month
-              ] as YearMonthClickable<{}>['calendar'])[
+              ] as YearMonthClickable<{}>['calendar']).weeks[
                 week
               ].checked = false;
             }
             else {
-              (visiblecalendar.value.selections[year][
+              ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                 month
-              ] as YearMonthClickable<{}>['calendar'])[
+              ] as YearMonthClickable<{}>['calendar']).weeks[
                 week
               ].checked = true;
             }
@@ -3607,16 +3647,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
           if(week === 0) {
             if(
               (
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-              )[week].days[0].day !== 1
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[week].days[0].day !== 1
             ) {
-              if((month-1) in visiblecalendar.value.selections[year]) {
+              if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                 if(
                   (
                     rangefirstselection.month === (month-1)
                     &&
                     rangefirstselection.week ===  Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1
                   )
                   ||
@@ -3624,7 +3664,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     rangelastselection.month === (month-1)
                     &&
                     rangelastselection.week === Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1
                   )
                 ) {
@@ -3640,7 +3680,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     year,
                     month-1,
                     (Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -3656,7 +3696,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     year,
                     month-1,
                     (Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -3665,42 +3705,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month - 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     (
                       Object.values(
-                        (visiblecalendar.value as VisibleCalendarType).selections[
+                        ((visiblecalendar.value as VisibleCalendarType).selections[
                           year
-                        ][
+                        ].months[
                           month - 1
-                        ] as YearMonthClickable<{}>['calendar']
+                        ] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ].checked = false;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month - 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     (
                       Object.values(
-                        (visiblecalendar.value as VisibleCalendarType).selections[
+                        ((visiblecalendar.value as VisibleCalendarType).selections[
                           year
-                        ][
+                        ].months[
                           month - 1
-                        ] as YearMonthClickable<{}>['calendar']
+                        ] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ].checked = true;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -3709,16 +3749,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -3727,14 +3767,14 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
           }
           else if(
             week === Object.values(
-              visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+              ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
             ).length - 1
           ) {
-            if((month+1) in visiblecalendar.value.selections[year]) {
+            if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month+1] as YearMonthClickable<{}>['calendar']
-                )[0].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[month+1] as YearMonthClickable<{}>['calendar']
+                ).weeks[0].days[0].day !== 1
               ) {
                 if(
                   ( 
@@ -3783,26 +3823,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month + 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     0
                   ].checked = false;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month + 1
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     0
                   ].checked = true;
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -3810,16 +3850,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -3829,16 +3869,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
           }
           else {
             if(deselected) {
-              (visiblecalendar.value.selections[year][
+              ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                 month
-              ] as YearMonthClickable<{}>['calendar'])[
+              ] as YearMonthClickable<{}>['calendar']).weeks[
                 week
               ].checked = false;
             }
             else {
-              (visiblecalendar.value.selections[year][
+              ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                 month
-              ] as YearMonthClickable<{}>['calendar'])[
+              ] as YearMonthClickable<{}>['calendar']).weeks[
                 week
               ].checked = true;
             }
@@ -3972,13 +4012,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             if(week === 0) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                )[week].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[0].day !== 1
               ) {
                 if(
-                  (year-1) in visiblecalendar.value.selections
+                  (year-1) in (visiblecalendar.value as VisibleCalendarType).selections
                   &&
-                  11 in visiblecalendar.value.selections[year-1]
+                  11 in (visiblecalendar.value as VisibleCalendarType).selections[year-1].months
                 ) {
                   if(
                     ( 
@@ -3987,7 +4027,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       rangelastselection.month === 11
                       &&
                       rangelastselection.week === Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                     ||
@@ -3997,7 +4037,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       rangefirstselection.month === 11
                       &&
                       rangefirstselection.week === Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ) {
@@ -4014,7 +4054,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year-1,
                       11,
                       (Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4030,7 +4070,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year-1,
                       11,
                       (Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4039,42 +4079,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year-1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                       11
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year-1
-                          ][
+                          ].months[
                             11
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year-1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                       11
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year-1
-                          ][
+                          ].months[
                             11
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4083,16 +4123,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -4101,14 +4141,14 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else if(
               week === Object.values(
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if((month+1) in visiblecalendar.value.selections[year]) {
+              if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                 if(
                   (
-                    visiblecalendar.value.selections[year][month+1] as YearMonthClickable<{}>['calendar']
-                  )[0].days[0].day !== 1
+                    (visiblecalendar.value as VisibleCalendarType).selections[year].months[month+1] as YearMonthClickable<{}>['calendar']
+                  ).weeks[0].days[0].day !== 1
                 ) {
                   if(
                     ( 
@@ -4156,26 +4196,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4183,16 +4223,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                 }
                 else {
                   if(deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4202,16 +4242,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -4222,10 +4262,10 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             if(week === 0) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                )[week].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[0].day !== 1
               ) {
-                if((month-1) in visiblecalendar.value.selections[year]) {
+                if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                   if(
                     ( 
                       rangelastselection.year === year
@@ -4233,7 +4273,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       rangelastselection.month === (month-1)
                       &&
                       rangelastselection.week === Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                     ||
@@ -4243,7 +4283,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       rangefirstselection.month === (month-1)
                       &&
                       rangefirstselection.week === Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ) {
@@ -4260,7 +4300,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year,
                       month-1,
                       (Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4276,7 +4316,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year,
                       month-1,
                       (Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4285,42 +4325,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4329,16 +4369,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -4347,18 +4387,18 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else if(
               week === Object.values(
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
               if(
-                (year+1) in visiblecalendar.value.selections
+                (year+1) in (visiblecalendar.value as VisibleCalendarType).selections
                 &&
-                0 in visiblecalendar.value.selections[year+1]
+                0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1].months
               ) {
                 if(
                   (
-                    visiblecalendar.value.selections[year+1][0] as YearMonthClickable<{}>['calendar']
-                  )[0].days[0].day !== 1
+                    (visiblecalendar.value as VisibleCalendarType).selections[year+1].months[0] as YearMonthClickable<{}>['calendar']
+                  ).weeks[0].days[0].day !== 1
                 ) {
                   if(
                     ( 
@@ -4410,26 +4450,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year+1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                       0
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year+1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                       0
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4437,16 +4477,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                 }
                 else {
                   if(deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4456,16 +4496,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -4476,16 +4516,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             if(week === 0) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                )[week].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[0].day !== 1
               ) {
-                if((month-1) in visiblecalendar.value.selections[year]) {
+                if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                   if(
                     (
                       rangefirstselection.month === (month-1)
                       &&
                       rangefirstselection.week ===  Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                     ||
@@ -4493,7 +4533,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       rangelastselection.month === (month-1)
                       &&
                       rangelastselection.week === Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ) {
@@ -4509,7 +4549,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year,
                       month-1,
                       (Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4525,7 +4565,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year,
                       month-1,
                       (Object.values(
-                        visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4534,42 +4574,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4578,16 +4618,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -4596,14 +4636,14 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else if(
               week === Object.values(
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if((month+1) in visiblecalendar.value.selections[year]) {
+              if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                 if(
                   (
-                    visiblecalendar.value.selections[year][month+1] as YearMonthClickable<{}>['calendar']
-                  )[0].days[0].day !== 1
+                    (visiblecalendar.value as VisibleCalendarType).selections[year].months[month+1] as YearMonthClickable<{}>['calendar']
+                  ).weeks[0].days[0].day !== 1
                 ) {
                   if(
                     ( 
@@ -4652,26 +4692,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4679,16 +4719,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                 }
                 else {
                   if(deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4698,16 +4738,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -4733,13 +4773,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             if(week === 0) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                )[week].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[0].day !== 1
               ) {
                 if(
-                  (year-1) in visiblecalendar.value.selections
+                  (year-1) in (visiblecalendar.value as VisibleCalendarType).selections
                   &&
-                  11 in visiblecalendar.value.selections[year-1]
+                  11 in (visiblecalendar.value as VisibleCalendarType).selections[year-1].months
                 ) {
                   if(
                     ( 
@@ -4748,7 +4788,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       rangelastselection.month === 11
                       &&
                       rangelastselection.week === Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                     ||
@@ -4758,7 +4798,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       rangefirstselection.month === 11
                       &&
                       rangefirstselection.week === Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1
                     )
                   ) {
@@ -4775,7 +4815,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year-1,
                       11,
                       (Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4791,7 +4831,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       year-1,
                       11,
                       (Object.values(
-                        visiblecalendar.value.selections[year-1][11] as YearMonthClickable<{}>['calendar']
+                        ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[11] as YearMonthClickable<{}>['calendar']).weeks
                       ).length - 1),
                       'COUNTER',
                       rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -4800,42 +4840,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year-1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                       11
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year-1
-                          ][
+                          ].months[
                             11
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year-1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                       11
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year-1
-                          ][
+                          ].months[
                             11
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4844,16 +4884,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -4862,14 +4902,14 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else if(
               week === Object.values(
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if((month+1) in visiblecalendar.value.selections[year]) {
+              if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                 if(
                   (
-                    visiblecalendar.value.selections[year][month+1] as YearMonthClickable<{}>['calendar']
-                  )[0].days[0].day !== 1
+                    (visiblecalendar.value as VisibleCalendarType).selections[year].months[month+1] as YearMonthClickable<{}>['calendar']
+                  ).weeks[0].days[0].day !== 1
                 ) {
                   if(
                     ( 
@@ -4922,26 +4962,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4949,16 +4989,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                 }
                 else {
                   if(deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -4968,16 +5008,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -4988,10 +5028,10 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             if(week === 0) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                )[week].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[0].day !== 1
               ) {
-                if((month-1) in visiblecalendar.value.selections[year]) {
+                if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                   deselectedcount = loopThroughWeekForRangeSelection(
                     checked,
                     '', 
@@ -4999,7 +5039,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     year,
                     month-1,
                     (Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -5007,42 +5047,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -5051,16 +5091,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -5069,17 +5109,17 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else if(
               week === Object.values(
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
               if(
-                (year+1) in visiblecalendar.value.selections
+                (year+1) in (visiblecalendar.value as VisibleCalendarType).selections
                 &&
-                0 in visiblecalendar.value.selections[year+1]
+                0 in (visiblecalendar.value as VisibleCalendarType).selections[year+1].months
               ) {
                 if(
                   (
-                    visiblecalendar.value.selections[year+1][0] as YearMonthClickable<{}>['calendar']
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[0] as YearMonthClickable<{}>['calendar']).weeks
                   )[0].days[0].day !== 1
                 ) {
                   if(
@@ -5132,26 +5172,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year+1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                       0
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year+1][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                       0
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -5159,16 +5199,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                 }
                 else {
                   if(deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -5178,16 +5218,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -5198,10 +5238,10 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             if(week === 0) {
               if(
                 (
-                  visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                )[week].days[0].day !== 1
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[0].day !== 1
               ) {
-                if((month-1) in visiblecalendar.value.selections[year]) {
+                if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                   deselectedcount = loopThroughWeekForRangeSelection(
                     checked,
                     '', 
@@ -5209,7 +5249,7 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     year,
                     month-1,
                     (Object.values(
-                      visiblecalendar.value.selections[year][month-1] as YearMonthClickable<{}>['calendar']
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month-1] as YearMonthClickable<{}>['calendar']).weeks
                     ).length - 1),
                     'COUNTER',
                     rangefirstselection as RangeFirstAndLastSelectionType, 
@@ -5217,42 +5257,42 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       (
                         Object.values(
-                          (visiblecalendar.value as VisibleCalendarType).selections[
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
                             year
-                          ][
+                          ].months[
                             month - 1
-                          ] as YearMonthClickable<{}>['calendar']
+                          ] as YearMonthClickable<{}>['calendar']).weeks
                         ).length - 1
                       )
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -5261,16 +5301,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
                 }
                 else {
-                  (visiblecalendar.value.selections[year][
+                  ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
-                  ] as YearMonthClickable<{}>['calendar'])[
+                  ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = true;
                 }
@@ -5279,13 +5319,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else if(
               week === Object.values(
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
               ).length - 1
             ) {
-              if((month+1) in visiblecalendar.value.selections[year]) {
+              if((month+1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                 if(
                   (
-                    visiblecalendar.value.selections[year][month+1] as YearMonthClickable<{}>['calendar']
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[month+1] as YearMonthClickable<{}>['calendar']).weeks
                   )[0].days[0].day !== 1
                 ) {
                   deselectedcount = loopThroughWeekForRangeSelection(
@@ -5301,26 +5341,26 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = true;
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -5328,16 +5368,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                 }
                 else {
                   if(deselected) {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
                   }
                   else {
-                    (visiblecalendar.value.selections[year][
+                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
-                    ] as YearMonthClickable<{}>['calendar'])[
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = true;
                   }
@@ -5347,16 +5387,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
             }
             else {
               if(deselected) {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
               }
               else {
-                (visiblecalendar.value.selections[year][
+                ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
-                ] as YearMonthClickable<{}>['calendar'])[
+                ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = true;
               }
@@ -5367,6 +5407,120 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
       }
     }  
   }
+}
+
+function checkNextMonthFirstDayIsHighlighted(week: VisibleCalendarType['selections'][number]['months'][number]['weeks'][number]) {
+  let firstdayishighlighted = false;
+  if(
+    week.days[0].day === 1
+    &&
+    week.days[0].status === 'ENABLE'
+    &&
+    week.days[0].selected === 'HIGHLIGHTED'
+  ) {
+    firstdayishighlighted = true;
+  }
+  else {
+    for(let d in week.days) {
+      if(week.days[d].day === 1) {
+        if(
+          week.days[d].selected === 'HIGHLIGHTED'
+          &&
+          week.days[d].status === 'ENABLE'
+        ) {
+          firstdayishighlighted = true;
+        }
+        break;
+      }
+    }
+  }
+  return firstdayishighlighted;
+}
+
+function checkPreviousMonthLastDayIsHighlighted(week: VisibleCalendarType['selections'][number]['months'][number]['weeks'][number]) {
+  let lastdayishighlighted = false;
+  if(
+    !(
+      week.days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+    )
+  ) {
+    if(
+      week.days[6].status === 'ENABLE'
+      &&
+      week.days[6].selected === 'HIGHLIGHTED'
+    ) {
+      lastdayishighlighted = true;
+    }
+  }
+  else {
+    for(let d in week.days) {
+      if(week.days[d].day === 1) {
+        if(
+          week.days[parseInt(d) - 1].selected === 'HIGHLIGHTED'
+          &&
+          week.days[parseInt(d) - 1].status === 'ENABLE'
+        ) {
+          lastdayishighlighted = true;
+          break;
+        }
+      }
+    }
+  }
+  return lastdayishighlighted;
+}
+
+function handleForwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, visiblecalendar: ShallowRef<VisibleCalendarType>) {
+  let startcheckingwherehighlightstop = false;
+  for(let y in visiblecalendar.value.selections) {
+    for(let m in visiblecalendar.value.selections[y].months) {
+      for(let w in (
+          visiblecalendar.value.selections[y].months[
+            m
+          ] as YearMonthClickable<{}>['calendar']
+        ).weeks
+      ) {
+        for(let d in (
+            visiblecalendar.value.selections[y].months[
+              m
+            ] as YearMonthClickable<{}>['calendar']
+          ).weeks[w].days
+        ) {
+          if(
+            params.value.rangefirstselection.year === parseInt(y)
+            &&
+            params.value.rangefirstselection.month === parseInt(m)
+            &&
+            params.value.rangefirstselection.week === parseInt(w)
+            &&
+            params.value.rangefirstselection.date === (
+              visiblecalendar.value.selections[y].months[
+                m
+              ] as YearMonthClickable<{}>['calendar']
+            ).weeks[w].days[d].date
+          ) {
+            startcheckingwherehighlightstop = true;
+          }
+          else {
+            if(startcheckingwherehighlightstop) {
+              if(
+                (
+                  visiblecalendar.value.selections[y].months[
+                    m
+                  ] as YearMonthClickable<{}>['calendar']
+                ).weeks[w].days[d].selected !== 'HIGHLIGHTED'
+              ) {
+
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+function handleBackwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, visiblecalendar: ShallowRef<VisibleCalendarType>) {
+  
 }
 
 function handleRangeSelection(
@@ -5381,22 +5535,22 @@ function handleRangeSelection(
   if(params.value.excludedates) {
     if (
       (
-        visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-      )[week].days[day].selected !== "SELECTED"
+        (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+      ).weeks[week].days[day].selected !== "SELECTED"
     ) {
       if(
         (
-          visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-        )[week].days[day].selected === "HIGHLIGHTED"
+          (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].days[day].selected === "HIGHLIGHTED"
       ) {
         (
-          visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-        )[week].days[day].selected = "DESELECTED";
+          (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].days[day].selected = "DESELECTED";
       }
       else {
         (
-          visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-        )[week].days[day].selected = "HIGHLIGHTED";
+          (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].days[day].selected = "HIGHLIGHTED";
       }
       triggerRef(visiblecalendar);
     }
@@ -5418,12 +5572,12 @@ function handleRangeSelection(
       if(params.value.rangeselectcount < 2) {
         if (
           (
-            visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-          )[week].days[day].selected === "DESELECTED"
+            (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[week].days[day].selected === "DESELECTED"
           || 
           (
-            visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-          )[week].days[day].selected === "HIGHLIGHTED"
+            (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[week].days[day].selected === "HIGHLIGHTED"
         ) {
           if(params.value.rangeselectcount === 0) {
             deselectAll(visiblecalendar);
@@ -5431,70 +5585,1276 @@ function handleRangeSelection(
             params.value.rangelastselection = {year: 0, month: 0, day: 0, date: "", week: 0};
             triggerRef(params);
           }
-          (
-            visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-          )[week].days[day].selected = "SELECTED";
     
           params.value.rangeselectcount++;
     
           if(params.value.rangeselectcount === 1) {
+            deselectAll(visiblecalendar);
+            (
+              (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+            ).weeks[week].days[day].selected = "SELECTED";
             params.value.rangefirstselection = {
               date: (
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-              )[week].days[day].date,
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[week].days[day].date,
               day: (
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-              )[week].days[day].day,
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[week].days[day].day,
               year: result.year,
               month: result.month,
               week
             };
           }
           else {
-            params.value.rangelastselection = {
-              date: (
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-              )[week].days[day].date,
-              day: (
-                visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-              )[week].days[day].day,
-              year: result.year,
-              month: result.month,
-              week
-            };
+            let avoidedgecases = whereisMouse(xpoint.value, ypoint.value, visiblecalendar);
+            if(
+              avoidedgecases.date === 
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[week].days[day].date
+            ) {
+              (
+                (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              ).weeks[week].days[day].selected = "SELECTED";
+              params.value.rangelastselection = {
+                date: (
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[day].date,
+                day: (
+                  (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                ).weeks[week].days[day].day,
+                year: result.year,
+                month: result.month,
+                week
+              };
+            }
+            else {
+              let bothsideisnothighlighted = false, onesideishighlighted = false;
+              for(let y in visiblecalendar.value.selections) {
+                for(let m in visiblecalendar.value.selections[y].months) {
+                  if(
+                    parseInt(y) === params.value.rangefirstselection.year
+                    &&
+                    parseInt(m) === params.value.rangefirstselection.month
+                  ) {
+                    for(let d in (visiblecalendar.value.selections[y].months[m] as YearMonthClickable<{}>['calendar']).weeks[params.value.rangefirstselection.week].days) {
+                      if(params.value.rangefirstselection.date === (visiblecalendar.value.selections[y].months[m] as YearMonthClickable<{}>['calendar']).weeks[params.value.rangefirstselection.week].days[d].date) {
+                        if(params.value.rangefirstselection.week === 0) {
+                          if(params.value.rangefirstselection.month === 0) {
+                            if(
+                              (
+                                visiblecalendar.value.selections[y].months[
+                                  m
+                                ] as YearMonthClickable<{}>['calendar']
+                              ).weeks[params.value.rangefirstselection.week].days[d].day !== 1
+                            ) {
+                              if(parseInt(d) < 6) {
+                                if(
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar)
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar)
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                              else {
+                                if ( 
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week+1].days[0].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week+1].days[0].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week+1].days[0].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week+1].days[0].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                            }
+                            else {
+                              if(
+                                (
+                                  (params.value.rangefirstselection.year - 1) in visiblecalendar.value.selections
+                                  &&
+                                  11 in visiblecalendar.value.selections[params.value.rangefirstselection.year - 1]
+                                  &&
+                                  checkPreviousMonthLastDayIsHighlighted(
+                                    (
+                                      visiblecalendar.value.selections[params.value.rangefirstselection.year - 1].months[
+                                        11
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[
+                                      Object.values(
+                                        (
+                                          visiblecalendar.value.selections[params.value.rangefirstselection.year - 1].months[
+                                            11
+                                          ] as YearMonthClickable<{}>['calendar']
+                                        ).weeks
+                                      ).length - 1
+                                    ]
+                                  )
+                                )
+                                ||
+                                (
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                )
+                              ) {
+                                if
+                                (
+                                  (params.value.rangefirstselection.year - 1) in visiblecalendar.value.selections
+                                  &&
+                                  11 in visiblecalendar.value.selections[params.value.rangefirstselection.year - 1]
+                                  &&
+                                  checkPreviousMonthLastDayIsHighlighted(
+                                    (
+                                      visiblecalendar.value.selections[params.value.rangefirstselection.year - 1].months[
+                                        11
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[
+                                      Object.values(
+                                        (
+                                          visiblecalendar.value.selections[params.value.rangefirstselection.year - 1].months[
+                                            11
+                                          ] as YearMonthClickable<{}>['calendar']
+                                        ).weeks
+                                      ).length - 1
+                                    ]
+                                  )
+                                ) {
+                                  handleBackwardEdgeCase(params, visiblecalendar);
+                                }
+                                else {
+                                  handleForwardEdgeCase(params, visiblecalendar);
+                                }
+                                onesideishighlighted = true;
+                                break;
+                              }
+                              else {
+                                bothsideisnothighlighted = true;
+                                break;
+                              }
+                            }
+                          }
+                          else {
+                            if(
+                              (
+                                visiblecalendar.value.selections[y].months[
+                                  m
+                                ] as YearMonthClickable<{}>['calendar']
+                              ).weeks[params.value.rangefirstselection.week].days[d].day !== 1
+                            ) {
+                              if(parseInt(d) < 6) {
+                                if(
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                              else {
+                                if(
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week + 1].days[0].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week + 1].days[0].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week + 1].days[0].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week + 1].days[0].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                            }
+                            else {
+                              if(
+                                (
+                                  (params.value.rangefirstselection.month - 1) in visiblecalendar.value.selections[params.value.rangefirstselection.year]
+                                  &&
+                                  checkPreviousMonthLastDayIsHighlighted(
+                                    (
+                                      visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                        params.value.rangefirstselection.month - 1
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[
+                                      Object.values(
+                                        (
+                                          visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                            params.value.rangefirstselection.month - 1
+                                          ] as YearMonthClickable<{}>['calendar']
+                                        ).weeks
+                                      ).length - 1
+                                    ]
+                                  )
+                                )
+                                ||
+                                (
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                )
+                              ) {
+                                if(
+                                  (params.value.rangefirstselection.month - 1) in visiblecalendar.value.selections[params.value.rangefirstselection.year]
+                                  &&
+                                  checkPreviousMonthLastDayIsHighlighted(
+                                    (
+                                      visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                        params.value.rangefirstselection.month - 1
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[
+                                      Object.values(
+                                        (
+                                          visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                            params.value.rangefirstselection.month - 1
+                                          ] as YearMonthClickable<{}>['calendar']
+                                        ).weeks
+                                      ).length - 1
+                                    ]
+                                  )
+                                ) {
+                                  handleBackwardEdgeCase(params, visiblecalendar);
+                                }
+                                else {
+                                  handleForwardEdgeCase(params, visiblecalendar);
+                                }
+                                onesideishighlighted = true;
+                                break;
+                              }
+                              else {
+                                bothsideisnothighlighted = true;
+                                break;
+                              }
+                            }
+                          }
+                        }
+                        else if(
+                          params.value.rangefirstselection.week === (
+                            Object.values(
+                              (visiblecalendar.value.selections[params.value.rangefirstselection.year].months[params.value.rangefirstselection.month] as YearMonthClickable<{}>['calendar']).weeks
+                            ).length - 1
+                          )
+                        ) {
+                          if(params.value.rangefirstselection.month === 11) {
+                            if(
+                              parseInt(d) > 0 && parseInt(d) < 6
+                            ) {
+                              if(
+                                !(
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                                )
+                              ) {
+                                if(
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                              else {
+                                if(
+                                  (
+                                    (params.value.rangefirstselection.year + 1) in visiblecalendar.value.selections
+                                    &&
+                                    0 in visiblecalendar.value.selections[params.value.rangefirstselection.year + 1]
+                                    &&
+                                    checkNextMonthFirstDayIsHighlighted(
+                                      (
+                                        visiblecalendar.value.selections[(params.value.rangefirstselection.year + 1)].months[
+                                          0
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[0]
+                                    )
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (params.value.rangefirstselection.year + 1) in visiblecalendar.value.selections
+                                    &&
+                                    0 in visiblecalendar.value.selections[params.value.rangefirstselection.year + 1]
+                                    &&
+                                    checkNextMonthFirstDayIsHighlighted(
+                                      (
+                                        visiblecalendar.value.selections[(params.value.rangefirstselection.year + 1)].months[
+                                          0
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[0]
+                                    )
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                            }
+                            else {
+                              if(parseInt(d) === 0) {
+                                if(
+                                  !(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                    )
+                                    ||
+                                    (
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                    )
+                                  ) {
+                                    if(
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                    ) {
+                                      handleForwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    else {
+                                      handleBackwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    onesideishighlighted = true;
+                                    break;
+                                  }
+                                  else {
+                                    bothsideisnothighlighted = true;
+                                    break;
+                                  }
+                                }
+                                else {
+                                  if(
+                                    (
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                    )
+                                    ||
+                                    (
+                                      (params.value.rangefirstselection.year + 1) in visiblecalendar.value.selections
+                                      &&
+                                      0 in visiblecalendar.value.selections[(params.value.rangefirstselection.year + 1)]
+                                      &&
+                                      checkNextMonthFirstDayIsHighlighted(
+                                        (
+                                          visiblecalendar.value.selections[(params.value.rangefirstselection.year + 1)].months[
+                                            0
+                                          ] as YearMonthClickable<{}>['calendar']
+                                        ).weeks[0]
+                                      )
+                                    )
+                                  ) {
+                                    if(
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                    ) {
+                                      handleBackwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    else {
+                                      handleForwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    onesideishighlighted = true;
+                                    break;
+                                  }
+                                  else {
+                                    bothsideisnothighlighted = true;
+                                    break;
+                                  }
+                                }
+                              }
+                              else {
+                                if(
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (params.value.rangefirstselection.year + 1) in visiblecalendar.value.selections
+                                    &&
+                                    0 in visiblecalendar.value.selections[(params.value.rangefirstselection.year + 1)]
+                                    &&
+                                    checkNextMonthFirstDayIsHighlighted(
+                                      (
+                                        visiblecalendar.value.selections[(params.value.rangefirstselection.year + 1)].months[
+                                          0
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[0]
+                                    )
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                            }
+                          }
+                          else {
+                            if(
+                              parseInt(d) > 0 && parseInt(d) < 6
+                            ) {
+                              if(
+                                !(
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                                )
+                              ) {
+                                if(
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                              else {
+                                if(
+                                  (
+                                    (params.value.rangefirstselection.month + 1) in visiblecalendar.value.selections[params.value.rangefirstselection.year]
+                                    &&
+                                    checkNextMonthFirstDayIsHighlighted(
+                                      (
+                                        visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                          params.value.rangefirstselection.month + 1
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[0]
+                                    )
+                                  )
+                                  ||
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                ) {
+                                  if(
+                                    (params.value.rangefirstselection.month + 1) in visiblecalendar.value.selections[params.value.rangefirstselection.year]
+                                    &&
+                                    checkNextMonthFirstDayIsHighlighted(
+                                      (
+                                        visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                          params.value.rangefirstselection.month + 1
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[0]
+                                    )
+                                  ) {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                            }
+                            else {
+                              if(parseInt(d) === 0) {
+                                if(
+                                  !(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                    )
+                                    ||
+                                    (
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                    )
+                                  ) {
+                                    if(
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                    ) {
+                                      handleBackwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    else {
+                                      handleForwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    onesideishighlighted = true;
+                                    break;
+                                  }
+                                  else {
+                                    bothsideisnothighlighted = true;
+                                    break;
+                                  }
+                                }
+                                else {
+                                  if(
+                                    (
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                    )
+                                    ||
+                                    (
+                                      (params.value.rangefirstselection.month + 1) in visiblecalendar.value.selections[params.value.rangefirstselection.year]
+                                      &&
+                                      checkNextMonthFirstDayIsHighlighted(
+                                        (
+                                          visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                            (params.value.rangefirstselection.month + 1)
+                                          ] as YearMonthClickable<{}>['calendar']
+                                        ).weeks[0]
+                                      )
+                                    )
+                                  ) {
+                                    if(
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                      &&
+                                      (
+                                        visiblecalendar.value.selections[y].months[
+                                          m
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                    ) {
+                                      handleBackwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    else {
+                                      handleForwardEdgeCase(params, visiblecalendar);
+                                    }
+                                    onesideishighlighted = true;
+                                    break;
+                                  }
+                                  else {
+                                    bothsideisnothighlighted = true;
+                                    break;
+                                  }
+                                }
+                              }
+                              else {
+                                if(
+                                  (
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  )
+                                  ||
+                                  (
+                                    (params.value.rangefirstselection.month + 1) in visiblecalendar.value.selections[params.value.rangefirstselection.year]
+                                    &&
+                                    checkNextMonthFirstDayIsHighlighted(
+                                      (
+                                        visiblecalendar.value.selections[params.value.rangefirstselection.year].months[
+                                          (params.value.rangefirstselection.month + 1)
+                                        ] as YearMonthClickable<{}>['calendar']
+                                      ).weeks[0]
+                                    )
+                                  )
+                                ) {
+                                  if(
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                    &&
+                                    (
+                                      visiblecalendar.value.selections[y].months[
+                                        m
+                                      ] as YearMonthClickable<{}>['calendar']
+                                    ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                  ) {
+                                    handleBackwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  else {
+                                    handleForwardEdgeCase(params, visiblecalendar);
+                                  }
+                                  onesideishighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                            }
+                          }
+                        }
+                        else {
+                          if(
+                            parseInt(d) > 0 && parseInt(d) < 6
+                          ) {
+                            if(
+                              (
+                                (
+                                  visiblecalendar.value.selections[y].months[
+                                    m
+                                  ] as YearMonthClickable<{}>['calendar']
+                                ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                &&
+                                (
+                                  visiblecalendar.value.selections[y].months[
+                                    m
+                                  ] as YearMonthClickable<{}>['calendar']
+                                ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                              )
+                              ||
+                              (
+                                (
+                                  visiblecalendar.value.selections[y].months[
+                                    m
+                                  ] as YearMonthClickable<{}>['calendar']
+                                ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                &&
+                                (
+                                  visiblecalendar.value.selections[y].months[
+                                    m
+                                  ] as YearMonthClickable<{}>['calendar']
+                                ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                              )
+                            ) {
+                              if(
+                                (
+                                  visiblecalendar.value.selections[y].months[
+                                    m
+                                  ] as YearMonthClickable<{}>['calendar']
+                                ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                &&
+                                (
+                                  visiblecalendar.value.selections[y].months[
+                                    m
+                                  ] as YearMonthClickable<{}>['calendar']
+                                ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                              ) {
+                                handleBackwardEdgeCase(params, visiblecalendar);
+                              }
+                              else {
+                                handleForwardEdgeCase(params, visiblecalendar);
+                              }
+                              onesideishighlighted = true;
+                              break;
+                            }
+                            else {
+                              bothsideisnothighlighted = true;
+                              break;
+                            }
+                          }
+                          else {
+                            if(parseInt(d) === 0) {
+                              if(
+                                (
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                )
+                                ||
+                                (
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)+1].selected === 'HIGHLIGHTED'
+                                )
+                              ) {
+                                if(
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week-1].days[6].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week-1].days[6].selected === 'HIGHLIGHTED'
+                                ) {
+                                  handleBackwardEdgeCase(params, visiblecalendar);
+                                }
+                                else {
+                                  handleForwardEdgeCase(params, visiblecalendar);
+                                }
+                                onesideishighlighted = true;
+                                break;
+                              }
+                              else {
+                                bothsideisnothighlighted = true;
+                                break;
+                              }
+                            }
+                            else {
+                              if(
+                                (
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                )
+                                ||
+                                (
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week+1].days[0].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week+1].days[0].selected === 'HIGHLIGHTED'
+                                )
+                              ) {
+                                if(
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].status === 'ENABLE'
+                                  &&
+                                  (
+                                    visiblecalendar.value.selections[y].months[
+                                      m
+                                    ] as YearMonthClickable<{}>['calendar']
+                                  ).weeks[params.value.rangefirstselection.week].days[parseInt(d)-1].selected === 'HIGHLIGHTED'
+                                ) {
+                                  handleBackwardEdgeCase(params, visiblecalendar);
+                                }
+                                else {
+                                  handleForwardEdgeCase(params, visiblecalendar);
+                                }
+                                onesideishighlighted = true;
+                                break;
+                              }
+                              else {
+                                bothsideisnothighlighted = true;
+                                break;
+                              }
+                            }
+                          }
+                        }
+                      } 
+                    }
+                  }
+                  if(bothsideisnothighlighted || onesideishighlighted) break;
+                }
+                if(bothsideisnothighlighted || onesideishighlighted) break;
+              }
+              if(bothsideisnothighlighted) {
+                deselectAll(visiblecalendar);
+                params.value.rangefirstselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
+                params.value.rangelastselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
+                params.value.rangeselectcount = 0;
+                (visiblecalendar.value as VisibleCalendarType).selections = {};
+              }
+            }
           }
         }
         else {
-          (
-            visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-          )[week].days[day].selected = "DESELECTED";
-          (
-            visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-          )[week].checked = false;
+          deselectAll(visiblecalendar);
           params.value.rangefirstselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
           params.value.rangelastselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
           params.value.rangeselectcount = 0;
-          visiblecalendar.value.selections = {};
+          (visiblecalendar.value as VisibleCalendarType).selections = {};
         }
       }
       else {
         deselectAll(visiblecalendar);
-        params.value.rangeselectcount = 0,
+        params.value.rangeselectcount = 0;
         params.value.rangefirstselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
         params.value.rangelastselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
         
         (
-          visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-        )[week].days[day].selected = "SELECTED";
+          (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+        ).weeks[week].days[day].selected = "SELECTED";
 
         params.value.rangeselectcount = 1;
         params.value.rangefirstselection = {
           date: (
-            visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-          )[week].days[day].date,
+            (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[week].days[day].date,
           day: (
-            visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-          )[week].days[day].day,
+            (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[week].days[day].day,
           year: result.year,
           month: result.month,
           week
@@ -5504,8 +6864,8 @@ function handleRangeSelection(
     }
     else {
       (
-        visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-      )[week].days[day].selected = "HIGHLIGHTED";
+        (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+      ).weeks[week].days[day].selected = "HIGHLIGHTED";
     }
   }
 }
@@ -5527,21 +6887,21 @@ export function handleDateSelectHighlightDeselect(
     wFound = false
   ;
 
-  if (Object.keys(visiblecalendar.value.selections).length > 0) {
-    for (let year in visiblecalendar.value.selections) {
+  if (Object.keys((visiblecalendar.value as VisibleCalendarType).selections).length > 0) {
+    for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
       if (parseInt(year) === result.year) {
-        for (let month in visiblecalendar.value.selections[year]) {
+        for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
           if (parseInt(month) === result.month) {
-            for (let week in visiblecalendar.value.selections[year][month]) {
-              for (let day in (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[week].days) {
+            for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+              for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                 if (
                   (
-                    visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                  )[week].days[day].day === result.day
+                    (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                  ).weeks[parseInt(week)].days[day].day === result.day
                   &&
                   (
-                    visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']
-                  )[week].days[day].status === "ENABLE"
+                    (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+                  ).weeks[parseInt(week)].days[day].status === "ENABLE"
                 ) {
                   if(selectionformat === 'RANGE') {
                     handleRangeSelection(
@@ -5601,8 +6961,8 @@ export function handleDateSelectHighlightDeselect(
 
     if (yFound) {
       if(mFound === false) {
-        visiblecalendar.value.selections[result.year] = {
-          ...visiblecalendar.value.selections[result.year],
+        (visiblecalendar.value as VisibleCalendarType).selections[result.year].months = {
+          ...(visiblecalendar.value as VisibleCalendarType).selections[result.year].months,
           [result.month]: buildCalendar(
             result.year,
             result.month,
@@ -5612,7 +6972,7 @@ export function handleDateSelectHighlightDeselect(
             maxdate,
             visiblecalendar
           ),
-        } as VisibleCalendarType['selections'][number];
+        } as VisibleCalendarType['selections'][number]['months'];
         handleDateSelectHighlightDeselect(
           params,
           isoweek,
@@ -5625,18 +6985,21 @@ export function handleDateSelectHighlightDeselect(
         );
       }
     } else {
-      visiblecalendar.value.selections = {
-        ...visiblecalendar.value.selections,
+      (visiblecalendar.value as VisibleCalendarType).selections = {
+        ...(visiblecalendar.value as VisibleCalendarType).selections,
         [result.year]: {
-          [result.month]: buildCalendar(
-            result.year,
-            result.month,
-            "SELECTIONS",
-            isoweek,
-            mindate,
-            maxdate,
-            visiblecalendar
-          ),
+          months: {
+            [result.month]: buildCalendar(
+              result.year,
+              result.month,
+              "SELECTIONS",
+              isoweek,
+              mindate,
+              maxdate,
+              visiblecalendar
+            ),
+          },
+          ty: [false, false, false, false, false, false, false],
         },
       } as VisibleCalendarType['selections'];
       handleDateSelectHighlightDeselect(
@@ -5651,17 +7014,20 @@ export function handleDateSelectHighlightDeselect(
       );
     }
   } else {
-    visiblecalendar.value.selections  = {
+    (visiblecalendar.value as VisibleCalendarType).selections  = {
       [result.year]: {
-        [result.month]: buildCalendar(
-          result.year,
-          result.month,
-          "SELECTIONS",
-          isoweek,
-          mindate,
-          maxdate,
-          visiblecalendar
-        ),
+        months: {
+          [result.month]: buildCalendar(
+            result.year,
+            result.month,
+            "SELECTIONS",
+            isoweek,
+            mindate,
+            maxdate,
+            visiblecalendar
+          ),
+        },
+        ty: [false, false, false, false, false, false, false]
       },
     } as unknown as VisibleCalendarType['selections'];
     handleDateSelectHighlightDeselect(
@@ -5689,24 +7055,28 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
           month: getMonth(new Date(mindate)),
           year: minISOWeekYear,
           clickable: true,
+          ty: [false, false, false, false, false, false, false],
           calendar: {},
         } as YearMonthClickable<PositionTrackerType>,
         last: {
           month: getMonth(new Date(mindate)),
           year: minISOWeekYear,
           clickable: true,
+          ty: [false, false, false, false, false, false, false],
           calendar: {},
         } as YearMonthClickable<{}>,
         current: {
           month: getMonth(new Date(maxdate)),
           year: maxISOWeekYear,
           clickable: true,
+          ty: [false, false, false, false, false, false, false],
           calendar: {},
         } as YearMonthClickable<PositionTrackerType>,
         first: {
           month: getMonth(new Date(maxdate)),
           year: maxISOWeekYear,
           clickable: true,
+          ty: [false, false, false, false, false, false, false],
           calendar: {},
         } as YearMonthClickable<{}>,
         selections: {},
@@ -5720,24 +7090,28 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
               year: minISOWeekYear - 1,
               clickable: false,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<PositionTrackerType>,
             last: {
               month: 11,
               year: minISOWeekYear - 1,
               clickable: false,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<{}>,
             current: {
               month: 0,
               year: maxISOWeekYear,
               clickable: true,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<PositionTrackerType>,
             first: {
               month: 0,
               year: maxISOWeekYear,
               clickable: true,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<{}>,
             selections: {},
           };
@@ -5747,24 +7121,28 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
               month: getMonth(new Date(mindate)) - 1,
               year: minISOWeekYear,
               clickable: false,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<PositionTrackerType>,
             last: {
               month: getMonth(new Date(mindate)) - 1,
               year: minISOWeekYear,
               clickable: false,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<{}>,
             current: {
               month: getMonth(new Date(maxdate)),
               year: maxISOWeekYear,
               clickable: true,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<PositionTrackerType>,
             first: {
               month: getMonth(new Date(maxdate)),
               year: maxISOWeekYear,
               clickable: true,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<{}>,
             selections: {},
@@ -5777,23 +7155,27 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
             year: minISOWeekYear,
             clickable: true,
             calendar: {},
+            ty: [false, false, false, false, false, false, false],
           } as YearMonthClickable<PositionTrackerType>,
           last: {
             month: getMonth(new Date(mindate)),
             year: minISOWeekYear,
             clickable: true,
             calendar: {},
+            ty: [false, false, false, false, false, false, false],
           } as YearMonthClickable<{}>,
           current: {
             month: getMonth(new Date(maxdate)),
             year: maxISOWeekYear,
             clickable: true,
             calendar: {},
+            ty: [false, false, false, false, false, false, false],
           } as YearMonthClickable<PositionTrackerType>,
           first: {
             month: getMonth(new Date(maxdate)),
             year: maxISOWeekYear,
             clickable: true,
+            ty: [false, false, false, false, false, false, false],
             calendar: {},
           } as YearMonthClickable<{}>,
           selections: {},
@@ -5810,24 +7192,28 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
           year: minWeekYear,
           clickable: true,
           calendar: {},
+          ty: [false, false, false, false, false, false, false],
         } as YearMonthClickable<{}>,
         previous: {
           month: getMonth(new Date(mindate)),
           year: minWeekYear,
           clickable: true,
           calendar: {},
+          ty: [false, false, false, false, false, false, false],
         } as YearMonthClickable<PositionTrackerType>,
         current: {
           month: getMonth(new Date(maxdate)),
           year: maxWeekYear,
           clickable: true,
           calendar: {},
+          ty: [false, false, false, false, false, false, false],
         } as YearMonthClickable<PositionTrackerType>,
         first: {
           month: getMonth(new Date(maxdate)),
           year: maxWeekYear,
           clickable: true,
           calendar: {},
+          ty: [false, false, false, false, false, false, false],
         } as YearMonthClickable<{}>,
         selections: {},
       };
@@ -5840,24 +7226,28 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
               year: minWeekYear - 1,
               clickable: false,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<PositionTrackerType>,
             last: {
               month: 11,
               year: minWeekYear - 1,
               clickable: false,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<{}>,
             current: {
               month: 0,
               year: maxWeekYear,
               clickable: true,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<PositionTrackerType>,
             first: {
               month: 0,
               year: maxWeekYear,
               clickable: true,
               calendar: {},
+              ty: [false, false, false, false, false, false, false],
             } as YearMonthClickable<{}>,
             selections: {},
           };
@@ -5867,24 +7257,28 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
               month: getMonth(new Date(mindate)) - 1,
               year: minWeekYear,
               clickable: false,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<PositionTrackerType>,
             last: {
               month: getMonth(new Date(mindate)) - 1,
               year: minWeekYear,
               clickable: false,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<{}>,
             current: {
               month: getMonth(new Date(maxdate)),
               year: maxWeekYear,
               clickable: true,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<PositionTrackerType>,
             first: {
               month: getMonth(new Date(maxdate)),
               year: maxWeekYear,
               clickable: true,
+              ty: [false, false, false, false, false, false, false],
               calendar: {},
             } as YearMonthClickable<{}>,
             selections: {},
@@ -5896,24 +7290,28 @@ export function fillVisibleCalendarArray(maxdate: string, mindate: string, isowe
             month: getMonth(new Date(mindate)),
             year: minWeekYear,
             clickable: true,
+            ty: [false, false, false, false, false, false, false],
             calendar: {},
           } as YearMonthClickable<PositionTrackerType>,
           last: {
             month: getMonth(new Date(mindate)),
             year: minWeekYear,
             clickable: true,
+            ty: [false, false, false, false, false, false, false],
             calendar: {},
           } as YearMonthClickable<{}>,
           current: {
             month: getMonth(new Date(maxdate)),
             year: maxWeekYear,
             clickable: true,
+            ty: [false, false, false, false, false, false, false],
             calendar: {},
           } as YearMonthClickable<PositionTrackerType>,
           first: {
             month: getMonth(new Date(maxdate)),
             year: maxWeekYear,
             clickable: true,
+            ty: [false, false, false, false, false, false, false],
             calendar: {},
           } as YearMonthClickable<{}>,
           selections: {},
@@ -5988,6 +7386,7 @@ export function mouseMovement(
   selectionformat: 'RANGE',
   visiblecalendar: ShallowRef<VisibleCalendarType>
 ) {
+
   nextTick(() => {
     if(loadingMovement.value === false) {
       loadingMovement.value = true;
@@ -6002,7 +7401,8 @@ export function mouseMovement(
             mousePointedDate, 
             params.value.rangefirstselection as RangeFirstAndLastSelectionType
           );
-          
+          xpoint.value = event.pageX;
+          ypoint.value = event.pageY;
           if(mousePointedDate.date && mousePointedDate.status === 'ENABLE') {
             if(
               differenceInCalendarDays(
@@ -6010,22 +7410,22 @@ export function mouseMovement(
                 new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
               ) >= 0
             ) {
-              for(let year in visiblecalendar.value.selections) {
-                for(let month in visiblecalendar.value.selections[year]) {
-                  for(let week in visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar']) {
-                    for(let day in (visiblecalendar.value.selections[year][month] as YearMonthClickable<{}>['calendar'])[parseInt(week)].days) {
+              for(let year in (visiblecalendar.value as VisibleCalendarType).selections) {
+                for(let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+                  for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                       if(
-                        new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) > new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
+                        new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) > new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
                         &&
-                        new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) <= new Date(mousePointedDate.date)
-                        && (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].status === 'ENABLE'
+                        new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) <= new Date(mousePointedDate.date)
+                        && ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status === 'ENABLE'
                       ) {
                         //highlight this dates
                         handleDateSelectHighlightDeselect(
                           params,
                           isoweek,
                           selectionformat,
-                          (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date,
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date,
                           true, //true means it is clicked, false means pasted 
                           mindate,
                           maxdate,
@@ -6034,14 +7434,16 @@ export function mouseMovement(
                       }
                       else {
                         if(
-                          (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === "HIGHLIGHTED"
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === "HIGHLIGHTED"
                           && (
-                            new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) > new Date(mousePointedDate.date)
-                          || new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) < new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
+                            ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status === 'ENABLE' 
+                            && (
+                              new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) > new Date(mousePointedDate.date)
+                            || new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) < new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
+                            )
                           )
-                          && (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].status === 'ENABLE'
                         ) {
-                          (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected = "DESELECTED";
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected = "DESELECTED";
                           triggerRef(visiblecalendar);
                         }
                       }
@@ -6051,22 +7453,22 @@ export function mouseMovement(
               }
             }
             else {
-              for(let year in visiblecalendar.value.selections) {
-                for(let month in visiblecalendar.value.selections[year]) {
-                  for(let week in visiblecalendar.value.selections[year][month]) {
-                    for(let day in (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days) {
+              for(let year in (visiblecalendar.value as VisibleCalendarType).selections) {
+                for(let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+                  for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                       if(
-                        new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) >= new Date(mousePointedDate.date)
+                        new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) >= new Date(mousePointedDate.date)
                         &&
-                        new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) < new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
-                        && (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].status === 'ENABLE'
+                        new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) < new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
+                        && ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status === 'ENABLE'
                       ) {
                         //highlight this dates
                         handleDateSelectHighlightDeselect(
                           params,
                           isoweek,
                           selectionformat, 
-                          (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date,
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date,
                           true, //true means it is clicked, false means pasted
                           mindate,
                           maxdate,
@@ -6075,13 +7477,13 @@ export function mouseMovement(
                       }
                       else {
                         if(
-                          (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected === "HIGHLIGHTED"
-                          && ( new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) < new Date(mousePointedDate.date)
-                          || new Date((visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].date) > new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
-                          )
-                          && (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].status === 'ENABLE'
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected === "HIGHLIGHTED"
+                          && (((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status === 'ENABLE'
+                          && ( new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) < new Date(mousePointedDate.date)
+                          || new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) > new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
+                          ))
                         ) {
-                          (visiblecalendar.value.selections[year][month][week] as YearMonthClickable<{}>['calendar'][number]).days[day].selected = "DESELECTED";
+                          ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected = "DESELECTED";
                           triggerRef(visiblecalendar);
                         }
                       }
@@ -6098,7 +7500,7 @@ export function mouseMovement(
   });
 }
 
-export function weekHasEnable(week: YearMonthClickable<PositionTrackerType>['calendar'][number]) {
+export function weekHasEnable(week: YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]) {
   let hasenable = false;
   Object.values(week.days).forEach((day, i) => {
     if(day.status === 'ENABLE') {
@@ -6117,9 +7519,9 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
   if(parseInt(mPointedDate.year) === rfirstselection.year) {
     if(parseInt(mPointedDate.month) > rfirstselection.month) {
       for(let j=rfirstselection.month; j<=parseInt(mPointedDate.month); j++) {
-        if(!(j in visiblecalendar.value.selections[rfirstselection.year])) {
-          visiblecalendar.value.selections[rfirstselection.year] = {
-            ...visiblecalendar.value.selections[rfirstselection.year],
+        if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months)) {
+          (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months = {
+            ...(visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months,
             [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
           };
         }
@@ -6127,9 +7529,9 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
     }
     else {
       for(let j=parseInt(mPointedDate.month); j<=rfirstselection.month; j++) {
-        if(!(j in visiblecalendar.value.selections[rfirstselection.year])) {
-          visiblecalendar.value.selections[rfirstselection.year] = {
-            ...visiblecalendar.value.selections[rfirstselection.year],
+        if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months)) {
+          (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months = {
+            ...(visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months,
             [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
           };
         }
@@ -6142,9 +7544,9 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         if(i === rfirstselection.year || i === parseInt(mPointedDate.year)) {
           if(i === rfirstselection.year) {
             for(let j=rfirstselection.month; j<12; j++) {
-              if(!(j in visiblecalendar.value.selections[i])) {
-                visiblecalendar.value.selections[i] = {
-                  ...visiblecalendar.value.selections[i],
+              if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                   [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                 };
               }
@@ -6153,27 +7555,30 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
           else {
             for(let j=0; j<=parseInt(mPointedDate.month); j++) {
               if(j === 0) {
-                if(!(i in visiblecalendar.value.selections)) {
-                  visiblecalendar.value.selections = {
-                    ...visiblecalendar.value.selections,
+                if(!(i in (visiblecalendar.value as VisibleCalendarType).selections)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections,
                     [i]: {
-                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                      months: {
+                        [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                      },
+                      ty: [false, false, false, false, false, false, false]
                     }
-                  } as YearMonthClickable<{}>;
+                  } as VisibleCalendarType['selections'];
                 }
                 else {
-                  if(!(j in visiblecalendar.value.selections[i])) {
-                    visiblecalendar.value.selections[i] = {
-                      ...visiblecalendar.value.selections[i],
+                  if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                    (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                      ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                       [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                     };
                   }
                 }
               }
               else {
-                if(!(j in visiblecalendar.value.selections[i])) {
-                  visiblecalendar.value.selections[i] = {
-                    ...visiblecalendar.value.selections[i],
+                if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                     [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                   };
                 }
@@ -6184,27 +7589,30 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         else {
           for(let j=0; j<12; j++) {
             if(j === 0) {
-              if(!(i in visiblecalendar.value.selections)) {
-                visiblecalendar.value.selections = {
-                  ...visiblecalendar.value.selections,
+              if(!(i in (visiblecalendar.value as VisibleCalendarType).selections)) {
+                (visiblecalendar.value as VisibleCalendarType).selections = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections,
                   [i]: {
-                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                    months: {
+                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>),
+                    },
+                    ty: [false, false, false, false, false, false, false]
                   }
-                } as YearMonthClickable<{}>;
+                } as VisibleCalendarType['selections'];
               }
               else {
-                if(!(j in visiblecalendar.value.selections[i])) {
-                  visiblecalendar.value.selections[i] = {
-                    ...visiblecalendar.value.selections[i],
+                if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                     [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                   };
                 }
               }
             }
             else {
-              if(!(j in visiblecalendar.value.selections[i])) {
-                visiblecalendar.value.selections[i] = {
-                  ...visiblecalendar.value.selections[i],
+              if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                   [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                 };
               }
@@ -6218,9 +7626,9 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         if(i === rfirstselection.year || i === parseInt(mPointedDate.year)) {
           if(i === rfirstselection.year) {
             for(let j=rfirstselection.month; j>=0; j--) {
-              if(!(j in visiblecalendar.value.selections[i])) {
-                visiblecalendar.value.selections[i] = {
-                  ...visiblecalendar.value.selections[i],
+              if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                   [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                 };
               }
@@ -6229,27 +7637,30 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
           else {
             for(let j=11; j>=parseInt(mPointedDate.month); j--) {
               if(j === 11) {
-                if(!(i in visiblecalendar.value.selections)) {
-                  visiblecalendar.value.selections = {
-                    ...visiblecalendar.value.selections,
+                if(!(i in (visiblecalendar.value as VisibleCalendarType).selections)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections,
                     [i]: {
-                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                      months: {
+                        [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>),
+                      },
+                      ty: [false, false, false, false, false, false, false]
                     }
-                  } as YearMonthClickable<{}>;
+                  } as VisibleCalendarType['selections'];
                 }
                 else {
-                  if(!(j in visiblecalendar.value.selections[i])) {
-                    visiblecalendar.value.selections[i] = {
-                      ...visiblecalendar.value.selections[i],
+                  if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                    (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                      ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                       [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                     };
                   }
                 }
               }
               else {
-                if(!(j in visiblecalendar.value.selections[i])) {
-                  visiblecalendar.value.selections[i] = {
-                    ...visiblecalendar.value.selections[i],
+                if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                     [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                   };
                 }
@@ -6260,27 +7671,30 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         else {
           for(let j=0; j<12; j++) {
             if(j === 0) {
-              if(!(i in visiblecalendar.value.selections)) {
-                visiblecalendar.value.selections = {
-                  ...visiblecalendar.value.selections,
+              if(!(i in (visiblecalendar.value as VisibleCalendarType).selections)) {
+                (visiblecalendar.value as VisibleCalendarType).selections = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections,
                   [i]: {
-                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                    months: {
+                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>),
+                    },
+                    ty: [false, false, false, false, false, false, false],
                   }
-                } as YearMonthClickable<{}>;
+                } as VisibleCalendarType['selections'];
               }
               else {
-                if(!(j in visiblecalendar.value.selections[i])) {
-                  visiblecalendar.value.selections[i] = {
-                    ...visiblecalendar.value.selections[i],
+                if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                  (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                    ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                     [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                   };
                 }
               }
             }
             else {
-              if(!(j in visiblecalendar.value.selections[i])) {
-                visiblecalendar.value.selections[i] = {
-                  ...visiblecalendar.value.selections[i],
+              if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
+                (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
+                  ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
                   [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                 };
               }
@@ -6296,48 +7710,48 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
 
 function whereisMouse(pointx: number, pointy: number, visiblecalendar: ShallowRef<VisibleCalendarType>) {
   let result = {date: "", status: "", day: "", month: "", year: ""}, found = false;
-  for(let week in visiblecalendar.value.previous.calendar) {
-    for(let day in visiblecalendar.value.previous.calendar[week].days) {
+  for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+    for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days) {
       if(
         (
           parseInt(week) === 0
           && (
-            pointy <= visiblecalendar.value.previous.calendar[week].days[day].y2
+            pointy <= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].y2
             &&
-            pointx >= visiblecalendar.value.previous.calendar[week].days[day].x1
+            pointx >= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].x1
             &&
-            pointx <= visiblecalendar.value.previous.calendar[week].days[day].x2
+            pointx <= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].x2
           )
         )
         ||
         (
-          (parseInt(week) === Object.keys(visiblecalendar.value.previous.calendar).length - 1)
+          (parseInt(week) === Object.keys((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks).length-1)
           && (
-            pointx >= visiblecalendar.value.previous.calendar[week].days[day].x1
+            pointx >= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].x1
             &&
-            pointx <= visiblecalendar.value.previous.calendar[week].days[day].x2
+            pointx <= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].x2
           )
         )
         ||
         (
-          (parseInt(week) !== Object.keys(visiblecalendar.value.previous.calendar).length - 1)
+          (parseInt(week) !== 0 && parseInt(week) !== Object.keys((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks).length-1)
           && (
-            pointx >= visiblecalendar.value.previous.calendar[week].days[day].x1
+            pointx >= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].x1
             &&
-            pointx <= visiblecalendar.value.previous.calendar[week].days[day].x2
+            pointx <= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].x2
             &&
-            pointy >= visiblecalendar.value.previous.calendar[week].days[day].y1
+            pointy >= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].y1
             &&
-            pointy <= visiblecalendar.value.previous.calendar[week].days[day].y2
+            pointy <= (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].y2
           )
         )
       ) {
         result = {
-          date: visiblecalendar.value.previous.calendar[week].days[day].date,
-          status: visiblecalendar.value.previous.calendar[week].days[day].status as 'ENABLE' | 'DISABLE',
-          year: visiblecalendar.value.previous.year+'',
-          month: visiblecalendar.value.previous.month+'',
-          day: visiblecalendar.value.previous.calendar[week].days[day].day+'',
+          date: (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].date,
+          status: (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].status  as 'ENABLE' | 'DISABLE',
+          day: (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days[day].day+"",
+          year: (visiblecalendar.value as VisibleCalendarType).previous.year+"",
+          month: (visiblecalendar.value as VisibleCalendarType).previous.month+"",
         };
         found = true;
         break;
@@ -6349,48 +7763,48 @@ function whereisMouse(pointx: number, pointy: number, visiblecalendar: ShallowRe
     return result;
   }
   else {
-    for(let week in visiblecalendar.value.current.calendar) {
-      for(let day in visiblecalendar.value.current.calendar[week].days) {
+    for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+      for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days) {
         if(
           (
             parseInt(week) === 0
             && (
-              pointy <= visiblecalendar.value.current.calendar[week].days[day].y2
+              pointy <= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].y2
               &&
-              pointx >= visiblecalendar.value.current.calendar[week].days[day].x1
+              pointx >= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].x1
               &&
-              pointx <= visiblecalendar.value.current.calendar[week].days[day].x2
+              pointx <= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].x2
             )
           )
           ||
           (
-            (parseInt(week) === Object.keys(visiblecalendar.value.current.calendar).length - 1)
+            (parseInt(week) === Object.keys((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks).length-1)
             && (
-              pointx >= visiblecalendar.value.current.calendar[week].days[day].x1
+              pointx >= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].x1
               &&
-              pointx <= visiblecalendar.value.current.calendar[week].days[day].x2
+              pointx <= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].x2
             )
           )
           ||
           (
-            (parseInt(week) !== Object.keys(visiblecalendar.value.current.calendar).length - 1)
+            (parseInt(week) !== 0 && parseInt(week) !== Object.keys((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks).length-1)
             && (
-              pointx >= visiblecalendar.value.current.calendar[week].days[day].x1
+              pointx >= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].x1
               &&
-              pointx <= visiblecalendar.value.current.calendar[week].days[day].x2
+              pointx <= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].x2
               &&
-              pointy >= visiblecalendar.value.current.calendar[week].days[day].y1
+              pointy >= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].y1
               &&
-              pointy <= visiblecalendar.value.current.calendar[week].days[day].y2
+              pointy <= (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].y2
             )
           )
         ) {
           result = {
-            date: visiblecalendar.value.current.calendar[week].days[day].date,
-            status: visiblecalendar.value.current.calendar[week].days[day].status  as 'ENABLE' | 'DISABLE',
-            day: visiblecalendar.value.current.calendar[week].days[day].day+"",
-            year: visiblecalendar.value.current.year+"",
-            month: visiblecalendar.value.current.month+"",
+            date: (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].date,
+            status: (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].status  as 'ENABLE' | 'DISABLE',
+            day: (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days[day].day+"",
+            year: (visiblecalendar.value as VisibleCalendarType).current.year+"",
+            month: (visiblecalendar.value as VisibleCalendarType).current.month+"",
           };
           found = true;
           break;
@@ -6403,39 +7817,39 @@ function whereisMouse(pointx: number, pointy: number, visiblecalendar: ShallowRe
 }
 
 export function clickForward(isoweek: boolean, maxdate: string, mindate: string, visiblecalendar: ShallowRef<VisibleCalendarType>) {
-  if (visiblecalendar.value.last.clickable) {
-    if (visiblecalendar.value.current.year > visiblecalendar.value.previous.year) {
+  if ((visiblecalendar.value as VisibleCalendarType).last.clickable) {
+    if ((visiblecalendar.value as VisibleCalendarType).current.year > (visiblecalendar.value as VisibleCalendarType).previous.year) {
       //current year is greater than previous year
-      if (visiblecalendar.value.previous.month + 1 < 12) {
-        visiblecalendar.value.previous.month++; //keep increasing the month
+      if ((visiblecalendar.value as VisibleCalendarType).previous.month + 1 < 12) {
+        (visiblecalendar.value as VisibleCalendarType).previous.month++; //keep increasing the month
       } else {
         if (
-          visiblecalendar.value.previous.year + 1 <
-          visiblecalendar.value.current.year
+          (visiblecalendar.value as VisibleCalendarType).previous.year + 1 <
+          (visiblecalendar.value as VisibleCalendarType).current.year
         ) {
-          visiblecalendar.value.previous.month = 0; //set month to jan and increase year
-          visiblecalendar.value.previous.year++;
+          (visiblecalendar.value as VisibleCalendarType).previous.month = 0; //set month to jan and increase year
+          (visiblecalendar.value as VisibleCalendarType).previous.year++;
         } else {
           //previous year + 1 is equal to current year
-          if (visiblecalendar.value.first.year > visiblecalendar.value.current.year) {
-            visiblecalendar.value.previous.month = 0; //set month to jan and increase year
-            visiblecalendar.value.previous.year++;
+          if ((visiblecalendar.value as VisibleCalendarType).first.year > (visiblecalendar.value as VisibleCalendarType).current.year) {
+            (visiblecalendar.value as VisibleCalendarType).previous.month = 0; //set month to jan and increase year
+            (visiblecalendar.value as VisibleCalendarType).previous.year++;
             if (
-              visiblecalendar.value.previous.month === visiblecalendar.value.current.month
+              (visiblecalendar.value as VisibleCalendarType).previous.month === (visiblecalendar.value as VisibleCalendarType).current.month
             ) {
-              visiblecalendar.value.current.month++;
+              (visiblecalendar.value as VisibleCalendarType).current.month++;
             }
           } else {
-            if (visiblecalendar.value.current.month > 0) {
-              visiblecalendar.value.previous.year++;
-              visiblecalendar.value.previous.month = 0;
+            if ((visiblecalendar.value as VisibleCalendarType).current.month > 0) {
+              (visiblecalendar.value as VisibleCalendarType).previous.year++;
+              (visiblecalendar.value as VisibleCalendarType).previous.month = 0;
             } else {
               if (
-                visiblecalendar.value.first.month > visiblecalendar.value.current.month
+                (visiblecalendar.value as VisibleCalendarType).first.month > (visiblecalendar.value as VisibleCalendarType).current.month
               ) {
-                visiblecalendar.value.previous.year++;
-                visiblecalendar.value.previous.month = 0;
-                visiblecalendar.value.current.month++;
+                (visiblecalendar.value as VisibleCalendarType).previous.year++;
+                (visiblecalendar.value as VisibleCalendarType).previous.month = 0;
+                (visiblecalendar.value as VisibleCalendarType).current.month++;
               }
             }
           }
@@ -6444,43 +7858,43 @@ export function clickForward(isoweek: boolean, maxdate: string, mindate: string,
     } else {
       //current year is equal to previous year
       if (
-        visiblecalendar.value.current.month - visiblecalendar.value.previous.month > 1
+        (visiblecalendar.value as VisibleCalendarType).current.month - (visiblecalendar.value as VisibleCalendarType).previous.month > 1
       ) {
         //keep increasing the month of the previous until it is less than 1
-        visiblecalendar.value.previous.month++;
+        (visiblecalendar.value as VisibleCalendarType).previous.month++;
       } else {
         //difference between current and previous month of the same year is 1
-        if (visiblecalendar.value.first.year > visiblecalendar.value.current.year) {
+        if ((visiblecalendar.value as VisibleCalendarType).first.year > (visiblecalendar.value as VisibleCalendarType).current.year) {
           //check if the current can be increased as well as the previous
-          visiblecalendar.value.previous = JSON.parse(
-            JSON.stringify(visiblecalendar.value.current)
+          (visiblecalendar.value as VisibleCalendarType).previous = JSON.parse(
+            JSON.stringify((visiblecalendar.value as VisibleCalendarType).current)
           ) as YearMonthClickable<PositionTrackerType>;
-          if (visiblecalendar.value.current.month + 1 < 12) {
-            visiblecalendar.value.current.month++;
+          if ((visiblecalendar.value as VisibleCalendarType).current.month + 1 < 12) {
+            (visiblecalendar.value as VisibleCalendarType).current.month++;
           } else {
-            visiblecalendar.value.current.month = 0;
-            visiblecalendar.value.current.year++;
+            (visiblecalendar.value as VisibleCalendarType).current.month = 0;
+            (visiblecalendar.value as VisibleCalendarType).current.year++;
           }
         } else {
           //current is equal to first
-          if (visiblecalendar.value.first.month > visiblecalendar.value.current.month) {
-            visiblecalendar.value.previous = JSON.parse(
-              JSON.stringify(visiblecalendar.value.current)
+          if ((visiblecalendar.value as VisibleCalendarType).first.month > (visiblecalendar.value as VisibleCalendarType).current.month) {
+            (visiblecalendar.value as VisibleCalendarType).previous = JSON.parse(
+              JSON.stringify((visiblecalendar.value as VisibleCalendarType).current)
             ) as YearMonthClickable<PositionTrackerType>;
-            visiblecalendar.value.current.month++;
+            (visiblecalendar.value as VisibleCalendarType).current.month++;
           }
         }
       }
     }
     
     visiblecalendar.value = {
-      last: visiblecalendar.value.last,
-      first: visiblecalendar.value.first,
+      last: (visiblecalendar.value as VisibleCalendarType).last,
+      first: (visiblecalendar.value as VisibleCalendarType).first,
       current: resetYearMonthDayCalendarHolder(
-        visiblecalendar.value.current,
+        (visiblecalendar.value as VisibleCalendarType).current,
         buildCalendar(
-          visiblecalendar.value.current.year,
-          visiblecalendar.value.current.month,
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
           "PREVIOUS-OR-CURRENT",
           isoweek,
           mindate,
@@ -6489,10 +7903,10 @@ export function clickForward(isoweek: boolean, maxdate: string, mindate: string,
         )
       ) as YearMonthClickable<PositionTrackerType>,
       previous: resetYearMonthDayCalendarHolder(
-        visiblecalendar.value.previous,
+        (visiblecalendar.value as VisibleCalendarType).previous,
         buildCalendar(
-          visiblecalendar.value.previous.year,
-          visiblecalendar.value.previous.month,
+          (visiblecalendar.value as VisibleCalendarType).previous.year,
+          (visiblecalendar.value as VisibleCalendarType).previous.month,
           "PREVIOUS-OR-CURRENT",
           isoweek,
           mindate,
@@ -6500,7 +7914,7 @@ export function clickForward(isoweek: boolean, maxdate: string, mindate: string,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         )
       ) as YearMonthClickable<PositionTrackerType>,
-      selections: visiblecalendar.value.selections,
+      selections: (visiblecalendar.value as VisibleCalendarType).selections,
     };
 
     triggerRef(visiblecalendar);
@@ -6508,38 +7922,38 @@ export function clickForward(isoweek: boolean, maxdate: string, mindate: string,
 }
 
 export function clickBackward(isoweek: boolean, maxdate: string, mindate: string, visiblecalendar: ShallowRef<VisibleCalendarType>) {
-  if (visiblecalendar.value.last.clickable) {
-    if (visiblecalendar.value.previous.year < visiblecalendar.value.current.year) {
-      if (visiblecalendar.value.current.month - 1 > -1) {
-        visiblecalendar.value.current.month--;
+  if ((visiblecalendar.value as VisibleCalendarType).last.clickable) {
+    if ((visiblecalendar.value as VisibleCalendarType).previous.year < (visiblecalendar.value as VisibleCalendarType).current.year) {
+      if ((visiblecalendar.value as VisibleCalendarType).current.month - 1 > -1) {
+        (visiblecalendar.value as VisibleCalendarType).current.month--;
       } else {
         if (
-          visiblecalendar.value.current.year - 1 >
-          visiblecalendar.value.previous.year
+          (visiblecalendar.value as VisibleCalendarType).current.year - 1 >
+          (visiblecalendar.value as VisibleCalendarType).previous.year
         ) {
-          visiblecalendar.value.current.month = 11;
-          visiblecalendar.value.current.year--;
+          (visiblecalendar.value as VisibleCalendarType).current.month = 11;
+          (visiblecalendar.value as VisibleCalendarType).current.year--;
         } else {
           //current year - 1 is equal to previous year
-          if (visiblecalendar.value.previous.year > visiblecalendar.value.last.year) {
-            visiblecalendar.value.current.month = 11;
-            visiblecalendar.value.current.year--;
+          if ((visiblecalendar.value as VisibleCalendarType).previous.year > (visiblecalendar.value as VisibleCalendarType).last.year) {
+            (visiblecalendar.value as VisibleCalendarType).current.month = 11;
+            (visiblecalendar.value as VisibleCalendarType).current.year--;
             if (
-              visiblecalendar.value.previous.month === visiblecalendar.value.current.month
+              (visiblecalendar.value as VisibleCalendarType).previous.month === (visiblecalendar.value as VisibleCalendarType).current.month
             ) {
-              visiblecalendar.value.previous.month--;
+              (visiblecalendar.value as VisibleCalendarType).previous.month--;
             }
           } else {
-            if (visiblecalendar.value.previous.month < 11) {
-              visiblecalendar.value.current.month = 11;
-              visiblecalendar.value.current.year--;
+            if ((visiblecalendar.value as VisibleCalendarType).previous.month < 11) {
+              (visiblecalendar.value as VisibleCalendarType).current.month = 11;
+              (visiblecalendar.value as VisibleCalendarType).current.year--;
             } else {
               if (
-                visiblecalendar.value.previous.month > visiblecalendar.value.last.month
+                (visiblecalendar.value as VisibleCalendarType).previous.month > (visiblecalendar.value as VisibleCalendarType).last.month
               ) {
-                visiblecalendar.value.current.month = 11;
-                visiblecalendar.value.current.year--;
-                visiblecalendar.value.previous.month--;
+                (visiblecalendar.value as VisibleCalendarType).current.month = 11;
+                (visiblecalendar.value as VisibleCalendarType).current.year--;
+                (visiblecalendar.value as VisibleCalendarType).previous.month--;
               }
             }
           }
@@ -6548,41 +7962,41 @@ export function clickBackward(isoweek: boolean, maxdate: string, mindate: string
     } else {
       //previous year is equal to current year
       if (
-        visiblecalendar.value.current.month - visiblecalendar.value.previous.month >
+        (visiblecalendar.value as VisibleCalendarType).current.month - (visiblecalendar.value as VisibleCalendarType).previous.month >
         1
       ) {
         //keep reducing current
-        visiblecalendar.value.current.month--;
+        (visiblecalendar.value as VisibleCalendarType).current.month--;
       } else {
-        if (visiblecalendar.value.previous.year > visiblecalendar.value.last.year) {
-          visiblecalendar.value.current = JSON.parse(
-            JSON.stringify(visiblecalendar.value.previous)
+        if ((visiblecalendar.value as VisibleCalendarType).previous.year > (visiblecalendar.value as VisibleCalendarType).last.year) {
+          (visiblecalendar.value as VisibleCalendarType).current = JSON.parse(
+            JSON.stringify((visiblecalendar.value as VisibleCalendarType).previous)
           ) as YearMonthClickable<PositionTrackerType>;
-          if (visiblecalendar.value.previous.month - 1 > -1) {
-            visiblecalendar.value.previous.month--;
+          if ((visiblecalendar.value as VisibleCalendarType).previous.month - 1 > -1) {
+            (visiblecalendar.value as VisibleCalendarType).previous.month--;
           } else {
-            visiblecalendar.value.previous.month = 11;
-            visiblecalendar.value.previous.year--;
+            (visiblecalendar.value as VisibleCalendarType).previous.month = 11;
+            (visiblecalendar.value as VisibleCalendarType).previous.year--;
           }
         } else {
-          if (visiblecalendar.value.previous.month > visiblecalendar.value.last.month) {
-            visiblecalendar.value.current = JSON.parse(
-              JSON.stringify(visiblecalendar.value.previous)
+          if ((visiblecalendar.value as VisibleCalendarType).previous.month > (visiblecalendar.value as VisibleCalendarType).last.month) {
+            (visiblecalendar.value as VisibleCalendarType).current = JSON.parse(
+              JSON.stringify((visiblecalendar.value as VisibleCalendarType).previous)
             );
-            visiblecalendar.value.previous.month--;
+            (visiblecalendar.value as VisibleCalendarType).previous.month--;
           }
         }
       }
     }
     
     visiblecalendar.value = {
-      last: visiblecalendar.value.last,
-      first: visiblecalendar.value.first,
+      last: (visiblecalendar.value as VisibleCalendarType).last,
+      first: (visiblecalendar.value as VisibleCalendarType).first,
       current: resetYearMonthDayCalendarHolder(
-        visiblecalendar.value.current,
+        (visiblecalendar.value as VisibleCalendarType).current,
         buildCalendar(
-          visiblecalendar.value.current.year,
-          visiblecalendar.value.current.month,
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
           "PREVIOUS-OR-CURRENT",
           isoweek,
           mindate,
@@ -6591,10 +8005,10 @@ export function clickBackward(isoweek: boolean, maxdate: string, mindate: string
         )
       ) as YearMonthClickable<PositionTrackerType>,
       previous: resetYearMonthDayCalendarHolder(
-        visiblecalendar.value.previous,
+        (visiblecalendar.value as VisibleCalendarType).previous,
         buildCalendar(
-          visiblecalendar.value.previous.year,
-          visiblecalendar.value.previous.month,
+          (visiblecalendar.value as VisibleCalendarType).previous.year,
+          (visiblecalendar.value as VisibleCalendarType).previous.month,
           "PREVIOUS-OR-CURRENT",
           isoweek,
           mindate,
@@ -6602,7 +8016,7 @@ export function clickBackward(isoweek: boolean, maxdate: string, mindate: string
           visiblecalendar as ShallowRef<VisibleCalendarType>
         )
       ) as YearMonthClickable<PositionTrackerType>,
-      selections: visiblecalendar.value.selections,
+      selections: (visiblecalendar.value as VisibleCalendarType).selections,
     };
 
     triggerRef(visiblecalendar);
@@ -6610,38 +8024,39 @@ export function clickBackward(isoweek: boolean, maxdate: string, mindate: string
 }
 
 export function assignRef(prevorcur: YearMonthClickable<PositionTrackerType>, el: HTMLLabelElement, weekindex: number, dayindex: number) {
-  if (weekindex in prevorcur.calendar && el) {
-    prevorcur.calendar[weekindex].days[dayindex].ref = el as HTMLLabelElement;
+  if ((prevorcur.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks && weekindex in prevorcur.calendar.weeks && el) {
+    prevorcur.calendar.weeks[weekindex].days[dayindex].ref = el as HTMLLabelElement;
   }
 }
 
-export function resetSelections(resetarea: 'SELECTIONS' | 'CALENDAR', selectionsorcalendar: VisibleCalendarType['selections'] | YearMonthClickable<PositionTrackerType>['calendar'], maxdate: string, mindate: string, isoweek: boolean) {
+export function resetSelections(resetarea: 'SELECTIONS' | 'CALENDAR', _selectionsorcalendar: VisibleCalendarType['selections'] | YearMonthClickable<PositionTrackerType>['calendar'], maxdate: string, mindate: string, isoweek: boolean) {
+  let selectionsorcalendar = _selectionsorcalendar;
   if(resetarea === 'SELECTIONS') {
     for(let year in selectionsorcalendar) {
-      for(let month in (selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number]) {
-        for(let week in (selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month]) {
-          for(let day in ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days) {
+      for(let month in (selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months) {
+        for(let week in ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+          for(let day in ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
             if(
               differenceInCalendarDays(
                 isoweek
-                  ? new Date(formatISO(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days[day].date), { representation: "date" }))
-                  : new Date(format(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days[day].date), "yyyy-MM-dd"))
+                  ? new Date(formatISO(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date), { representation: "date" }))
+                  : new Date(format(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date), "yyyy-MM-dd"))
                 ,
                 new Date(mindate)
               ) >= 0 && differenceInCalendarDays(
                 isoweek
-                  ? new Date(formatISO(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days[day].date), { representation: "date" }))
-                  : new Date(format(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days[day].date), "yyyy-MM-dd"))
+                  ? new Date(formatISO(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date), { representation: "date" }))
+                  : new Date(format(new Date(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date), "yyyy-MM-dd"))
                 ,
                 new Date(maxdate)
               ) <= 0
             ) {
-              if(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days[day].readonlystatus === "ENABLE") {
-                ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days[day].status = "ENABLE";
+              if(((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].readonlystatus === "ENABLE") {
+                ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status = "ENABLE";
               }
             }
             else {
-              ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number][month] as YearMonthClickable<{}>['calendar'])[week].days[day].status = "DISABLE";
+              ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].status = "DISABLE";
             }
           }
         }
@@ -6649,29 +8064,29 @@ export function resetSelections(resetarea: 'SELECTIONS' | 'CALENDAR', selections
     }
   }
   else {
-    for(let week in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])) {
-      for(let day in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days) {
+    for(let week in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks) {
+      for(let day in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days) {
         if(
           differenceInCalendarDays(
             isoweek
-              ? new Date(formatISO(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days[day].date), { representation: "date" }))
-              : new Date(format(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days[day].date), "yyyy-MM-dd"))
+              ? new Date(formatISO(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days[day].date), { representation: "date" }))
+              : new Date(format(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days[day].date), "yyyy-MM-dd"))
             ,
             new Date(mindate)
           ) >= 0 && differenceInCalendarDays(
             isoweek
-              ? new Date(formatISO(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days[day].date), { representation: "date" }))
-              : new Date(format(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days[day].date), "yyyy-MM-dd"))
+              ? new Date(formatISO(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days[day].date), { representation: "date" }))
+              : new Date(format(new Date((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days[day].date), "yyyy-MM-dd"))
             ,
             new Date(maxdate)
           ) <= 0
         ) {
-          if((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-            (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days[day].status = "ENABLE";
+          if((selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+            (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days[day].status = "ENABLE";
           }
         }
         else {
-          (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar'])[parseInt(''+week)].days[day].status = "DISABLE";
+          (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days[day].status = "DISABLE";
         }
       }
     }

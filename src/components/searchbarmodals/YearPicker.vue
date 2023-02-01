@@ -4,12 +4,10 @@ import type {  YearSelectionType, YearRangeFirstSelectionType, YearSelectionForm
 import { 
   addYear, 
   getYearDimensions, 
-  unTrackYearBoxMouseMovement, 
-  trackYearBoxMouseMovement, 
+  unTrackYearBoxMouseMovement,
   deselectAll,
   fillYearArray,
 } from "../utility/days_months_years_utility_fns";
-import type {YearType} from "../types/SupportedDatatypesTypeDeclaration";
 import Paste from "./Paste.vue";
 
 let 
@@ -25,11 +23,14 @@ const
     maxyear: number;
     minyear: number;
     yearselectionandformat: YearSelectionFormat;
+    title: string;
   }>(),
-  cards = inject("cards") as ShallowRef<YearType[]>,
-  index = inject("index") as number,
+  emits = defineEmits<{
+    (e: "update:yearselectionandformat", action: YearSelectionFormat): void;
+    (e: "signal:readyforexclude", action: boolean): void;
+  }>(),
+  holder = shallowRef<YearSelectionFormat>(),
   years = shallowRef<YearSelectionType>(),
-  format = ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">(),
   page = ref(0),
   rangecount = ref(0),
   multipleselectcount = ref(0),
@@ -45,16 +46,21 @@ const compYearsLength = computed(() => {
   return Object.keys(years.value as YearSelectionType).length;
 });
 
+function triggerHolder() {
+  triggerRef(holder);
+}
+
 function processDimensions() {
   getYearDimensions(years as ShallowRef<YearSelectionType>, page as Ref<number>);
 }
 
 function addYearByClick(year: number, clickedorpasted: boolean) {
-  addYear(page, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, rangecount, multipleselectcount, year, clickedorpasted, years as ShallowRef<YearSelectionType>, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">);
+  addYear(page, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, rangecount, multipleselectcount, year, clickedorpasted, years as ShallowRef<YearSelectionType>, (holder.value as YearSelectionFormat).format as "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN");
 }
 
 onBeforeMount(() => {
-  format.value = "RANGE";
+  holder.value = JSON.parse(JSON.stringify(props.yearselectionandformat)) as YearSelectionFormat;
+  triggerRef(holder);
   rangefirstselection.value = { page: -1, year: -1 };
   rangecount.value = 0;
   multipleselectcount.value = 0;
@@ -70,7 +76,7 @@ onBeforeMount(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', processDimensions, true);
   window.removeEventListener('scroll', processDimensions, true);
-  unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">);
+  unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, (holder.value as YearSelectionFormat).format as "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN");
   unwatchformat();
   unwatchgreaterthan();
   unwatchlessthan();
@@ -82,10 +88,12 @@ onMounted(() => {
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {
-      if(format.value !== "RANGE") {
+      if((holder.value as YearSelectionFormat).format !== "RANGE") {
         if(x > 0) {
+          emits('signal:readyforexclude', true);
         }
         else {
+          emits('signal:readyforexclude', false);
         }
       }
     }
@@ -93,19 +101,21 @@ onMounted(() => {
   unwatchrangecount = watch(
     () => rangecount.value,
     (x) => {
-      if (format.value === "RANGE") {
+      if ((holder.value as YearSelectionFormat).format === "RANGE") {
         if(x === 2) {
+          emits('signal:readyforexclude', true);
         }
         else {
+          emits('signal:readyforexclude', false);
         }
       }
     }
   );
   unwatchformat = watch(
-    () => format.value,
+    () => (holder.value as YearSelectionFormat).format,
     (x) => {
       deselectAll(years as ShallowRef<YearSelectionType>);
-      unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, format as Ref<"RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN">);
+      unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, (holder.value as YearSelectionFormat).format as "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN");
       rangefirstselection.value = { page: -1, year: -1 };
       rangecount.value = 0;
       multipleselectcount.value = 0;
@@ -131,7 +141,7 @@ onMounted(() => {
               for(let p in years.value) {
                 for(let row in years.value[parseInt(p)]) {
                   for(let col in years.value[parseInt(p)][row]) {
-                    if((years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).year === parseInt(x) && (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE') {
+                    if((years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).year === parseInt(x) && (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).status === 'ENABLE') {
                       found = true;
                       break;
                     }
@@ -144,9 +154,9 @@ onMounted(() => {
                 for(let p in years.value) {
                   for(let row in years.value[parseInt(p)]) {
                     for(let col in years.value[parseInt(p)][row]) {
-                      if((years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).year > parseInt(x) && (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE') {
+                      if((years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).year > parseInt(x) && (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).status === 'ENABLE') {
                         found = true;
-                        (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).selected = 'SELECTED';
+                        (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
                         page.value = parseInt(p);
                         multipleselectcount.value++;
                       }
@@ -201,7 +211,7 @@ onMounted(() => {
               for(let p in years.value) {
                 for(let row in years.value[parseInt(p)]) {
                   for(let col in years.value[parseInt(p)][row]) {
-                    if((years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).year === parseInt(x) && (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE') {
+                    if((years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).year === parseInt(x) && (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).status === 'ENABLE') {
                       found = true;
                       break;
                     }
@@ -214,9 +224,9 @@ onMounted(() => {
                 for(let p in years.value) {
                   for(let row in years.value[parseInt(p)]) {
                     for(let col in years.value[parseInt(p)][row]) {
-                      if((years.value[parseInt(p)][row][parseInt(col)] as unknown as YearSelectionType[number][number][number][number][number][number]).year < parseInt(x) && (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE') {
+                      if((years.value[parseInt(p)][row][parseInt(col)] as YearSelectionType[number][number][number]).year < parseInt(x) && (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).status === 'ENABLE') {
                         found = true;
-                        (years.value[parseInt(p)][row][col] as unknown as YearSelectionType[number][number][number][number][number][number]).selected = 'SELECTED';
+                        (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
                         page.value = parseInt(p);
 
                         multipleselectcount.value++;
@@ -264,10 +274,10 @@ onMounted(() => {
     >
       <div class="flex-w-50 align-self-stretch">
         <button
-          @keypress.enter="() => {format = 'RANGE'; greaterthan = ''; lessthan = '';}"
-          @click="() => {format = 'RANGE'; greaterthan = ''; lessthan = '';}"
+          @keypress.enter="() => {(holder as YearSelectionFormat).format = 'RANGE'; greaterthan = ''; lessthan = ''; triggerHolder(); }"
+          @click="() => {(holder as YearSelectionFormat).format = 'RANGE'; greaterthan = ''; lessthan = ''; triggerHolder(); }"
           :style="
-            format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
+            (holder as YearSelectionFormat).format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
           "
           class="font-family letter-spacing cursor-pointer btn w-100"
           style="color: #fff; padding: 2px 0; border-right: 1px solid #fff"
@@ -279,20 +289,22 @@ onMounted(() => {
         <button
           @keypress.enter="
             () => {
-              format = 'MULTIPLE-OR-SINGLE';
+              (holder as YearSelectionFormat).format = 'MULTIPLE-OR-SINGLE';
               greaterthan = '';
               lessthan = '';
+              triggerHolder();
             }
           "
           @click="
             () => {
-              format = 'MULTIPLE-OR-SINGLE';
+              (holder as YearSelectionFormat).format = 'MULTIPLE-OR-SINGLE';
               greaterthan = '';
               lessthan = '';
+              triggerHolder();
             }
           "
           :style="
-            format === 'MULTIPLE-OR-SINGLE'
+            (holder as YearSelectionFormat).format === 'MULTIPLE-OR-SINGLE'
               ? 'background-color:green;'
               : 'background-color:gray;'
           "
@@ -305,7 +317,7 @@ onMounted(() => {
     </div>
     <Paste
       pastearea="YEAR-AREA"
-      :title="cards[index].info.name"
+      :title="props.title"
       :datatype="'Year'"
       :max="''+props.maxyear"
       :min="''+props.minyear"
@@ -364,7 +376,7 @@ onMounted(() => {
             @focus="
               () => {
                 greaterthan = '';
-                format = 'LESS-THAN';
+                (holder as YearSelectionFormat).format = 'LESS-THAN';
               }
             "
             type="text"
@@ -393,7 +405,7 @@ onMounted(() => {
             @focus="
               () => {
                 lessthan = '';
-                format = 'GREATER-THAN';
+                (holder as YearSelectionFormat).format = 'GREATER-THAN';
               }
             "
             type="text"
@@ -503,9 +515,9 @@ onMounted(() => {
               style="float: left; outline: 1px solid #fff"
             >
               <label
-                :ref="(el) => ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).ref = el as HTMLLabelElement"
-                @keypress.enter="() => { ((format==='RANGE' || format==='MULTIPLE-OR-SINGLE') && (col as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).year, true) : ''; }"
-                @click="() => { ((format==='RANGE' || format==='MULTIPLE-OR-SINGLE') && (col as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).year, true) : ''; }"
+                :ref="(el) => ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).ref = el as HTMLLabelElement"
+                @keypress.enter="() => { (((holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE') && (col as YearSelectionType[number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year, true) : ''; }"
+                @click="() => { (((holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE') && (col as YearSelectionType[number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year, true) : ''; }"
                 class="w-100"
                 style="float: left; line-height: 2em; height: 2em"
               >
@@ -513,25 +525,25 @@ onMounted(() => {
                   @keypress.enter.stop=""
                   @click.stop=""
                   type="checkbox"
-                  :value="((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).year"
+                  :value="((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year"
                   class="position-absolute d-none"
                   style="pointer-events: auto"
                 />
                 <span
                   class="font-family text-center d-block letter-spacing"
                   style="font-size: 1rem; line-height: 2em; height: 2em"
-                  :class="[((format==='RANGE' || format==='MULTIPLE-OR-SINGLE') && ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE')? 'cursor-pointer' : '']"
+                  :class="[(((holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE') && ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).status === 'ENABLE')? 'cursor-pointer' : '']"
                   :style="
-                    ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE' ? (
-                      ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).selected === 'SELECTED'?
+                    ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).status === 'ENABLE' ? (
+                      ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).selected === 'SELECTED'?
                       'background-color: green; color: #fff;'
-                      : ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).selected === 'DESELECTED'?
+                      : ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).selected === 'DESELECTED'?
                         'background-color: #E8E8E8; color: black; text-shadow:none;'
                         : 'background-color: gray; color: #fff;'
                     ) : 'background-color: #fff; color: #fff; text-shadow:none;'
                   "
                 >
-                  {{ ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).status === 'ENABLE'? ((years as YearSelectionType)[page][rindex][cindex] as unknown as YearSelectionType[number][number][number][number][number][number]).year : '' }}
+                  {{ ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).status === 'ENABLE'? ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year : '' }}
                 </span>
               </label>
             </div>
