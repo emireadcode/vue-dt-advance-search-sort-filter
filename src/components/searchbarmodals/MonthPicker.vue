@@ -16,6 +16,7 @@ import { getMonthDimensions, fillMonthArray } from "../utility/days_months_years
 
 const 
   props = defineProps<{
+    notifytosendsignal?: number | undefined;
     monthselectionandformat: MonthSelectionFormat;
   }>(),
   emits = defineEmits<{
@@ -33,7 +34,8 @@ const
 let
   unwatchrangecount: WatchStopHandle,
   unwatchmultipleselectcount: WatchStopHandle,
-  unwatchformat: WatchStopHandle
+  unwatchformat: WatchStopHandle,
+  unwatchnotifytosendsignal: WatchStopHandle
 ;
 
 function triggerHolder() {
@@ -224,6 +226,14 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
+  unwatchnotifytosendsignal = watch(
+    () => (props.notifytosendsignal as number),
+    (x) => {
+      (holder.value as MonthSelectionFormat).months = months.value as MonthSelectionType;
+      triggerHolder();
+      emits('update:monthselectionandformat', holder.value as MonthSelectionFormat);
+    }
+  );
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {
@@ -268,7 +278,7 @@ onBeforeMount(() => {
   holder.value = JSON.parse(JSON.stringify(props.monthselectionandformat)) as MonthSelectionFormat;
   (holder.value as MonthSelectionFormat).format = props.monthselectionandformat.format;
   triggerHolder();
-  (months.value as MonthSelectionType) = (fillMonthArray((holder.value as MonthSelectionFormat).format) as ShallowRef<MonthSelectionType>).value;
+  months.value = fillMonthArray((holder.value as MonthSelectionFormat).format).value as MonthSelectionType;
   rangefirstselection.value = { month: -1 };
   triggerRef(months);
 });

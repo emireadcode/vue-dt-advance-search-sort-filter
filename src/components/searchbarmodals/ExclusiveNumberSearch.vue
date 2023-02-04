@@ -242,7 +242,7 @@ const excludeAddNewEqualto = computed(() => {
           </div>
         </div>
       </template>
-      <div class="d-block" :style="props.from === 'NUMBER-SEARCHER-MODAL'?'padding: 0 5px;':'padding: 15px 5px 0 5px;'">
+      <div class="d-block" :style="props.from === 'NUMBER-SEARCHER-MODAL'?'padding: 0 5px;':'padding: 7.5px 5px;'">
         <template
           v-if="
             ((props.from === 'NUMBER-SEARCHER-MODAL')? holder as NumberType['search']['multiple'] : ((holder as AtNumber<NumberSearchType>).search))?.tab === 'GREATER-THAN'

@@ -17,11 +17,13 @@ import { getDayDimensions, fillDayArray } from "../utility/days_months_years_uti
 let 
   unwatchrangecount: WatchStopHandle,
   unwatchmultipleselectcount: WatchStopHandle,
-  unwatchformat: WatchStopHandle
+  unwatchformat: WatchStopHandle,
+  unwatchnotifytosendsignal: WatchStopHandle
 ;
 
 const 
   props = defineProps<{
+    notifytosendsignal?: number | undefined;
     dayselectionandformat: DaySelectionFormat;
     isoweek: boolean;
   }>(),
@@ -177,6 +179,14 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
+  unwatchnotifytosendsignal = watch(
+    () => (props.notifytosendsignal as number),
+    (x) => {
+      (holder.value as DaySelectionFormat).days = days.value as DaySelectionType;
+      triggerRef(holder);
+      emits('update:dayselectionandformat', holder.value as DaySelectionFormat);
+    }
+  );
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {
@@ -221,7 +231,7 @@ onMounted(() => {
 onBeforeMount(() => {
   holder.value = JSON.parse(JSON.stringify(props.dayselectionandformat));
   triggerHolder();
-  (days.value as DaySelectionType) = (fillDayArray(props.isoweek, (holder.value as DaySelectionFormat).format) as ShallowRef<DaySelectionType>).value as DaySelectionType;
+  days.value = (fillDayArray(props.isoweek, (holder.value as DaySelectionFormat).format) as ShallowRef<DaySelectionType>).value as DaySelectionType;
   rangefirstselection.value = { day: -1 };
   triggerRef(days);
 });

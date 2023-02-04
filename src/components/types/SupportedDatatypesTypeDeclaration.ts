@@ -1,4 +1,5 @@
-import type { RangeSelectionParamsType } from './dd_mm_yy_types';
+import type { DaySelectionType, MonthSelectionType, YearSelectionType } from './days_months_years_types';
+import type { RangeSelectionParamsType, VisibleCalendarType } from './dd_mm_yy_types';
 
 type StartModifierWildCardType = "@" | "+" | "*" | "(" | "#" | "/" | "{" | "(" | "[" | "[";
 
@@ -214,77 +215,27 @@ export type DateInnerType = {
         format: "RANGE" | "MULTIPLE-OR-SINGLE";
         rangeselectionparams?: RangeSelectionParamsType,
         dates:
-          | {
-              //key is years
-              [key: string | number]: {
-                //key is months
-                [key: string | number]: {
-                  //key is week number
-                  [key: string | number]: {
-                    //key is day number in a week 0 - 6
-                    [key: string | number]: {
-                      status: boolean;
-                      selected: boolean;
-                      date: string;
-                      day: number;
-                    };
-                  };
-                };
-              };
-            }
+          | VisibleCalendarType['selections']
           | {};
       };
   days_months_years:
     | {
         days: {
           format: "RANGE" | "MULTIPLE-OR-SINGLE";
-          days: {
-            [key: string | number]: {
-              selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-              index: number;
-              name: "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
-            };
-          } | {};
+          days: DaySelectionType | {};
         };
         months: {
           format: "RANGE" | "MULTIPLE-OR-SINGLE";
-          months: {
-            [key: string | number]: {
-              selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-              index: number;
-              name: "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec";
-            };
-          } | {};
+          months: MonthSelectionType | {};
         };
         years: {
           format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN";
           greaterthan?: string | undefined;
           lessthan?: string | undefined;
-          years: {
-            [key: string | number]: {
-              selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-            };
-          } | {};
+          years: YearSelectionType | {};
         };
         dates:
-          | {
-              //key is years
-              [key: string | number]: {
-                //key is months
-                [key: string | number]: {
-                  //key is week number
-                  [key: string | number]: {
-                    //key is day number in a week 0 - 6
-                    [key: string | number]: {
-                      status: boolean;
-                      selected: boolean;
-                      date: string;
-                      day: number;
-                    };
-                  };
-                };
-              };
-            }
+          | VisibleCalendarType['selections']
           | {};
       };
 };

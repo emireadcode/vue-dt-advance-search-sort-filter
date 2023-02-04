@@ -15,11 +15,13 @@ let
   unwatchmultipleselectcount: WatchStopHandle,
   unwatchformat: WatchStopHandle,
   unwatchgreaterthan: WatchStopHandle,
-  unwatchlessthan: WatchStopHandle
+  unwatchlessthan: WatchStopHandle,
+  unwatchnotifytosendsignal: WatchStopHandle
 ;
 
 const 
   props = defineProps<{
+    notifytosendsignal?: number | undefined;
     maxyear: number;
     minyear: number;
     yearselectionandformat: YearSelectionFormat;
@@ -85,6 +87,14 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
+  unwatchnotifytosendsignal = watch(
+    () => (props.notifytosendsignal as number),
+    (x) => {
+      (holder.value as YearSelectionFormat).years = years.value as YearSelectionType;
+      triggerHolder();
+      emits('update:yearselectionandformat', holder.value as YearSelectionFormat);
+    }
+  );
   unwatchmultipleselectcount = watch(
     () => multipleselectcount.value,
     (x) => {

@@ -36,6 +36,7 @@ export type MonthSelectionType = {
 
 export type DaySelectionType = {
   [key: string]: {
+    daynumber: number;
     selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
     name: "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
     ref: HTMLLabelElement;
@@ -63,32 +64,16 @@ export type DuplicateCheckerObjectType = {
 
 export type DaySelectionFormat = {
     format: "RANGE" | "MULTIPLE-OR-SINGLE";
-    days: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-        index: number;
-        name: "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
-      };
-    } | {};
+    days: DaySelectionType | {};
 };
 
 export type MonthSelectionFormat = {
     format: "RANGE" | "MULTIPLE-OR-SINGLE";
-    months: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-        index: number;
-        name: "Jan" | "Feb" | "Mar" | "Apr" | "May" | "Jun" | "Jul" | "Aug" | "Sep" | "Oct" | "Nov" | "Dec";
-      };
-    } | {};
+    months: MonthSelectionType | {};
   };
 
 
 export type YearSelectionFormat = {
     format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN";
-    years: {
-      [key: string | number]: {
-        selected: "SELECTED" | "DESELECTED" | "HIGHLIGHTED";
-      };
-    } | number | {};
+    years: YearSelectionType | {};
   };

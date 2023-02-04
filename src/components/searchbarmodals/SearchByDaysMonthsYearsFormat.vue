@@ -9,8 +9,12 @@ import {
   type WatchStopHandle,
   onBeforeUnmount,
   triggerRef,
+  nextTick,
+  shallowRef,
 } from "vue";
-import type { YearSelectionFormat, MonthSelectionFormat, DaySelectionFormat } from "../types/days_months_years_types";
+import type { VisibleCalendarType } from "../types/dd_mm_yy_types";
+import { buildCalendar, weekHasHighlightedOrSelected } from "../utility/dd_mm_yy_utility_fns";
+import type { YearSelectionType, MonthSelectionType, DaySelectionType, YearSelectionFormat, MonthSelectionFormat, DaySelectionFormat } from "../types/days_months_years_types";
 import type { DateType } from "../types/SupportedDatatypesTypeDeclaration";
 import DayPicker from "./DayPicker.vue";
 import MonthPicker from "./MonthPicker.vue";
@@ -45,7 +49,9 @@ const
 
   ismonthready = ref(false),
 
-  isyearready = ref(false)
+  isyearready = ref(false),
+
+  notifytosendsignal = ref(0)
 
 ;
 
@@ -74,6 +80,206 @@ onBeforeMount(() => {
     ([x, y, z]) => {
       if(x && y && z) {
         emits('enable:excludebutton', false);
+        notifytosendsignal.value++;
+        nextTick(() => {
+          for(let row in cards.value[index].search.days_months_years.years.years) {
+            for(let col in (cards.value[index].search.days_months_years.years.years as YearSelectionType)[row]) {
+              for(let yearindex in (cards.value[index].search.days_months_years.years.years as YearSelectionType)[row][col]) {
+                if(
+                  (cards.value[index].search.days_months_years.years.years as YearSelectionType)[
+                    row
+                  ][
+                    col
+                  ][
+                    yearindex
+                  ].selected === 'HIGHLIGHTED'
+                  ||
+                  (cards.value[index].search.days_months_years.years.years as YearSelectionType)[
+                    row
+                  ][
+                    col
+                  ][
+                    yearindex
+                  ].selected === 'SELECTED'
+                ) {
+                  cards.value[index].search.days_months_years.dates = {
+                    ...cards.value[index].search.days_months_years.dates,
+                    [
+                      (cards.value[index].search.days_months_years.years.years as YearSelectionType)[
+                        row
+                      ][
+                        col
+                      ][
+                        yearindex
+                      ].year
+                    ]: {
+                      months: {}
+                    }
+                  };
+                  for(let mrow in cards.value[index].search.days_months_years.months.months) {
+                    for(let mcol in (cards.value[index].search.days_months_years.months.months as MonthSelectionType)[parseInt(mrow)]) {
+                      if(
+                        !(
+                          (cards.value[index].search.days_months_years.months.months as MonthSelectionType)[
+                            parseInt(mrow)
+                          ][
+                            parseInt(mcol)
+                          ].monthnumber in 
+                          (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                            (cards.value[index].search.days_months_years.years.years as YearSelectionType)[
+                              row
+                            ][
+                              col
+                            ][
+                              yearindex
+                            ].year
+                          ].months
+                        )
+                        &&
+                        (
+                          (cards.value[index].search.days_months_years.months.months as MonthSelectionType)[
+                            parseInt(mrow)
+                          ][
+                            parseInt(mcol)
+                          ].selected === 'SELECTED'
+                          ||
+                          (cards.value[index].search.days_months_years.months.months as MonthSelectionType)[
+                            parseInt(mrow)
+                          ][
+                            parseInt(mcol)
+                          ].selected === 'HIGHLIGHTED'
+                        )
+                      ) {
+                        (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                          (cards.value[index].search.days_months_years.years.years as YearSelectionType)[
+                            row
+                          ][
+                            col
+                          ][
+                            yearindex
+                          ].year
+                        ].months = {
+                          ...(cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                            (cards.value[index].search.days_months_years.years.years as YearSelectionType)[
+                              row
+                            ][
+                              col
+                            ][
+                              yearindex
+                            ].year
+                          ].months,
+                          [
+                            (cards.value[index].search.days_months_years.months.months as MonthSelectionType)[
+                              parseInt(mrow)
+                            ][
+                              parseInt(mcol)
+                            ].monthnumber
+                          ]: buildCalendar(
+                            (cards.value[index].search.days_months_years.years.years as YearSelectionType)[
+                              row
+                            ][
+                              col
+                            ][
+                              yearindex
+                            ].year,
+                            (cards.value[index].search.days_months_years.months.months as MonthSelectionType)[
+                              parseInt(mrow)
+                            ][
+                              parseInt(mcol)
+                            ].monthnumber,
+                            "SELECTIONS",
+                            cards.value[index].isoweek,
+                            cards.value[index].result.min,
+                            cards.value[index].result.max,
+                            undefined
+                          )
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          for(let year in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])) {
+            for(let month in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months) {
+              for(let week in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months[month].weeks) {
+                for(let day in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months[month].weeks[week].days) {
+                  if(
+                    (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months[month].weeks[week].days[day].readonlystatus==='ENABLE'
+                  ) {
+                    (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                      year
+                    ].months[
+                      month
+                    ].weeks[
+                      week
+                    ].days[
+                      day
+                    ].selected = (
+                      (
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'HIGHLIGHTED'
+                        ||
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'SELECTED'
+                      )?
+                      'SELECTED'
+                      :
+                      'DESELECTED'
+                    );
+                    (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                      year
+                    ].months[
+                      month
+                    ].weeks[
+                      week
+                    ].days[
+                      day
+                    ].status = (
+                      (
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'HIGHLIGHTED'
+                        ||
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'SELECTED'
+                      )?
+                      'ENABLE'
+                      :
+                      'DISABLE'
+                    );
+                    (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                      year
+                    ].months[
+                      month
+                    ].weeks[
+                      week
+                    ].days[
+                      day
+                    ].readonlystatus = (
+                      (
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'HIGHLIGHTED'
+                        ||
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'SELECTED'
+                      )?
+                      'ENABLE'
+                      :
+                      'DISABLE'
+                    );
+                  }
+                }
+              }
+            } 
+          }
+          for(let year in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])) {
+            for(let month in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months) {
+              for(let week in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months[month].weeks) {
+                if(weekHasHighlightedOrSelected(
+                  (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months[month].weeks[parseInt(week)]
+                )) {
+                  (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months[month].weeks[parseInt(week)].checked = true;
+                }
+              }
+            }
+          }
+          triggerRef(cards);
+        });
       }
       else {
         emits('enable:excludebutton', true);
@@ -93,6 +299,7 @@ onBeforeUnmount(() => {
   <div class="d-block position-relative" style="padding: 0 10px;z-index: 1000;">
     <div class="d-block" style="padding: 7px 0px 3.5px 0;">
       <DayPicker
+        :notifytosendsignal="notifytosendsignal"
         @update:dayselectionandformat="($val: DaySelectionFormat) => { cards[index].search.days_months_years.days = $val; triggerCard(); }"
         :dayselectionandformat="((cards[index] as DateType).search.days_months_years.days as DaySelectionFormat)"
         :isoweek="(cards[index] as DateType).isoweek"
@@ -101,6 +308,7 @@ onBeforeUnmount(() => {
     </div>
     <div class="d-block" style="padding: 3.5px 0px;">
       <MonthPicker
+        :notifytosendsignal="notifytosendsignal"
         @update:monthselectionandformat="($val: MonthSelectionFormat) => { cards[index].search.days_months_years.months = $val; triggerCard(); }"
         @signal:readyforexclude="($val: boolean) => ismonthready = $val"
         :monthselectionandformat="((cards[index] as DateType).search.days_months_years?.months as MonthSelectionFormat)"
@@ -109,11 +317,12 @@ onBeforeUnmount(() => {
     <div class="d-block" style="padding: 3.5px 0px 7px 0;">
       <YearPicker
         :title="'year'"
+        :notifytosendsignal="notifytosendsignal"
         @update:yearselectionandformat="($val: YearSelectionFormat) => { cards[index].search.days_months_years.years = $val; triggerCard(); }"
         @signal:readyforexclude="($val: boolean) => isyearready = $val"
         :maxyear="(parseInt(cmaxyear) as number)"
         :minyear="(parseInt(cminyear) as number)"
-        :yearselectionandformat="((cards[index] as DateType).search.days_months_years?.years as YearSelectionFormat)"
+        :yearselectionandformat="((cards[index] as DateType).search.days_months_years.years as YearSelectionFormat)"
       ></YearPicker>
     </div>
     <template v-if="openexcludewindow">

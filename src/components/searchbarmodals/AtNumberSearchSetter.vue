@@ -10,6 +10,9 @@ import type {
 const
   holder = inject("numbersearchcard") as ShallowRef<AtNumber<NumberSearchType>>,
   index = inject("index") as number,
+  props = defineProps<{
+    from?: 'TABPANELWITHINCLUDEANDEXCLUDE' | undefined;
+  }>(),
   emits = defineEmits<{
     (e: "open:atnumbersearchwindow", action: boolean): void;
     (e: "enable:atnumbersearchwindowopenerbutton", action: boolean): void;
@@ -122,7 +125,11 @@ let addnewpatternguard = computed(() => {
         <slot name="closeatnumbersearch"></slot>
       </div>
     </div>
-    <div class="d-block" style="padding: 5px 0.5rem 10px 0.5rem;height:60px;">
+    <div 
+      class="d-block" 
+      style="padding: 5px 0.5rem 10px 0.5rem;"
+      :style="(from !== undefined && from === 'TABPANELWITHINCLUDEANDEXCLUDE')? 'height: 80px;' : 'height:90px;'"
+    >
       <div class="shadow-sm flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center" style="background-color: #E8E8E8;">
         <div class="flex-fill">
           {{

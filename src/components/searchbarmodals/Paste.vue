@@ -736,7 +736,7 @@ onBeforeMount(() => {
         class="d-block text-center" 
         :style="
           props.pastearea === 'DATE-DATETIME-DD-MM-YYYY-AREA'?
-          'padding: 16.85px 0'
+          'padding: 8px 0'
           :
           'padding: 0'
         "
@@ -746,7 +746,7 @@ onBeforeMount(() => {
           style="background-color: #f0e68c;"
           :style="
             props.pastearea === 'DATE-DATETIME-DD-MM-YYYY-AREA'?
-            'border-radius: 50px; padding: 12px; font-size: 1.2rem;'
+            'border-radius: 15px; padding: 3px; font-size: 1rem;'
             : (
               (
                 props.pastearea === 'YEAR-AREA' 

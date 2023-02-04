@@ -486,6 +486,7 @@ export function fillDayArray(isoweek: boolean, dayselectionformat: "RANGE" | "MU
         y1: 0,
         x2: 0,
         y2: 0,
+        daynumber: index,
         name: (isoweek)? isodayNames[index] : dayNames[index],
         selected: "DESELECTED",
       },

@@ -130,8 +130,8 @@ onBeforeUnmount(() => {
         ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch === true
       ">
         <div class="d-block" style="padding: 0px 0.5rem">
-          <div class="d-block shadow-sm" style="height:390px;padding: 10px 0;border-bottom:1px solid gray;">
-            <AtNumberSearchSetter @enable:atnumbersearchwindowopenerbutton="($val: boolean) => emits('enable:atnumbersearchwindowopenerbutton', $val)" @open:atnumbersearchwindow="($val: boolean) => openOrCloseAtNumberSearchWindow($val)"></AtNumberSearchSetter>
+          <div class="d-block shadow-sm" style="height:410px;padding: 10px 0;border-bottom:1px solid gray;">
+            <AtNumberSearchSetter from="TABPANELWITHINCLUDEANDEXCLUDE" @enable:atnumbersearchwindowopenerbutton="($val: boolean) => emits('enable:atnumbersearchwindowopenerbutton', $val)" @open:atnumbersearchwindow="($val: boolean) => openOrCloseAtNumberSearchWindow($val)"></AtNumberSearchSetter>
           </div>
         </div>
       </template>
@@ -164,8 +164,8 @@ onBeforeUnmount(() => {
         ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch === true
       ">
         <template v-if="((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.openatnumbersearchwindow">
-          <div class="w-100 position-absolute t-0 l-0 h-100">
-            <div class="h-100 d-block" style="background-color: #f8f8f8;border-bottom:2px solid blue;">
+          <div class="w-100 position-absolute t-0 l-0">
+            <div class="d-block" style="background-color: #f8f8f8;border-bottom:2px solid blue;">
               <template v-if="((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.openatnumbersearchexcludenumberwindow === false">
                 <div
                   class="shadow-sm d-block text-center"

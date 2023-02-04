@@ -262,7 +262,7 @@ onBeforeUnmount(() => {
   <div 
     class="d-block" 
     style="z-index: 8000;"
-    :style="props.from==='NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL'? 'padding: 0.1rem 0.3rem;':'padding: 0 0.5rem;height:100%;'"
+    :style="props.from==='NUMBER-STRING-OR-SINGLE-WORD-STRING-SEARCHER-MODAL'? 'padding: 0.8rem 0.3rem;':'padding: 0 0.5rem;height:100%;'"
   >
     <div class="d-block" style="padding: 0 0 0.945rem 0">
       <div

@@ -20,7 +20,15 @@ export type YearMonthClickable<T> = {
         checked: false | true;
       };
     };
-    tm: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
+    tm: [
+      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE'}
+    ];
   };
 };
 

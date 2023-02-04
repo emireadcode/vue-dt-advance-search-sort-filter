@@ -309,7 +309,7 @@ onBeforeUnmount(() => {
         ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch === true
       ">
         <div class="d-block" style="padding:2px 0">
-          <div class="d-block overflow-hidden shadow-sm" style="height:390px;padding: 10px 0px;">
+          <div class="d-block overflow-hidden shadow-sm" style="height:420px;padding: 10px 0px;">
             <AtNumberSearchSetter @enable:atnumbersearchwindowopenerbutton="($val: boolean) => emits('enable:atnumbersearchwindowopenerbutton', $val)" @open:atnumbersearchwindow="($val: boolean) => openOrCloseAtNumberSearchWindow($val)">
               <template v-slot:closeatnumbersearch>
                 <div
@@ -366,8 +366,8 @@ onBeforeUnmount(() => {
         &&
         ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch === true
       ">
-        <div class="w-100 position-absolute t-0 l-0 h-100">
-          <div class="d-block h-100" style="background-color: #f8f8f8;border-bottom:2px solid blue;">
+        <div class="w-100 position-absolute t-0 l-0">
+          <div class="d-block" style="background-color: #f8f8f8;border-bottom:2px solid blue;">
             <template v-if="((concatfieldindex === undefined)? cards[index].search.multiple : (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex as number].search)?.openatnumbersearchexcludenumberwindow === false">
               <div
                 class="shadow-sm d-block text-center"
