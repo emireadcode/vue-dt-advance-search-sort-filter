@@ -18,7 +18,10 @@ const
     "Dec",
   ],
   dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  isodayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+  isodayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  xpoint = ref(),
+  ypoint = ref(),
+  pagepoint = ref(0)
 ;
 
 export function getOffset(el: HTMLLabelElement) {
@@ -151,6 +154,9 @@ export function mouseMovement(page: Ref<number>, years: ShallowRef<YearSelection
       if (format === "RANGE") {
         if (rangefirstselection.value.year > -1) {
           let mousePointed = whereisMouse(event.pageX, event.pageY, page, years);
+          xpoint.value = event.pageX;
+          ypoint.value = event.pageY;
+          pagepoint.value = mousePointed.page;
           if(mousePointed.status === "ENABLE" && mousePointed.year > -1 && mousePointed.page > -1) {
             for(let p in years.value) {
               for(let row in years.value[p]) {
@@ -224,15 +230,428 @@ export function addYear(page: Ref<number>, rangefirstselection: Ref<YearRangeFir
             if(rangecount && rangefirstselection && loadingMovement) {
               if(rangecount.value < 2) {
                 if((years.value[p][row][col] as YearSelectionType[number][number][number]).selected === 'DESELECTED' || (years.value[page.value][row][col] as YearSelectionType[number][number][number]).selected === 'HIGHLIGHTED') {
-                  (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
                   rangecount.value++;
                   if(rangecount.value === 1) {
+                    (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
                     rangefirstselection.value = { page: parseInt(p), year };
                     trackYearBoxMouseMovement(page, years, rangefirstselection, loadingMovement, format);
                   }
                   else {
+                    let avoidedgecases = whereisMouse(xpoint.value, ypoint.value, pagepoint, years);
+                    if(avoidedgecases.year === (years.value[p][row][col] as YearSelectionType[number][number][number]).year) {
+                      (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
+                      rangefirstselection.value = { page: -1, year: -1 };
+                    }
+                    else {
+                      let 
+                        bothsideisnothighlighted = false, 
+                        onesideishighlighted = false,
+                        highlightstoppedyearandpage = {year: 0, page: 0, row: 0, col: 0};
+                      ;
+                      for(let k in years.value) {
+                        for(let r in years.value[k]) {
+                          for(let c in years.value[k][r]) {
+                            if((years.value[k][r][c] as YearSelectionType[number][number][number]).year === rangefirstselection.value.year) {
+                              if(parseInt(c) === 0) {
+                                if(parseInt(r) === 0) {
+                                  if(
+                                    (
+                                      years.value[k][r][
+                                        parseInt(c)+1
+                                      ] as YearSelectionType[number][number][number]
+                                    ).status === 'ENABLE'
+                                  ) {
+                                    if(
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c)+1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleForwardEdgeCase(
+                                        years, 
+                                        parseInt(k), 
+                                        parseInt(r), 
+                                        parseInt(c)+1
+                                      );
+                                    }
+                                    else {
+                                      if(
+                                        (Object.keys(years.value as YearSelectionType).length > 1)
+                                        &&
+                                        (
+                                          years.value[parseInt(k) - 1][2][
+                                            4
+                                          ] as YearSelectionType[number][number][number]
+                                        ).status === 'ENABLE'
+                                        &&
+                                        (
+                                          years.value[parseInt(k) - 1][2][
+                                            4
+                                          ] as YearSelectionType[number][number][number]
+                                        ).selected === 'HIGHLIGHTED'
+                                      ) {
+                                        onesideishighlighted = true;
+                                        highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                          years, 
+                                          parseInt(k) - 1,
+                                          2,
+                                          4
+                                        );
+                                      }
+                                    }
+                                  }
+                                  else {
+                                    if(
+                                      (Object.keys(years.value as YearSelectionType).length > 1)
+                                      &&
+                                      (
+                                        years.value[parseInt(k) - 1][2][
+                                          4
+                                        ] as YearSelectionType[number][number][number]
+                                      ).status === 'ENABLE'
+                                      &&
+                                      (
+                                        years.value[parseInt(k) - 1][2][
+                                          4
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                        years, 
+                                        parseInt(k) - 1,
+                                        2,
+                                        4
+                                      );
+                                    }
+                                  }
+                                  if(!onesideishighlighted) bothsideisnothighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  if(
+                                    (
+                                      years.value[k][r][
+                                        parseInt(c)+1
+                                      ] as YearSelectionType[number][number][number]
+                                    ).status === 'ENABLE'
+                                  ) {
+                                    if(
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c)+1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleForwardEdgeCase(
+                                        years, 
+                                        parseInt(k),
+                                        parseInt(r),
+                                        parseInt(c)+1
+                                      );
+                                    }
+                                    else {
+                                      if(
+                                        (
+                                          years.value[k][parseInt(r) - 1][
+                                            4
+                                          ] as YearSelectionType[number][number][number]
+                                        ).status === 'ENABLE'
+                                        &&
+                                        (
+                                          years.value[k][parseInt(r) - 1][
+                                            4
+                                          ] as YearSelectionType[number][number][number]
+                                        ).selected === 'HIGHLIGHTED'
+                                      ) {
+                                        onesideishighlighted = true;
+                                        highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                          years, 
+                                          parseInt(k),
+                                          parseInt(r) - 1,
+                                          4
+                                        );
+                                      }
+                                    }
+                                  }
+                                  else {
+                                    if(
+                                      (
+                                        years.value[k][parseInt(r) - 1][
+                                          4
+                                        ] as YearSelectionType[number][number][number]
+                                      ).status === 'ENABLE'
+                                      &&
+                                      (
+                                        years.value[k][parseInt(r) - 1][
+                                          4
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                        years, 
+                                        parseInt(k),
+                                        parseInt(r) - 1,
+                                        4
+                                      );
+                                    }
+                                  }
+                                  if(!onesideishighlighted) bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                              else if(parseInt(c) === 4) {
+                                if(parseInt(r) === 2) {
+                                  if(
+                                    ((Object.keys(years.value as YearSelectionType).length - 1) > parseInt(k))
+                                    &&
+                                    (
+                                      years.value[parseInt(k) + 1][0][
+                                        0
+                                      ] as YearSelectionType[number][number][number]
+                                    ).status === 'ENABLE'
+                                  ) {
+                                    if(
+                                      (
+                                        years.value[parseInt(k) + 1][0][
+                                          0
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleForwardEdgeCase(
+                                        years, 
+                                        parseInt(k) + 1,
+                                        0,
+                                        0
+                                      );
+                                    }
+                                    else {
+                                      if(
+                                        (
+                                          years.value[k][r][
+                                            parseInt(c) - 1
+                                          ] as YearSelectionType[number][number][number]
+                                        ).status === 'ENABLE'
+                                        &&
+                                        (
+                                          years.value[k][r][
+                                            parseInt(c) - 1
+                                          ] as YearSelectionType[number][number][number]
+                                        ).selected === 'HIGHLIGHTED'
+                                      ) {
+                                        onesideishighlighted = true;
+                                        highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                          years, 
+                                          parseInt(k),
+                                          parseInt(r),
+                                          parseInt(c) - 1
+                                        );
+                                      }
+                                    }
+                                  }
+                                  else {
+                                    if(
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c) - 1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).status === 'ENABLE'
+                                      &&
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c) - 1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                        years, 
+                                        parseInt(k),
+                                        parseInt(r),
+                                        parseInt(c) - 1
+                                      );
+                                    }
+                                  }
+                                  if(!onesideishighlighted) bothsideisnothighlighted = true;
+                                  break;
+                                }
+                                else {
+                                  if(
+                                    (
+                                      years.value[k][parseInt(r) + 1][
+                                        0
+                                      ] as YearSelectionType[number][number][number]
+                                    ).status === 'ENABLE'
+                                  ) {
+                                    if(
+                                      (
+                                        years.value[k][parseInt(r) + 1][
+                                          0
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleForwardEdgeCase(
+                                        years, 
+                                        parseInt(k),
+                                        parseInt(r) + 1,
+                                        0
+                                      );
+                                    }
+                                    else {
+                                      if(
+                                        (
+                                          years.value[k][r][
+                                            parseInt(c) - 1
+                                          ] as YearSelectionType[number][number][number]
+                                        ).status === 'ENABLE'
+                                        &&
+                                        (
+                                          years.value[k][r][
+                                            parseInt(c) - 1
+                                          ] as YearSelectionType[number][number][number]
+                                        ).selected === 'HIGHLIGHTED'
+                                      ) {
+                                        onesideishighlighted = true;
+                                        highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                          years, 
+                                          parseInt(k),
+                                          parseInt(r),
+                                          parseInt(c) - 1
+                                        );
+                                      }
+                                    }
+                                  }
+                                  else {
+                                    if(
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c) - 1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).status === 'ENABLE'
+                                      &&
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c) - 1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                        years, 
+                                        parseInt(k),
+                                        parseInt(r),
+                                        parseInt(c) - 1
+                                      );
+                                    }
+                                  }
+                                  if(!onesideishighlighted) bothsideisnothighlighted = true;
+                                  break;
+                                }
+                              }
+                              else {
+                                if(
+                                  (
+                                    years.value[k][r][
+                                      parseInt(c)+1
+                                    ] as YearSelectionType[number][number][number]
+                                  ).status === 'ENABLE'
+                                ) {
+                                  if(
+                                    (
+                                      years.value[k][r][
+                                        parseInt(c)+1
+                                      ] as YearSelectionType[number][number][number]
+                                    ).selected === 'HIGHLIGHTED'
+                                  ) {
+                                    onesideishighlighted = true;
+                                    highlightstoppedyearandpage = handleForwardEdgeCase(
+                                      years, 
+                                      parseInt(k),
+                                      parseInt(r),
+                                      parseInt(c)+1
+                                    );
+                                  }
+                                  else {
+                                    if(
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c)-1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).status === 'ENABLE'
+                                      &&
+                                      (
+                                        years.value[k][r][
+                                          parseInt(c)-1
+                                        ] as YearSelectionType[number][number][number]
+                                      ).selected === 'HIGHLIGHTED'
+                                    ) {
+                                      onesideishighlighted = true;
+                                      highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                        years, 
+                                        parseInt(k),
+                                        parseInt(r),
+                                        parseInt(c)-1
+                                      );
+                                    }
+                                  }
+                                }
+                                else {
+                                  if(
+                                    (
+                                      years.value[k][r][
+                                        parseInt(c)-1
+                                      ] as YearSelectionType[number][number][number]
+                                    ).status === 'ENABLE'
+                                    &&
+                                    (
+                                      years.value[k][r][
+                                        parseInt(c)-1
+                                      ] as YearSelectionType[number][number][number]
+                                    ).selected === 'HIGHLIGHTED'
+                                  ) {
+                                    onesideishighlighted = true;
+                                    highlightstoppedyearandpage = handleBackwardEdgeCase(
+                                      years, 
+                                      parseInt(k),
+                                      parseInt(r),
+                                      parseInt(c)-1
+                                    );
+                                  }
+                                }
+                                if(!onesideishighlighted) bothsideisnothighlighted = true;
+                                break;
+                              }
+                            }
+                          }
+                          if(onesideishighlighted || bothsideisnothighlighted) break;
+                        }
+                        if(onesideishighlighted || bothsideisnothighlighted) break;
+                      }
+                      if(bothsideisnothighlighted) {
+                        (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'DESELECTED';
+                        rangefirstselection.value = { page: -1, year: -1 };
+                        rangecount.value = 0;
+                      }
+                      else {
+                        (
+                          years.value[
+                            highlightstoppedyearandpage.page
+                          ][
+                            highlightstoppedyearandpage.row
+                          ][
+                            highlightstoppedyearandpage.col
+                          ] as YearSelectionType[number][number][number]
+                        ).selected = 'SELECTED';
+                        rangefirstselection.value = { page: -1, year: -1 };
+                      }
+                    }
                     unTrackYearBoxMouseMovement(page, years, rangefirstselection, loadingMovement, format);
-                    rangefirstselection.value = { page: -1, year: -1 };
                   }
                 }
                 else {
@@ -283,6 +702,144 @@ export function addYear(page: Ref<number>, rangefirstselection: Ref<YearRangeFir
   triggerRef(years);
 }
 
+function handleForwardEdgeCase(
+  years: ShallowRef<YearSelectionType>, 
+  page: number,
+  row: number,
+  col: number, 
+) {
+  let 
+    startlookingforwherehighlightstop = false,
+    highlightstoppositionfound = false,
+    highlightstoppedyearpagerowandcol = {year: 0, page: 0, row: 0, col: 0}
+  ;
+  for(let p=page; p<Object.keys(years.value).length; p++) {
+    for(let r=0; r<3; r++) {
+      for(let c=0; c<5; c++) {
+        if(startlookingforwherehighlightstop) {
+          if(
+            (
+              years.value as YearSelectionType
+            )[p][r][c].selected !== 'HIGHLIGHTED'
+          ) {
+            highlightstoppositionfound = true;
+            let sr = 0, sc = 0, sp = 0;
+            if(r===0) {
+              if(c===0) {
+                sp = p - 1;
+                sr = 2;
+                sc = 4;
+              }
+              else {
+                sp = p;
+                sr = r;
+                sc = c - 1;
+              }
+            }
+            else {
+              if(c===0) {
+                sp = p;
+                sr = r - 1;
+                sc = 4;
+              }
+              else {
+                sp = p;
+                sr = r;
+                sc = c - 1;
+              }
+            }
+            highlightstoppedyearpagerowandcol = {
+              year: (
+                years.value as YearSelectionType
+              )[p][r][c].year,
+              page: sp,
+              row: sr,
+              col: sc
+            };
+            break;
+          }
+        }
+        if(p === page && r===row && c==col) {
+          startlookingforwherehighlightstop = true;
+        }
+      }
+      if(highlightstoppositionfound) break;
+    }
+    if(highlightstoppositionfound) break;
+  }
+
+  return highlightstoppedyearpagerowandcol;
+}
+
+function handleBackwardEdgeCase(
+  years: ShallowRef<YearSelectionType>, 
+  page: number,
+  row: number,
+  col: number, 
+) {
+  let 
+    startlookingforwherehighlightstop = false,
+    highlightstoppositionfound = false,
+    highlightstoppedyearpagerowandcol = {year: 0, page: 0, row: 0, col: 0}
+  ;
+  for(let p=page; p>=0; p--) {
+    for(let r=2; r>=0; r--) {
+      for(let c=4; c>=0; c--) {
+        if(startlookingforwherehighlightstop) {
+          if(
+            (
+              years.value as YearSelectionType
+            )[p][r][c].selected !== 'HIGHLIGHTED'
+          ) {
+            highlightstoppositionfound = true;
+            let sr = 0, sc = 0, sp = 0;
+            if(r===2) {
+              if(c===4) {
+                sp = p + 1;
+                sr = 0;
+                sc = 0;
+              }
+              else {
+                sp = p;
+                sr = r;
+                sc = c + 1;
+              }
+            }
+            else {
+              if(c===4) {
+                sp = p;
+                sr = r + 1;
+                sc = 0;
+              }
+              else {
+                sp = p;
+                sr = r;
+                sc = c + 1;
+              }
+            }
+            highlightstoppedyearpagerowandcol = {
+              year: (
+                years.value as YearSelectionType
+              )[p][r][c].year,
+              page: sp,
+              row: sr,
+              col: sc
+            };
+            break;
+          }
+        }
+        if(p === page && r===row && c==col) {
+          startlookingforwherehighlightstop = true;
+        }
+      }
+      if(highlightstoppositionfound) break;
+    }
+    if(highlightstoppositionfound) break;
+  }
+
+  return highlightstoppedyearpagerowandcol;
+}
+
 export function fillYearArray(
   _maxyear: number, 
   minyear: number, 
@@ -291,10 +848,10 @@ export function fillYearArray(
 ) {
   let index = 0, row = 0, col = 0, counter = 0, years = shallowRef<YearSelectionType>();
 
-  //let remainder = calculateRemainder(2022, 1945), maxyear = 2022 + remainder;
-  //for(let year=1945; year<=maxyear; year++) {
+  let remainder = calculateRemainder(2022, 1945), maxyear = 2022 + remainder;
+  for(let year=1945; year<=maxyear; year++) {
 
-  let 
+  /*let 
     remainder = calculateRemainder(
       _maxyear, 
       minyear
@@ -302,7 +859,7 @@ export function fillYearArray(
     maxyear = _maxyear + remainder
   ;
   
-  for(let year=minyear; year<=maxyear; year++) {
+  for(let year=minyear; year<=maxyear; year++) {*/
     if(years.value) {
       if(index in years.value) {
         if(row in years.value[index]) {

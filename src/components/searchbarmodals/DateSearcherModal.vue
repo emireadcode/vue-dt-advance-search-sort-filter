@@ -12,12 +12,6 @@ import SearchByDDMMYYYYFormat from "./SearchByDDMMYYYYFormat.vue";
 import SearchByDaysMonthsYearsFormat from "./SearchByDaysMonthsYearsFormat.vue";
 import { format } from "date-fns";
 import type { DateType } from "../types/SupportedDatatypesTypeDeclaration";
-import type { VisibleCalendarType } from "../types/dd_mm_yy_types";
-import type { 
-  DaySelectionFormat, 
-  MonthSelectionFormat, 
-  YearSelectionFormat 
-} from "../types/days_months_years_types";
 import type { AccessibilityType } from "../types/accessibility";
 
 let 

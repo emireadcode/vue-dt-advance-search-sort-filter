@@ -113,7 +113,16 @@ onBeforeMount(() => {
                         yearindex
                       ].year
                     ]: {
-                      months: {}
+                      months: {},
+                      ty: [
+                        {checked: false, status: 'ENABLE'},
+                        {checked: false, status: 'ENABLE'},
+                        {checked: false, status: 'ENABLE'},
+                        {checked: false, status: 'ENABLE'},
+                        {checked: false, status: 'ENABLE'},
+                        {checked: false, status: 'ENABLE'},
+                        {checked: false, status: 'ENABLE'}
+                      ]
                     }
                   };
                   for(let mrow in cards.value[index].search.days_months_years.months.months) {
@@ -262,10 +271,72 @@ onBeforeMount(() => {
                       :
                       'DISABLE'
                     );
+                    (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                      year
+                    ].months[
+                      month
+                    ].tm[
+                      day
+                    ].checked = (
+                      (
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'HIGHLIGHTED'
+                        ||
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'SELECTED'
+                      )?
+                      true
+                      :
+                      false
+                    );
+                    (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                      year
+                    ].months[
+                      month
+                    ].tm[
+                      day
+                    ].status = (
+                      (
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'HIGHLIGHTED'
+                        ||
+                        (cards.value[index].search.days_months_years.days.days as DaySelectionType)[day].selected === 'SELECTED'
+                      )?
+                      'ENABLE'
+                      :
+                      'DISABLE'
+                    );
                   }
                 }
               }
-            } 
+            }
+            for(let d=0; d<7; d++) {
+              (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                year
+              ].ty[
+                d
+              ].checked = (
+                (
+                  (cards.value[index].search.days_months_years.days.days as DaySelectionType)[d].selected === 'HIGHLIGHTED'
+                  ||
+                  (cards.value[index].search.days_months_years.days.days as DaySelectionType)[d].selected === 'SELECTED'
+                )?
+                true
+                :
+                false
+              );
+              (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[
+                year
+              ].ty[
+                d
+              ].status = (
+                (
+                  (cards.value[index].search.days_months_years.days.days as DaySelectionType)[d].selected === 'HIGHLIGHTED'
+                  ||
+                  (cards.value[index].search.days_months_years.days.days as DaySelectionType)[d].selected === 'SELECTED'
+                )?
+                'ENABLE'
+                :
+                'DISABLE'
+              );
+            }
           }
           for(let year in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])) {
             for(let month in (cards.value[index].search.days_months_years.dates as VisibleCalendarType['selections'])[year].months) {

@@ -3,8 +3,18 @@ import type { DateType } from "./SupportedDatatypesTypeDeclaration";
 export type YearMonthClickable<T> = {
   month: number;
   year: number;
-  ty: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
   clickable: boolean;
+  ty: {
+    [key: number]: [
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}
+    ];
+  };
   calendar: {
     weeks: {
       [key: number]: {
@@ -21,12 +31,12 @@ export type YearMonthClickable<T> = {
       };
     };
     tm: [
-      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
-      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
-      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
-      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
-      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
-      {checked: boolean; status: 'ENABLE' | 'DISABLE'}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+      {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
       {checked: boolean; status: 'ENABLE' | 'DISABLE'}
     ];
   };
@@ -60,7 +70,15 @@ export type VisibleCalendarType = {
         //key is months
         [key: number]: YearMonthClickable<{}>['calendar'];
       };
-      ty: [boolean, boolean, boolean, boolean, boolean, boolean, boolean];
+      ty: [
+        {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+        {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+        {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+        {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+        {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+        {checked: boolean; status: 'ENABLE' | 'DISABLE';}, 
+        {checked: boolean; status: 'ENABLE' | 'DISABLE';}
+      ];
     };
   };
 };
