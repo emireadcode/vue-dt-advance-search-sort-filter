@@ -1,5 +1,6 @@
 import {
   getDate,
+  getISOWeeksInYear,
   getWeeksInMonth,
   getDaysInMonth,
   getMonth,
@@ -13,6 +14,9 @@ import {
   differenceInCalendarYears,
   differenceInCalendarISOWeekYears,
 } from "date-fns";
+import type {
+  DateType
+} from "../types/SupportedDatatypesTypeDeclaration";
 import {
   nextTick,
   type ShallowRef,
@@ -23,8 +27,7 @@ import {
 } from "vue";
 import type { RangeSelectionParamsType, VisibleCalendarType, PositionTrackerType, YearMonthClickable, RangeFirstAndLastSelectionType} from "../types/dd_mm_yy_types";
 
-const 
-  loadingMovement = ref(false),
+const
   xpoint = ref(),
   ypoint = ref()
 ;
@@ -234,7 +237,7 @@ export function buildCalendar(
         {checked: false, status: 'ENABLE'},
         {checked: false, status: 'ENABLE'},
         {checked: false, status: 'ENABLE'}
-      ]
+      ],
     } as YearMonthClickable<PositionTrackerType>['calendar'] | YearMonthClickable<{}>['calendar'],
     diffBtwWkStartAndMnthStart,
     startDate,
@@ -264,7 +267,8 @@ export function buildCalendar(
         calendar.weeks = {
           [j]: {
             days: {},
-            checked: false
+            checked: false,
+            ref: null
           } as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number] | YearMonthClickable<{}>['calendar']['weeks'][number]
         }
       } else {
@@ -272,7 +276,8 @@ export function buildCalendar(
           ...calendar.weeks,
           [j]: {
             days: {},
-            checked: false
+            checked: false,
+            ref: null,
           } as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number] | YearMonthClickable<{}>['calendar']['weeks'][number]
         } as YearMonthClickable<PositionTrackerType>['calendar'] | YearMonthClickable<{}>['calendar'];
       }
@@ -566,7 +571,48 @@ function handleMultipleSelectionByPaste(
   }
 }
 
-async function handleMultipleSelectionByClick(
+export function determineMonthAndWeek(isoweek: boolean, yearandweek: {year: number; week: number;}) {
+  let week = 0, monthcontainingweek = -1, mainweek = -1;
+  for(let month=0; month<12; month++) {
+    if(isoweek) {
+      if(
+        differenceInCalendarDays(
+          new Date(yearandweek.year, month, 1),
+          startOfISOWeek(new Date(yearandweek.year, month, 1))
+        ) > 0
+      ) {
+        week+=(getWeeksInMonth(new Date(yearandweek.year, month, 1)) - 1);
+      }
+      else {
+        week+=getWeeksInMonth(new Date(yearandweek.year, month, 1));
+      }
+    }
+    else {
+      if(
+        differenceInCalendarDays(
+          new Date(yearandweek.year, month, 1),
+          startOfWeek(new Date(yearandweek.year, month, 1))
+        ) > 0
+      ) {
+        week+=(getWeeksInMonth(new Date(yearandweek.year, month, 1)) - 1);
+      }
+      else {
+        week+=getWeeksInMonth(new Date(yearandweek.year, month, 1));
+      }
+    }
+    if(week > 0) {
+      if(yearandweek.week <= week) {
+        mainweek = (getWeeksInMonth(new Date(yearandweek.year, month, 1)) - (week - yearandweek.week))-1;
+        monthcontainingweek = month;
+        break;
+      }
+    }
+  }
+
+  return { month: monthcontainingweek, week: mainweek};
+}
+
+function handleMultipleSelectionByClick(
   from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY',
   day: number,
   week: number,
@@ -626,7 +672,7 @@ async function handleMultipleSelectionByClick(
   });
 }
 
-export async function selectOrDeselectDaysInWeekForMultipleSelection(
+export function selectOrDeselectDaysInWeekForMultipleSelection(
   from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY',
   checked: boolean | undefined,
   year: number,
@@ -651,8 +697,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate,
-              visiblecalendar
+              maxdate
             ),
           };
           if(month === 0) {
@@ -668,8 +713,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate
                       ),
                     },
                     ty: [
@@ -694,8 +738,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate
                     ),
                   };
                 }
@@ -719,8 +762,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate
                     ),
                   };
                 }
@@ -746,8 +788,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                           "SELECTIONS",
                           isoweek,
                           mindate,
-                          maxdate,
-                          visiblecalendar
+                          maxdate 
                         ),
                       },
                       ty: [
@@ -772,8 +813,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     };
                   }
@@ -790,8 +830,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     };
                   }
@@ -814,8 +853,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   };
                 }
@@ -831,8 +869,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     };
                   }
@@ -855,8 +892,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     },
                     ty: [
@@ -881,15 +917,14 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   }
                 }
               }
             }
             else {
-              if (week === Object.values(
+              if(week === Object.values(
                   ((visiblecalendar.value as VisibleCalendarType).selections[
                     year
                   ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
@@ -906,8 +941,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   };
                 }
@@ -933,8 +967,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                           "SELECTIONS",
                           isoweek,
                           mindate,
-                          maxdate,
-                          visiblecalendar
+                          maxdate 
                         ),
                       },
                       ty: [
@@ -959,8 +992,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     };
                   }
@@ -977,8 +1009,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     };
                   }
@@ -986,7 +1017,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               }
             }
             else {
-              if (week === Object.values(
+              if(week === Object.values(
                   ((visiblecalendar.value as VisibleCalendarType).selections[
                     year
                   ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks
@@ -1001,8 +1032,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   };
                 }
@@ -1018,8 +1048,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     };
                   }
@@ -1040,8 +1069,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate,
-                visiblecalendar
+                maxdate 
               ),
             },
             ty: [
@@ -1068,8 +1096,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   },
                   ty: [
@@ -1094,8 +1121,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate,
-                    visiblecalendar
+                    maxdate 
                   ),
                 };
               }
@@ -1117,8 +1143,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate,
-                    visiblecalendar
+                    maxdate 
                   ),
                 };
               }
@@ -1144,8 +1169,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate,
-                        visiblecalendar
+                        maxdate 
                       ),
                     },
                     ty: [
@@ -1170,8 +1194,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   };
                 }
@@ -1188,8 +1211,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   };
                 }
@@ -1212,8 +1234,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate,
-                    visiblecalendar
+                    maxdate 
                   ),
                 };
               }
@@ -1229,8 +1250,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate,
-                      visiblecalendar
+                      maxdate 
                     ),
                   };
                 }
@@ -1250,8 +1270,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate,
-              visiblecalendar
+              maxdate 
             ),
           },
           ty: [
@@ -1277,8 +1296,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate,
-                  visiblecalendar
+                  maxdate 
                 ),
               },
               ty: [
@@ -1308,8 +1326,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate,
-                visiblecalendar
+                maxdate 
               ),
             };
           }
@@ -1333,8 +1350,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate,
-                    visiblecalendar
+                    maxdate 
                   ),
                 },
                 ty: [
@@ -1359,8 +1375,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate,
-                  visiblecalendar
+                  maxdate 
                 ),
               };
             }
@@ -1381,8 +1396,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate,
-                visiblecalendar
+                maxdate 
               ),
             };
           }
@@ -1396,8 +1410,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate,
-                  visiblecalendar
+                  maxdate 
                 ),
               };
             }
@@ -1451,7 +1464,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               ).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1462,7 +1475,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1482,7 +1495,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   ).length - 1
                 )
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
                 (
                   Object.values(
                     ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -1496,7 +1509,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate,
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
                 (
                   Object.values(
                     ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -1524,7 +1537,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1563,7 +1576,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   )
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
                 (
                   Object.values(
                     ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -1584,7 +1597,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               ).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1595,7 +1608,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1620,7 +1633,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
             }
           }
         }
@@ -1633,7 +1646,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -1644,7 +1657,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -1669,7 +1682,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
           }
         }
       }
@@ -1682,7 +1695,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
           ).weeks[
             week
           ].checked = false;
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -1693,7 +1706,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             maxdate, 
             isoweek
           );
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -1719,7 +1732,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               week
             ].checked = true;
           }
-          await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+          deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
         }
       }
     }
@@ -1759,7 +1772,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               ).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1770,7 +1783,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1782,7 +1795,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   year
                 ].months[month+1] as YearMonthClickable<{}>['calendar']
               ).weeks[0].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month+1, 
@@ -1793,7 +1806,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month+1, 
@@ -1819,7 +1832,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
               if(weekHasHighlightedOrSelected(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -1833,7 +1846,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   ].months[month+1] as YearMonthClickable<{}>['calendar']
                 ).weeks[0].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT', from, mindate, maxdate, isoweek);
             }
           }
           else {
@@ -1845,7 +1858,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               ).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1856,7 +1869,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -1882,7 +1895,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
             }
           }
         }
@@ -1895,7 +1908,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -1906,7 +1919,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -1932,7 +1945,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
           }
         }
       }
@@ -1945,7 +1958,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
           ).weeks[
             week
           ].checked = false;
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -1956,7 +1969,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             maxdate, 
             isoweek
           );
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -1982,7 +1995,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               week
             ].checked = true;
           }
-          await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+          deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
         }
       }
     }
@@ -2021,7 +2034,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2032,7 +2045,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2052,7 +2065,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 ).length - 1
               )
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month-1, 
@@ -2069,7 +2082,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month-1, 
@@ -2101,7 +2114,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
             if(weekHasHighlightedOrSelected(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
@@ -2131,7 +2144,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 )
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
               (
                 Object.values(
                   ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -2152,7 +2165,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2163,7 +2176,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2189,7 +2202,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
           }
         }
       }
@@ -2202,7 +2215,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
           ).weeks[
             week
           ].checked = false;
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -2213,7 +2226,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             maxdate, 
             isoweek
           );
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -2239,7 +2252,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               week
             ].checked = true;
           }
-          await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+          deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
         }
       }
     }
@@ -2280,7 +2293,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 ).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -2291,7 +2304,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   maxdate, 
                   isoweek
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -2303,7 +2316,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     year+1
                   ].months[0] as YearMonthClickable<{}>['calendar']
                 ).weeks[0].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year+1, 
                   0, 
@@ -2314,7 +2327,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   maxdate, 
                   isoweek
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year+1, 
                   0, 
@@ -2340,7 +2353,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
                 if(weekHasHighlightedOrSelected(
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[
@@ -2354,7 +2367,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     ].months[0] as YearMonthClickable<{}>['calendar']
                   ).weeks[0].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year+1, 0, 0, 'SELECT', from, mindate, maxdate, isoweek);
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year+1, 0, 0, 'SELECT', from, mindate, maxdate, isoweek);
               }
             }
             else {
@@ -2366,7 +2379,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 ).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -2377,7 +2390,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   maxdate, 
                   isoweek
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -2403,7 +2416,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
               }
             }
           }
@@ -2416,7 +2429,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               ).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -2427,7 +2440,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -2453,7 +2466,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
             }
           }
         }
@@ -2466,7 +2479,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2477,7 +2490,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2503,7 +2516,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
           }
         }
       }
@@ -2516,7 +2529,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
           ).weeks[
             week
           ].checked = false;
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -2527,7 +2540,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             maxdate, 
             isoweek
           );
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -2553,7 +2566,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               week
             ].checked = true;
           }
-          await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+          deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
         }
       }
     }
@@ -2592,7 +2605,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2603,7 +2616,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2623,7 +2636,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 ).length - 1
               )
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year,
               month-1, 
@@ -2640,7 +2653,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month-1, 
@@ -2672,7 +2685,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
             if(weekHasHighlightedOrSelected(
               (
                 (visiblecalendar.value as VisibleCalendarType).selections[
@@ -2702,7 +2715,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 )
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
               (
                 Object.values(
                   ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -2723,7 +2736,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2734,7 +2747,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2760,7 +2773,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
           }
         }
       }
@@ -2773,7 +2786,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
           ).weeks[
             week
           ].checked = false;
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -2784,7 +2797,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             maxdate, 
             isoweek
           );
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -2810,7 +2823,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               week
             ].checked = true;
           }
-          await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+          deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
         }
       }
     }
@@ -2850,7 +2863,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               ).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -2861,7 +2874,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -2873,7 +2886,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   year
                 ].months[month+1] as YearMonthClickable<{}>['calendar']
               ).weeks[0].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month+1, 
@@ -2884,7 +2897,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month+1, 
@@ -2910,7 +2923,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
               if(weekHasHighlightedOrSelected(
                 (
                   (visiblecalendar.value as VisibleCalendarType).selections[
@@ -2924,7 +2937,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   ].months[month+1] as YearMonthClickable<{}>['calendar']
                 ).weeks[0].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT', from, mindate, maxdate, isoweek);
             }
           }
           else {
@@ -2936,7 +2949,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               ).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -2947,7 +2960,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 maxdate, 
                 isoweek
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -2973,7 +2986,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
             }
           }
         }
@@ -2986,7 +2999,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             ).weeks[
               week
             ].checked = false;
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -2997,7 +3010,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               maxdate, 
               isoweek
             );
-            await deselectOrSelectTyTmForWeekBoxClick(
+            deselectOrSelectTyTmForWeekBoxClick(
               visiblecalendar, 
               year, 
               month, 
@@ -3023,7 +3036,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
                 week
               ].checked = true;
             }
-            await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+            deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
           }
         }
       }
@@ -3036,7 +3049,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
           ).weeks[
             week
           ].checked = false;
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year,
             month, 
@@ -3047,7 +3060,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
             maxdate, 
             isoweek
           );
-          await deselectOrSelectTyTmForWeekBoxClick(
+          deselectOrSelectTyTmForWeekBoxClick(
             visiblecalendar, 
             year, 
             month, 
@@ -3073,7 +3086,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
               week
             ].checked = true;
           }
-          await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
+          deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT', from, mindate, maxdate, isoweek);
         }
       }
     }
@@ -3081,7 +3094,7 @@ export async function selectOrDeselectDaysInWeekForMultipleSelection(
   triggerRef(visiblecalendar);
 }
 
-async function checkThroughMonthDayLineToBeCheckedAndEnabledByDefault(
+function checkThroughMonthDayLineToBeCheckedAndEnabledByDefault(
   month: YearMonthClickable<{}>['calendar'],
   day: number
 ) {
@@ -3127,7 +3140,7 @@ async function checkThroughMonthDayLineToBeCheckedAndEnabledByDefault(
   return tobecheckedandenabled1 && tobecheckedandenabled2;
 }
 
-async function checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
+function checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
   year: VisibleCalendarType['selections'][number],
   day: number
 ) {
@@ -4353,7 +4366,7 @@ function loopThroughWeekForRangeSelection(
     return deselected;
 }
 
-async function deselectOrSelectTyTmForWeekBoxClick(
+function deselectOrSelectTyTmForWeekBoxClick(
   visiblecalendar: ShallowRef<VisibleCalendarType>, 
   year: number, 
   month: number, 
@@ -4464,7 +4477,7 @@ async function deselectOrSelectTyTmForWeekBoxClick(
       ).weeks[week].days
     ) {
       if(
-        await checkThroughMonthDayLineToBeCheckedAndEnabledByDefault(
+        checkThroughMonthDayLineToBeCheckedAndEnabledByDefault(
           (
             (
               visiblecalendar.value as VisibleCalendarType
@@ -4484,7 +4497,7 @@ async function deselectOrSelectTyTmForWeekBoxClick(
         ).tm[d].checked = true;
         if(from === undefined || from === 'DAYS-MONTHS-YEARS') {
           if(
-            await checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
+            checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
               (
                 visiblecalendar.value as VisibleCalendarType
               ).selections[
@@ -4503,7 +4516,7 @@ async function deselectOrSelectTyTmForWeekBoxClick(
         else {
           if(eligibletocheckthroughyear) {
             if(
-              await checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
+              checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
                 (
                   visiblecalendar.value as VisibleCalendarType
                 ).selections[
@@ -4525,7 +4538,7 @@ async function deselectOrSelectTyTmForWeekBoxClick(
   }
 }
 
-export async function highlightOrDeselectDaysInWeekForRangeSelection(
+export function highlightOrDeselectDaysInWeekForRangeSelection(
   checked: boolean | undefined,
   year: number, 
   month: number, 
@@ -4553,7 +4566,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
       week === rangelastselection.week
     )
   ) {
-    //alert('aaa');
     deselectedcount = loopThroughWeekForRangeSelection(
       checked,
       (rangefirstselection.day > rangelastselection.day)?
@@ -4571,7 +4583,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
       boxtype
     ) as number;
     if(deselectedcount > 0) {
-      //alert('a1');
       (
         (visiblecalendar.value as VisibleCalendarType).selections[
           year
@@ -4579,14 +4590,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
           parseInt(''+month)
         ] as YearMonthClickable<{}>['calendar']
       ).weeks[week].checked = false;
-      await deselectOrSelectTyTmForWeekBoxClick(
+      deselectOrSelectTyTmForWeekBoxClick(
         visiblecalendar, 
         year, 
         month, 
         week, 
         'SELECT'
       );
-      await deselectOrSelectTyTmForWeekBoxClick(
+      deselectOrSelectTyTmForWeekBoxClick(
         visiblecalendar, 
         year, 
         month, 
@@ -4595,7 +4606,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
       );
     }
     else {
-      //alert('a2');
       if(weekHasHighlightedOrSelected(
         (
           (visiblecalendar.value as VisibleCalendarType).selections[year].months[
@@ -4609,11 +4619,10 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
           ] as YearMonthClickable<{}>['calendar']
         ).weeks[week].checked = true;
       }
-      await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+      deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
     }
   }
   else {
-    //alert('bbb');
     if(
       (
         year === rangefirstselection.year 
@@ -4627,7 +4636,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
         month === rangelastselection.month
       )
     ) {
-      //alert('ddd');
       if(
         (
           week === rangefirstselection.week
@@ -4684,7 +4692,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
         ) as number;
       }
       if(deselectedcount > 0) {
-        //alert('a3');
         (
           (visiblecalendar.value as VisibleCalendarType).selections[
             year
@@ -4692,14 +4699,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
             parseInt(''+month)
           ] as YearMonthClickable<{}>['calendar']
         ).weeks[week].checked = false;
-        await deselectOrSelectTyTmForWeekBoxClick(
+        deselectOrSelectTyTmForWeekBoxClick(
           visiblecalendar, 
           year, 
           month, 
           week, 
           'SELECT'
         );
-        await deselectOrSelectTyTmForWeekBoxClick(
+        deselectOrSelectTyTmForWeekBoxClick(
           visiblecalendar, 
           year, 
           month, 
@@ -4708,7 +4715,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
         );
       }
       else {
-        //alert('a4');
         if(weekHasHighlightedOrSelected(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[year].months[
@@ -4722,11 +4728,10 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
             ] as YearMonthClickable<{}>['calendar']
           ).weeks[week].checked = true;
         }
-        await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+        deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
       }
     }
     else {
-      //alert('ccc');
       if(year === rangefirstselection.year && year === rangelastselection.year) {
         if(
           month === rangefirstselection.month 
@@ -4864,7 +4869,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  //alert('a5');
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month - 1
                   ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -4878,7 +4882,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ).length - 1
                     )
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month-1, 
@@ -4893,7 +4897,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ), 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month-1, 
@@ -4913,14 +4917,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -4929,7 +4933,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a6');
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
@@ -4959,7 +4962,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       )
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, (
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, (
                     Object.values(
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         year
@@ -4981,25 +4984,24 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a7');
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -5008,7 +5010,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a8');
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -5022,26 +5023,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a9');
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -5050,7 +5050,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a10');
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -5064,7 +5063,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -5125,20 +5124,19 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  //alert('a11');
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month + 1
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     0
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month+1, 
                     0, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month+1, 
@@ -5150,14 +5148,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -5166,7 +5164,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a12');
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
@@ -5180,7 +5177,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       0
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
                   if(weekHasHighlightedOrSelected(
                     (
                       (visiblecalendar.value as VisibleCalendarType).selections[year].months[
@@ -5198,25 +5195,24 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a13');
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -5225,7 +5221,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a14');
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -5239,26 +5234,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a15');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -5267,7 +5262,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a16');
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -5281,26 +5275,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
           else {
             if(deselected) {
-              //alert('a17');
               ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                 month
               ] as YearMonthClickable<{}>['calendar']).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
                 week, 
                 'SELECT'
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -5309,7 +5302,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
               );
             }
             else {
-              //alert('a18');
+              
               if(weekHasHighlightedOrSelected(
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
@@ -5323,7 +5316,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
             }
           }
         }
@@ -5401,7 +5394,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  //alert('a19');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month - 1
                   ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -5415,7 +5408,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ).length - 1
                     )
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month-1, 
@@ -5430,7 +5423,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ),
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month-1, 
@@ -5450,14 +5443,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -5466,7 +5459,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a20');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
@@ -5496,7 +5489,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       )
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, (
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, (
                     Object.values(
                       ((visiblecalendar.value as VisibleCalendarType).selections[
                         year
@@ -5518,26 +5511,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a21');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -5546,7 +5539,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a22');
+                
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -5560,7 +5553,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -5622,20 +5615,20 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ) as number;
                 }
                 if(deselectedcount > 0 || deselected) {
-                  //alert('a23');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month + 1
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     0
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month+1, 
                     0, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month+1, 
@@ -5647,14 +5640,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -5663,7 +5656,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a24');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
@@ -5677,7 +5670,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       0
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -5691,25 +5684,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a25');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -5718,7 +5711,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a26');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -5732,27 +5725,27 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
           }
           else {
             if(deselected) {
-              //alert('a27');
+              
               ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                 month
               ] as YearMonthClickable<{}>['calendar']).weeks[
                 week
               ].checked = false;
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
                 week, 
                 'SELECT'
               );
-              await deselectOrSelectTyTmForWeekBoxClick(
+              deselectOrSelectTyTmForWeekBoxClick(
                 visiblecalendar, 
                 year, 
                 month, 
@@ -5761,7 +5754,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
               );
             }
             else {
-              //alert('a28');
+              
               if(weekHasHighlightedOrSelected(
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
@@ -5775,13 +5768,12 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   week
                 ].checked = true;
               }
-              await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+              deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
             }
           }
         }
       }
       else {
-        //alert('eee');
         if(
           (
             rangefirstselection.year === year 
@@ -5795,7 +5787,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
             month === rangelastselection.month
           )
         ) {
-          //alert('hhh');
           deselected = loopThroughWeekForRangeSelection(
             checked,
             (
@@ -5975,7 +5966,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a29');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                       11
                     ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -5989,7 +5980,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year-1, 
                       11,
@@ -6004,7 +5995,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ),
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year-1, 
                       11,
@@ -6024,14 +6015,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -6040,7 +6031,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a30');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                         11
@@ -6070,7 +6061,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         )
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
                       (
                         Object.values(
                           ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -6094,26 +6085,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a31');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -6122,7 +6113,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a32');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -6136,7 +6127,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
@@ -6197,20 +6188,20 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a33');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
                       0, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
@@ -6222,14 +6213,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -6238,7 +6229,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a34');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month + 1
@@ -6252,7 +6243,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -6266,25 +6257,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a35');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -6293,7 +6284,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a36');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -6307,27 +6298,27 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a37');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -6336,7 +6327,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a38');
+                
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -6350,7 +6341,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -6421,7 +6412,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a39');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -6435,7 +6426,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month-1, 
@@ -6450,7 +6441,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ),
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month-1, 
@@ -6470,14 +6461,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -6486,7 +6477,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a40');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month - 1
@@ -6516,7 +6507,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         )
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
                       (
                         Object.values(
                           ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -6541,26 +6532,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a41');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -6569,7 +6560,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a42');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -6583,7 +6574,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
@@ -6652,20 +6643,20 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a43');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                       0
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year+1, 
                       0, 
                       0, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year+1, 
                       0, 
@@ -6677,14 +6668,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -6693,7 +6684,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a44');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                         0
@@ -6707,7 +6698,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year+1, 0, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year+1, 0, 0, 'SELECT');
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -6721,25 +6712,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a45');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -6748,7 +6739,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a46');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -6762,26 +6753,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a450');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -6790,7 +6781,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a460');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -6804,26 +6795,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a47');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -6832,7 +6823,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a48');
+                
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -6846,7 +6837,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -6857,7 +6848,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
                 ).weeks[week].days[0].day !== 1
               ) {
-                //alert('ooo');
                 if((month-1) in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
                   if(
                     (
@@ -6876,7 +6866,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ).length - 1
                     )
                   ) {
-                    //alert('ppp');
                     deselectedcount = loopThroughWeekForRangeSelection(
                       checked,
                       (
@@ -6898,7 +6887,6 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   else {
-                    //alert('qqq');
                     deselectedcount = loopThroughWeekForRangeSelection(
                       checked,
                       '', 
@@ -6915,7 +6903,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a49');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -6929,7 +6917,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month-1, 
@@ -6944,7 +6932,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ), 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month-1, 
@@ -6964,14 +6952,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -6980,7 +6968,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a50');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month - 1
@@ -7010,7 +6998,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         )
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
                       (
                         Object.values(
                           ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -7035,25 +7023,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a511');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -7062,7 +7050,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a522');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -7076,26 +7064,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a51');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -7104,7 +7092,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a52');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -7118,7 +7106,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
@@ -7180,20 +7168,20 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a53');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
                       0, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
@@ -7205,14 +7193,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -7221,7 +7209,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a54');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month + 1
@@ -7235,7 +7223,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -7249,25 +7237,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a55');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -7276,7 +7264,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a56');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -7290,26 +7278,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a570');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -7318,7 +7306,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a580');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -7332,26 +7320,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a57');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -7360,7 +7348,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a58');
+                
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -7374,7 +7362,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -7464,7 +7452,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a59');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                       11
                     ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -7478,7 +7466,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year-1, 
                       11, 
@@ -7493,7 +7481,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ),
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year-1, 
                       11, 
@@ -7513,14 +7501,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -7529,7 +7517,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a60');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                         11
@@ -7559,7 +7547,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         )
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year-1, 11, 
                       (
                         Object.values(
                           ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -7584,25 +7572,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a610');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -7611,7 +7599,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a620');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -7625,26 +7613,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a61');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -7653,7 +7641,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a62');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -7667,7 +7655,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
@@ -7733,20 +7721,20 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a63');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
                       0, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
@@ -7758,14 +7746,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -7774,7 +7762,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a64');
+                    
                     if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
@@ -7788,7 +7776,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -7802,25 +7790,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a65');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -7829,7 +7817,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a66');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -7843,26 +7831,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a6133');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -7871,7 +7859,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a6233');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -7885,26 +7873,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a67');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -7913,7 +7901,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a68');
+                
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -7927,7 +7915,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -7954,7 +7942,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a69');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -7968,7 +7956,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month-1, 
@@ -7983,7 +7971,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ),  
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year,
                       month-1,
@@ -8003,14 +7991,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8019,7 +8007,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a70');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month - 1
@@ -8049,7 +8037,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         )
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
                       (
                         Object.values(
                           ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -8074,25 +8062,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a6155');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8101,7 +8089,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a6255');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -8115,26 +8103,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a71');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -8143,7 +8131,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a72');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -8157,7 +8145,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
@@ -8226,20 +8214,20 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a73');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                       0
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year+1, 
                       0, 
                       0, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year+1, 
                       0, 
@@ -8251,14 +8239,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8267,7 +8255,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a74');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
                         0
@@ -8281,7 +8269,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year+1, 0, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year+1, 0, 0, 'SELECT');
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -8295,25 +8283,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
-                  //alert('a75');
+                  
                   if(deselected) {
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8322,7 +8310,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a76');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -8336,26 +8324,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a6189');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -8364,7 +8352,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a6289');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -8378,26 +8366,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a77');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -8406,7 +8394,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a78');
+                
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -8420,7 +8408,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -8447,7 +8435,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a79');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month - 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -8461,7 +8449,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month-1, 
@@ -8476,7 +8464,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       ),
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month-1, 
@@ -8496,14 +8484,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8512,7 +8500,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a80');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month - 1
@@ -8542,7 +8530,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         )
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month-1, 
                       (
                         Object.values(
                           ((visiblecalendar.value as VisibleCalendarType).selections[
@@ -8567,25 +8555,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a6190');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8594,7 +8582,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a6290');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -8608,26 +8596,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a81');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -8636,7 +8624,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a82');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -8650,7 +8638,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
@@ -8678,20 +8666,20 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     boxtype
                   ) as number;
                   if(deselectedcount > 0 || deselected) {
-                    //alert('a83');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month + 1
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
                       0, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month+1, 
@@ -8703,14 +8691,14 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8719,7 +8707,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a84');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month + 1
@@ -8733,7 +8721,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -8747,25 +8735,25 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
                 else {
                   if(deselected) {
-                    //alert('a85');
+                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       week
                     ].checked = false;
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
                       week, 
                       'SELECT'
                     );
-                    await deselectOrSelectTyTmForWeekBoxClick(
+                    deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year, 
                       month, 
@@ -8774,7 +8762,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    //alert('a86');
+                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -8788,26 +8776,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                   }
                 }
               }
               else {
                 if(deselected) {
-                  //alert('a61');
+                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
                     week
                   ].checked = false;
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
                     week, 
                     'SELECT'
                   );
-                  await deselectOrSelectTyTmForWeekBoxClick(
+                  deselectOrSelectTyTmForWeekBoxClick(
                     visiblecalendar, 
                     year, 
                     month, 
@@ -8816,7 +8804,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  //alert('a62');
+                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -8830,26 +8818,26 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
                 }
               }
             }
             else {
               if(deselected) {
-                //alert('a87');
+                
                 ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                   month
                 ] as YearMonthClickable<{}>['calendar']).weeks[
                   week
                 ].checked = false;
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
                   week, 
                   'SELECT'
                 );
-                await deselectOrSelectTyTmForWeekBoxClick(
+                deselectOrSelectTyTmForWeekBoxClick(
                   visiblecalendar, 
                   year, 
                   month, 
@@ -8858,7 +8846,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                 );
               }
               else {
-                //alert('a88');
+                
                 if(weekHasHighlightedOrSelected(
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
@@ -8872,7 +8860,7 @@ export async function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                await deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
               }
             }
           }
@@ -9119,7 +9107,7 @@ function handleBackwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, vi
   return highlightstoppeddate;
 }
 
-async function handleRangeSelection(
+function handleRangeSelection(
   result: { year: number; month: number; day: number; },
   params: ShallowRef<RangeSelectionParamsType>,
   day: number,
@@ -9163,8 +9151,8 @@ async function handleRangeSelection(
         ).weeks[week].days[day].selected = "HIGHLIGHTED";
       }
     }
-    nextTick(async () => {
-      await highlightOrDeselectDaysInWeekForRangeSelection(
+    nextTick(() => {
+      highlightOrDeselectDaysInWeekForRangeSelection(
         undefined,
         year, 
         month, 
@@ -9194,6 +9182,9 @@ async function handleRangeSelection(
         ) {
           if(params.value.rangeselectcount === 0) {
             deselectAll(visiblecalendar);
+            params.value.rangeselectcount = 0;
+            params.value.excludedates = false;
+            params.value.inselectionmode = false;
             params.value.rangefirstselection = {year: 0, month: 0, day: 0, date: "", week: 0};
             params.value.rangelastselection = {year: 0, month: 0, day: 0, date: "", week: 0};
             triggerRef(params);
@@ -10438,9 +10429,11 @@ async function handleRangeSelection(
               }
               if(bothsideisnothighlighted) {
                 deselectAll(visiblecalendar);
+                params.value.inselectionmode = false;
+                params.value.rangeselectcount = 0;
+                params.value.excludedates = false;
                 params.value.rangefirstselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
                 params.value.rangelastselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
-                params.value.rangeselectcount = 0;
                 (visiblecalendar.value as VisibleCalendarType).selections = {};
               }
               else {
@@ -10464,15 +10457,19 @@ async function handleRangeSelection(
         }
         else {
           deselectAll(visiblecalendar);
+          params.value.inselectionmode = false;
+          params.value.rangeselectcount = 0;
+          params.value.excludedates = false;
           params.value.rangefirstselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
           params.value.rangelastselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
-          params.value.rangeselectcount = 0;
           (visiblecalendar.value as VisibleCalendarType).selections = {};
         }
       }
       else {
         deselectAll(visiblecalendar);
+        params.value.inselectionmode = false;
         params.value.rangeselectcount = 0;
+        params.value.excludedates = false;
         params.value.rangefirstselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
         params.value.rangelastselection = {week: 0, year: 0, month: 0, day: 0, date: ""};
         
@@ -10504,7 +10501,7 @@ async function handleRangeSelection(
   triggerRef(visiblecalendar);
 }
 
-export async function handleDateSelectHighlightDeselect(
+export function handleDateSelectHighlightDeselect(
   from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY',
   isoweek: boolean,
   selectionformat: "RANGE" | "MULTIPLE-OR-SINGLE", 
@@ -10539,7 +10536,7 @@ export async function handleDateSelectHighlightDeselect(
                   ).weeks[parseInt(week)].days[day].status === "ENABLE"
                 ) {
                   if(selectionformat === 'RANGE') {
-                    await handleRangeSelection(
+                    handleRangeSelection(
                       result,
                       params as ShallowRef<RangeSelectionParamsType>,
                       parseInt(day) as number, 
@@ -10552,7 +10549,7 @@ export async function handleDateSelectHighlightDeselect(
                   else {
                     if(isclickedstatus) {
                       //multiple select mode by click
-                      await handleMultipleSelectionByClick(
+                      handleMultipleSelectionByClick(
                         from,
                         parseInt(day) as number, 
                         parseInt(week) as number,
@@ -10601,11 +10598,10 @@ export async function handleDateSelectHighlightDeselect(
             "SELECTIONS",
             isoweek,
             mindate,
-            maxdate,
-            visiblecalendar
+            maxdate 
           ),
         } as VisibleCalendarType['selections'][number]['months'];
-        await handleDateSelectHighlightDeselect(
+        handleDateSelectHighlightDeselect(
           from,
           isoweek,
           selectionformat, 
@@ -10628,8 +10624,7 @@ export async function handleDateSelectHighlightDeselect(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate,
-              visiblecalendar
+              maxdate 
             ),
           },
           ty: [
@@ -10643,7 +10638,7 @@ export async function handleDateSelectHighlightDeselect(
           ],
         },
       } as VisibleCalendarType['selections'];
-      await handleDateSelectHighlightDeselect(
+      handleDateSelectHighlightDeselect(
         from,
         isoweek,
         selectionformat, 
@@ -10665,8 +10660,7 @@ export async function handleDateSelectHighlightDeselect(
             "SELECTIONS",
             isoweek,
             mindate,
-            maxdate,
-            visiblecalendar
+            maxdate 
           ),
         },
         ty: [
@@ -10680,7 +10674,7 @@ export async function handleDateSelectHighlightDeselect(
         ],
       },
     } as unknown as VisibleCalendarType['selections'];
-    await handleDateSelectHighlightDeselect(
+    handleDateSelectHighlightDeselect(
       from,
       isoweek,
       selectionformat, 
@@ -11355,9 +11349,9 @@ export function mouseMovement(
   mindate: string, 
   maxdate: string, 
   selectionformat: 'RANGE',
-  visiblecalendar: ShallowRef<VisibleCalendarType>
+  visiblecalendar: ShallowRef<VisibleCalendarType>,
+  loadingMovement: Ref<boolean>
 ) {
-
   nextTick(() => {
     if(loadingMovement.value === false) {
       loadingMovement.value = true;
@@ -11499,8 +11493,7 @@ export function handleTyTm(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate,
-                visiblecalendar
+                maxdate 
               ),
             };
             (visiblecalendar.value as VisibleCalendarType).selections[year].months[
@@ -11520,8 +11513,7 @@ export function handleTyTm(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate,
-                    visiblecalendar
+                    maxdate 
                   ),
                 },
                 ty: [
@@ -11552,8 +11544,7 @@ export function handleTyTm(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate,
-                  visiblecalendar
+                  maxdate 
                 ),
               },
               ty: [
@@ -11697,8 +11688,8 @@ export function handleTyTm(
                       ).weeks[w].days[tytmindex].selected = checkedornot? "HIGHLIGHTED" : "DESELECTED";
                     }
                   }
-                  nextTick(async () => {
-                    await highlightOrDeselectDaysInWeekForRangeSelection(
+                  nextTick(() => {
+                    highlightOrDeselectDaysInWeekForRangeSelection(
                       undefined,
                       year, 
                       parseInt(m), 
@@ -11747,8 +11738,7 @@ export function handleTyTm(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate,
-                visiblecalendar
+                maxdate 
               ),
             };
           }
@@ -11764,8 +11754,7 @@ export function handleTyTm(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate,
-                  visiblecalendar
+                  maxdate 
                 ),
               };
             }
@@ -11797,8 +11786,7 @@ export function handleTyTm(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate,
-              visiblecalendar
+              maxdate 
             ),
           };
         }
@@ -11930,8 +11918,8 @@ export function handleTyTm(
                   ).weeks[w].days[tytmindex].selected = checkedornot? "HIGHLIGHTED" : "DESELECTED";
                 }
               }
-              nextTick(async () => {
-                await highlightOrDeselectDaysInWeekForRangeSelection(
+              nextTick(() => {
+                highlightOrDeselectDaysInWeekForRangeSelection(
                   undefined,
                   year, 
                   m, 
@@ -11993,7 +11981,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months)) {
           (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months = {
             ...(visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months,
-            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate )
           };
         }
       }
@@ -12003,7 +11991,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months)) {
           (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months = {
             ...(visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months,
-            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate )
           };
         }
       }
@@ -12018,7 +12006,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
               if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                 (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                   ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                  [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                  [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate )
                 };
               }
             }
@@ -12031,7 +12019,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                     ...(visiblecalendar.value as VisibleCalendarType).selections,
                     [i]: {
                       months: {
-                        [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                        [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate)
                       },
                       ty: [
                         {checked: false, status: 'ENABLE'}, 
@@ -12049,7 +12037,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                   if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                     (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                       ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate)
                     };
                   }
                 }
@@ -12058,7 +12046,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                 if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                   (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                     ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate)
                   };
                 }
               }
@@ -12073,7 +12061,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                   ...(visiblecalendar.value as VisibleCalendarType).selections,
                   [i]: {
                     months: {
-                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>),
+                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate),
                     },
                     ty: [
                       {checked: false, status: 'ENABLE'}, 
@@ -12091,7 +12079,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                 if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                   (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                     ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
+                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate )
                   };
                 }
               }
@@ -12614,4 +12602,27 @@ export function findRangeSelectionMaxAndMinDate(params: ShallowRef<RangeSelectio
   }
 
   return {max, min};
+}
+
+export function calculateWeeksInAYear(year: number, isoweek: boolean) {
+  let numberofweeksinayear = 0;
+  if(isoweek) {
+    numberofweeksinayear = getISOWeeksInYear(year);
+  }
+  else {
+    for(let month=0; month<12; month++) {
+      if(
+        differenceInCalendarDays(
+          new Date(year, month, 1),
+          startOfWeek(new Date(year, month, 1))
+        ) > 0
+      ) {
+        numberofweeksinayear+=(getWeeksInMonth(new Date(year, month, 1)) - 1);
+      }
+      else {
+        numberofweeksinayear+=getWeeksInMonth(new Date(year, month, 1));
+      }
+    }
+  }
+  return numberofweeksinayear;
 }

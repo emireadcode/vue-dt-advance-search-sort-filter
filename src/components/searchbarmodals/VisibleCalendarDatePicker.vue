@@ -11,6 +11,7 @@ import {
   computed,
   type WatchStopHandle,
   type ShallowRef,
+  provide,
 } from "vue";
 import type {
   DateType
@@ -37,12 +38,15 @@ import {
   highlightOrDeselectDaysInWeekForRangeSelection,
   fillVisibleCalendarArray,
   resetSelections,
+  buildCalendar,
+  determineMonthAndWeek,
 } from "../utility/dd_mm_yy_utility_fns";
+import JumpToWeek from "./JumpToWeek.vue";
 
 const 
   props = defineProps<{
     resetcalendarsignal?: number | undefined;
-    selections: DateType['search']['dd_mm_yyyy']['dates'] | DateType['search']['days_months_years']['dates'];
+    selections: VisibleCalendarType['selections'];
     excludedates?: boolean | undefined;
     isoweek: boolean;
     from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY';
@@ -89,8 +93,27 @@ const
     rangeselectcount: 0,
     inselectionmode: true,
     excludedates: props.excludedates as boolean,
-  })
+  }),
+  jumptoweekclicked = ref(false)
 ;
+
+provide('jumptoweek', {
+  selections: props.selections,
+  selectionformat: props.selectionformat,
+  isoweek: props.isoweek,
+  from: props.from,
+  rangeselectionparams: rangeselectionparams.value,
+  mindate: props.mindate,
+  maxdate: props.maxdate
+} as {
+  selections: VisibleCalendarType['selections'];
+  isoweek: boolean;
+  rangeselectionparams: RangeSelectionParamsType;
+  from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY';
+  selectionformat: 'RANGE' | 'MULTIPLE-OR-SINGLE';
+  mindate: string;
+  maxdate: string;
+});
 
 let
   unwatchselectionformat: WatchStopHandle,
@@ -100,6 +123,26 @@ let
   maxdate = '',
   mindate = ''
 ;
+
+function assignWeekRef($el: HTMLDivElement, weekindex: number, weektype: 'PREVIOUS' | 'CURRENT') {
+  if(weektype === 'PREVIOUS') {
+    if($el) {
+      (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[weekindex].ref = $el as HTMLDivElement;
+    }
+  }
+  else {
+    if($el) {
+      (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[weekindex].ref = $el as HTMLDivElement;
+    }
+  }
+}
+
+function determineMonthAndWeekInJumpToWeek(yearandweek: {year: number; week: number;}) {
+  const {week, month} = determineMonthAndWeek(
+    props.isoweek,
+    yearandweek
+  );
+}
 
 function handleTyTmClicked(
   tytmtype: 'TM-CURRENT-SELECTIONS' | 'TM-PREVIOUS-SELECTIONS' | 'TY' | 'TM-CURRENT' | 'TM-PREVIOUS',
@@ -178,9 +221,9 @@ function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'
       (rangeselectionparams.value as RangeSelectionParamsType).inselectionmode = true;
       triggerRef(rangeselectionparams);
     }
-    nextTick(async () => {
+    nextTick(() => {
       if(props.selectionformat === 'RANGE') {
-        await handleDateSelectHighlightDeselect(
+        handleDateSelectHighlightDeselect(
           props.from,
           props.isoweek,
           props.selectionformat,
@@ -193,7 +236,7 @@ function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'
         );
       }
       else {
-        await handleDateSelectHighlightDeselect(
+        handleDateSelectHighlightDeselect(
           props.from,
           props.isoweek,
           props.selectionformat,
@@ -399,6 +442,7 @@ function processDimensions() {
 }
 
 function trackMouseMovement(event: { pageX: number; pageY: number; }) {
+  let loadingMovement = ref(false);
   if((rangeselectionparams.value as RangeSelectionParamsType).inselectionmode) {
     (rangeselectionparams.value as RangeSelectionParamsType).inselectionmode = false;
     triggerRef(rangeselectionparams);
@@ -411,7 +455,8 @@ function trackMouseMovement(event: { pageX: number; pageY: number; }) {
     mindate, 
     maxdate, 
     props.selectionformat as 'RANGE',
-    visiblecalendar as ShallowRef<VisibleCalendarType>
+    visiblecalendar as ShallowRef<VisibleCalendarType>,
+    loadingMovement
   );
 }
 
@@ -536,66 +581,9 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
-  unwatchresetcalendarsignal = watch(
-    () => (props.resetcalendarsignal as number),
-    (x) => {
-      for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
-        for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days) {
-          if((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-            (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
-          }
-        }
-        (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].checked = false;
-        (visiblecalendar.value as VisibleCalendarType).previous.ty[
-          (visiblecalendar.value as VisibleCalendarType).previous.year
-        ] = [
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'}
-        ];
-      }
-      for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
-        for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days) {
-          if((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
-            (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
-          }
-        }
-        (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].checked = false;
-        (visiblecalendar.value as VisibleCalendarType).current.ty[
-          (visiblecalendar.value as VisibleCalendarType).current.year
-        ] = [
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'},
-          {checked: false, status: 'ENABLE'}
-        ];
-      }
-      for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-        for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
-          for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
-            ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = false;
-          }
-        }
-      }
-      rangeselectionparams.value.rangeselectcount = 0;
-      rangeselectionparams.value.excludedates = false;
-      rangeselectionparams.value.inselectionmode = false;
-      rangeselectionparams.value.rangefirstselection = {year: 0, month: 0, day: 0, date: "", week: 0};
-      rangeselectionparams.value.rangelastselection = {year: 0, month: 0, day: 0, date: "", week: 0};
-      (visiblecalendar.value as VisibleCalendarType).selections = {};
-      triggerRef(visiblecalendar);
-    }
-  );
   unwatchexcludedates = watch(
     () => (props.excludedates as boolean),
-    async (x) => {
+    (x) => {
       (rangeselectionparams.value as RangeSelectionParamsType).excludedates = x;
       triggerRef(rangeselectionparams);
       if(x) {
@@ -1627,7 +1615,73 @@ onMounted(() => {
           ) as YearMonthClickable<PositionTrackerType>['calendar'];
         }
       }
+      else {
+        (rangeselectionparams.value as RangeSelectionParamsType).inselectionmode = false;
+        (rangeselectionparams.value as RangeSelectionParamsType).rangeselectcount = 0;
+        (rangeselectionparams.value as RangeSelectionParamsType).rangefirstselection = {year: 0, month: 0, day: 0, date: "", week: 0};
+        (rangeselectionparams.value as RangeSelectionParamsType).rangelastselection = {year: 0, month: 0, day: 0, date: "", week: 0};
+      }
+      processDimensions();
       triggerRef(visiblecalendar);
+    }
+  );
+  unwatchresetcalendarsignal = watch(
+    () => (props.resetcalendarsignal as number),
+    (x) => {
+      for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+        for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days) {
+          if((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
+          }
+        }
+        (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].checked = false;
+        (visiblecalendar.value as VisibleCalendarType).previous.ty[
+          (visiblecalendar.value as VisibleCalendarType).previous.year
+        ] = [
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'}
+        ];
+      }
+      for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+        for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days) {
+          if((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
+            (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].days[day].status = "ENABLE";
+          }
+        }
+        (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(''+week)].checked = false;
+        (visiblecalendar.value as VisibleCalendarType).current.ty[
+          (visiblecalendar.value as VisibleCalendarType).current.year
+        ] = [
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'},
+          {checked: false, status: 'ENABLE'}
+        ];
+      }
+      for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
+        for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+          for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+            ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].checked = false;
+          }
+        }
+      }
+      rangeselectionparams.value.rangeselectcount = 0;
+      rangeselectionparams.value.excludedates = false;
+      rangeselectionparams.value.inselectionmode = false;
+      rangeselectionparams.value.rangefirstselection = {year: 0, month: 0, day: 0, date: "", week: 0};
+      rangeselectionparams.value.rangelastselection = {year: 0, month: 0, day: 0, date: "", week: 0};
+      (visiblecalendar.value as VisibleCalendarType).selections = {};
+      triggerRef(rangeselectionparams);
+      triggerRef(visiblecalendar);
+      processDimensions();
     }
   );
   unwatchselectionformat = watch(
@@ -1639,7 +1693,12 @@ onMounted(() => {
       rangeselectionparams.value.rangefirstselection = {year: 0, month: 0, day: 0, date: "", week: 0};
       rangeselectionparams.value.rangelastselection = {year: 0, month: 0, day: 0, date: "", week: 0};
       (visiblecalendar.value as VisibleCalendarType).selections = {};
+
+      triggerRef(rangeselectionparams);
       triggerRef(visiblecalendar);
+
+      processDimensions();
+
       unTrackVisibleCalendarMouseMovement();
     }
   );
@@ -1738,26 +1797,35 @@ onBeforeUnmount(() => {
   >
     <div class="d-block" style="padding: 7px 2px;">
       <button 
+        @keypress.enter="jumptoweekclicked=!jumptoweekclicked"
+        @click="jumptoweekclicked=!jumptoweekclicked"
         class="btn w-100" 
         style="padding:2px;"
         :style="from==='DD-MM-YYYY'? 'background-color: #E8E8E8;' : 'background-color: #f0e68c;'"
       >
         <span class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100">
+          <span style="padding-left:5px;">
+            <img src="/src/assets/icons/calendar.png" style="width:1rem;height:1rem;" />
+          </span>
           <span class="flex-fill text-center">Jump to week</span>
           <span style="padding-right:5px;">
-            <img src="/src/assets/icons/down-arrow.png" style="width:1rem;height:1rem;" />
+            <img :src="jumptoweekclicked? './src/assets/icons/up-arrow.png' : './src/assets/icons/down-arrow.png'" style="width:1rem;height:1rem;" />
           </span>
         </span>
       </button>
     </div>
     <div class="d-block position-relative">
-      <div 
-        class="position-absolute t-0 w-100 p-0 m-0 d-none" 
-        style="background-color: #fff;"
-        :style="from==='DD-MM-YYYY'? 'height:339px;' : 'height:383px;'"
-      >
-      
-      </div>
+      <template v-if="jumptoweekclicked">
+        <div 
+          class="position-absolute t-0 w-100 p-0 m-0" 
+          style="background-color: #fff;"
+          :style="from==='DD-MM-YYYY'? 'height:339px;' : 'height:383px;'"
+        >
+          <JumpToWeek
+            @receive:yearandweek="($val) => { jumptoweekclicked = false; determineMonthAndWeekInJumpToWeek($val); }"
+          ></JumpToWeek>
+        </div>
+      </template>
       <div
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
       >
@@ -1960,6 +2028,8 @@ onBeforeUnmount(() => {
             <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).previous.calendar.weeks">
               <div class="flex-w-100">
                 <div
+                  :ref="($el) => assignWeekRef($el as HTMLDivElement, weekindex, 'PREVIOUS')"
+                  style="background-color: transparent;"
                   class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
                 >
                   <template v-if="((props.excludedates !== undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
@@ -1971,7 +2041,7 @@ onBeforeUnmount(() => {
                         style="float: left;"
                         :style="
                           (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                          'padding:0;'
+                          'padding:0.068rem 0;'
                           : (
                             (from === 'DD-MM-YYYY')?
                             (
@@ -2013,7 +2083,7 @@ onBeforeUnmount(() => {
                             style="float: left;"
                             :style="
                               (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.78em; height: 1.78em;'
+                              'line-height: 1.73em; height: 1.73em;'
                               : (
                                 (from === 'DD-MM-YYYY')?
                                 (
@@ -2042,7 +2112,7 @@ onBeforeUnmount(() => {
                             style="float: left;"
                             :style="
                               (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.78em; height: 1.78em;'
+                              'line-height: 1.73em; height: 1.73em;'
                               : (
                                 (from === 'DD-MM-YYYY')?
                                 (
@@ -2077,12 +2147,12 @@ onBeforeUnmount(() => {
                     style="float: left;"
                     :style="
                       (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                      'line-height: 1.78em; height: 1.78em;'
+                      'line-height: 1.73em; height: 1.73em;'
                       : (
                         (from === 'DD-MM-YYYY')?
                         (
                           (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                          'line-height: 1.78em; height: 1.78em;'
+                          'line-height: 1.73em; height: 1.73em;'
                           :
                           'line-height: 2.73em; height: 2.73em;'
                         )
@@ -2103,12 +2173,12 @@ onBeforeUnmount(() => {
                       style="float: left;border: 1px solid #fff;"
                       :style="
                         (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                        'line-height: 1.78em; height: 1.78em;'
+                        'line-height: 1.73em; height: 1.73em;'
                         : (
                           (from === 'DD-MM-YYYY')?
                           (
                             (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                            'line-height: 1.78em; height: 1.78em;'
+                            'line-height: 1.73em; height: 1.73em;'
                             :
                             'line-height: 2.73em; height: 2.73em;'
                           )
@@ -2129,12 +2199,12 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.78em; height: 1.78em;'
+                            'line-height: 1.73em; height: 1.73em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.78em; height: 1.78em;'
+                                'line-height: 1.73em; height: 1.73em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )
@@ -2191,12 +2261,12 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.78em; height: 1.78em;'
+                            'line-height: 1.73em; height: 1.73em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.78em; height: 1.78em;'
+                                'line-height: 1.73em; height: 1.73em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )
@@ -2425,6 +2495,8 @@ onBeforeUnmount(() => {
             <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).current.calendar.weeks">
               <div class="flex-w-100">
                 <div
+                  :ref="($el) => assignWeekRef($el as HTMLDivElement, weekindex, 'CURRENT')"
+                  style="background-color: transparent;"
                   class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
                 >
                   <template v-if="((props.excludedates!==undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
@@ -2436,7 +2508,7 @@ onBeforeUnmount(() => {
                         style="float: left;"
                         :style="
                           (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                          'padding:0;'
+                          'padding:0.068rem 0;'
                           : (
                             (from === 'DD-MM-YYYY')?
                             (
@@ -2478,7 +2550,7 @@ onBeforeUnmount(() => {
                             style="float: left;"
                             :style="
                               (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.78em; height: 1.78em;'
+                              'line-height: 1.73em; height: 1.73em;'
                               : (
                                 (from === 'DD-MM-YYYY')?
                                 (
@@ -2509,7 +2581,7 @@ onBeforeUnmount(() => {
                             style="float: left;"
                             :style="
                               (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.78em; height: 1.78em;'
+                              'line-height: 1.73em; height: 1.73em;'
                               : (
                                 (from === 'DD-MM-YYYY')?
                                 (
@@ -2544,12 +2616,12 @@ onBeforeUnmount(() => {
                     style="float: left;"
                     :style="
                       (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                      'line-height: 1.78em; height: 1.78em;'
+                      'line-height: 1.73em; height: 1.73em;'
                       : (
                         (from === 'DD-MM-YYYY')?
                         (
                           (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                          'line-height: 1.78em; height: 1.78em;'
+                          'line-height: 1.73em; height: 1.73em;'
                           :
                           'line-height: 2.73em; height: 2.73em;'
                         )
@@ -2570,12 +2642,12 @@ onBeforeUnmount(() => {
                       style="float: left;border: 1px solid #fff;"
                       :style="
                         (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                        'line-height: 1.78em; height: 1.78em;'
+                        'line-height: 1.73em; height: 1.73em;'
                         : (
                           (from === 'DD-MM-YYYY')?
                           (
                             (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                            'line-height: 1.78em; height: 1.78em;'
+                            'line-height: 1.73em; height: 1.73em;'
                             :
                             'line-height: 2.73em; height: 2.73em;'
                           )
@@ -2596,12 +2668,12 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.78em; height: 1.78em;'
+                            'line-height: 1.73em; height: 1.73em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.78em; height: 1.78em;'
+                                'line-height: 1.73em; height: 1.73em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )
@@ -2658,12 +2730,12 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.78em; height: 1.78em;'
+                            'line-height: 1.73em; height: 1.73em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.78em; height: 1.78em;'
+                                'line-height: 1.73em; height: 1.73em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )

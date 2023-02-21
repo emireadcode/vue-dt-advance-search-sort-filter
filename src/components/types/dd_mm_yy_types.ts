@@ -27,7 +27,8 @@ export type YearMonthClickable<T> = {
             day: number;
           });
         };
-        checked: false | true;
+        checked: boolean;
+        ref: HTMLDivElement | null;
       };
     };
     tm: [

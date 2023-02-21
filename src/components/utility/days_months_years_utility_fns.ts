@@ -91,9 +91,9 @@ export function getYearDimensions(years: ShallowRef<YearSelectionType>, page: Re
   });
 }
 
-export function calculateRemainder(max: number, min: number) {
-  let diff = max - min, quotient = parseInt(""+(diff/15));
-  return (((quotient + 1)*15) - diff) - 1;
+export function calculateRemainder(max: number, min: number, div: number) {
+  let diff = max - min, quotient = parseInt(""+(diff/div));
+  return (((quotient + 1)*div) - diff) - 1;
 }
 
 export function whereisMouse(pointx: number, pointy: number, page: Ref<number>, years: ShallowRef<YearSelectionType>) {
@@ -848,13 +848,14 @@ export function fillYearArray(
 ) {
   let index = 0, row = 0, col = 0, counter = 0, years = shallowRef<YearSelectionType>();
 
-  let remainder = calculateRemainder(2022, 1945), maxyear = 2022 + remainder;
+  let remainder = calculateRemainder(2022, 1945, 15), maxyear = 2022 + remainder;
   for(let year=1945; year<=maxyear; year++) {
 
   /*let 
     remainder = calculateRemainder(
       _maxyear, 
-      minyear
+      minyear,
+      15
     ), 
     maxyear = _maxyear + remainder
   ;

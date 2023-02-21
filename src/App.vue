@@ -202,7 +202,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           table: 'payment',
           limit: 10,
           dateFormat: 'ddd dd mmm, yyyy',
-          isoweek: true,
+          isoweek: false,
         },
       ],
       timetypes: [
@@ -735,6 +735,14 @@ input[type="text"][readonly] {
   -webkit-flex: 0 0 33.333333333%; /* Chrome */
   -ms-flex: 0 0 33.333333333%; /* IE 10 */
   flex: 0 0 33.333333333%; /* NEW, Spec - Opera 12.1, Firefox 20+ */
+}
+.flex-w-100-over-6 {
+  -webkit-box-flex: 0 0 16.666666667%; /* OLD - iOS 6-, Safari 3.1-6 */
+  -moz-box-flex: 0 0 16.666666667%; /* OLD - Firefox 19- */
+  width: 16.666666667%; /* For old syntax, otherwise collapses. */
+  -webkit-flex: 0 0 16.666666667%; /* Chrome */
+  -ms-flex: 0 0 16.666666667%; /* IE 10 */
+  flex: 0 0 16.666666667%; /* NEW, Spec - Opera 12.1, Firefox 20+ */
 }
 .flex-w-40 {
   -webkit-box-flex: 0 0 40%; /* OLD - iOS 6-, Safari 3.1-6 */

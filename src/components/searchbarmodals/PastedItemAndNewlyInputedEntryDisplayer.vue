@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
               props.paginationarea === 'ATNUMBER-EXCLUSIVE-EQUAL-TO' 
               || props.paginationarea === 'ATNUMBER-EXCLUSIVE-FROM-TO' 
             )?
-            'height: 222px;'
+            'height: 237px;'
             : (
               (
                 props.paginationarea === 'WORD-DISPLAY-AREA-WITH-INCLUDE-EXCLUDE-AND-ATNUMBER' 
