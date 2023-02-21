@@ -20,7 +20,6 @@ const
     selections: VisibleCalendarType['selections'];
     isoweek: boolean;
     from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY';
-    selectionformat: 'RANGE' | 'MULTIPLE-OR-SINGLE';
     rangeselectionparams: RangeSelectionParamsType;
     mindate: string;
     maxdate: string;
@@ -81,8 +80,6 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
       }
     }
     if(
-      props.selectionformat === 'RANGE' 
-      && 
       props.rangeselectionparams.rangefirstselection.date
       &&
       props.rangeselectionparams.rangelastselection.date
@@ -371,7 +368,8 @@ function selectJustAWeek(rindex: number, cindex: number) {
                 @keypress.enter="selectJustAWeek(rindex, cindex)"
                 @click="selectJustAWeek(rindex, cindex)"
                 class="w-100"
-                style="float: left; line-height: 2em; height: 2em"
+                style="float: left;"
+                :style="props.from === 'DAYS-MONTHS-YEARS'? ' line-height: 2.3em; height: 2.3em' : ' line-height: 2em; height: 2em'"
               >
                 <input
                   @keypress.enter.stop=""
@@ -383,8 +381,8 @@ function selectJustAWeek(rindex: number, cindex: number) {
                 />
                 <span
                   :class="[col.status === 'ENABLE'? 'cursor-pointer' : '']"
-                  class="font-family text-center d-block letter-spacing"
-                  style="font-size: 1rem; line-height: 2em; height: 2em"
+                  class="font-family text-center d-block letter-spacing h-100"
+                  style="font-size: 1rem;"
                   :style="
                     col.status === 'ENABLE' ? (
                       col.selected === 'SELECTED'?

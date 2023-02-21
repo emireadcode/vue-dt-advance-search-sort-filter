@@ -99,7 +99,6 @@ const
 
 provide('jumptoweek', {
   selections: props.selections,
-  selectionformat: props.selectionformat,
   isoweek: props.isoweek,
   from: props.from,
   rangeselectionparams: rangeselectionparams.value,
@@ -110,7 +109,6 @@ provide('jumptoweek', {
   isoweek: boolean;
   rangeselectionparams: RangeSelectionParamsType;
   from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY';
-  selectionformat: 'RANGE' | 'MULTIPLE-OR-SINGLE';
   mindate: string;
   maxdate: string;
 });
@@ -216,7 +214,9 @@ function weekCheckboxClicked(checked: boolean, weekindex: string, vcalendartype:
 }
 
 function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]['days'][number]) {
+  alert(day.status + ' ' + day.readonlystatus);
   if(day.status === 'ENABLE') {
+    alert((rangeselectionparams.value as RangeSelectionParamsType).inselectionmode);
     if(!(rangeselectionparams.value as RangeSelectionParamsType).inselectionmode) {
       (rangeselectionparams.value as RangeSelectionParamsType).inselectionmode = true;
       triggerRef(rangeselectionparams);
@@ -2214,6 +2214,7 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
+                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
@@ -2276,6 +2277,7 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
+                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
@@ -2683,6 +2685,7 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
+                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
@@ -2745,6 +2748,7 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
+                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="

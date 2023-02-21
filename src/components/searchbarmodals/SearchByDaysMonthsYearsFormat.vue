@@ -45,11 +45,11 @@ const
     return ((cards.value[index] as DateType).result.min as string).split('-')[0];
   }),
 
-  isdayready = ref(false),
+  isdayready = ref(0),
 
-  ismonthready = ref(false),
+  ismonthready = ref(0),
 
-  isyearready = ref(false),
+  isyearready = ref(0),
 
   notifytosendsignal = ref(0)
 
@@ -69,6 +69,7 @@ onBeforeMount(() => {
     () => props.excludedatesignal,
     (x) => {
       openexcludewindow.value = true;
+      notifytosendsignal.value++;
     }
   );
   unwatchexclude = watch(
@@ -78,9 +79,11 @@ onBeforeMount(() => {
       () => isyearready.value
     ],
     ([x, y, z]) => {
-      if(x && y && z) {
+      if(x > 0 && y > 0 && z > 0) {
         emits('enable:excludebutton', false);
         notifytosendsignal.value++;
+        cards.value[index].search.days_months_years.dates = {};
+        triggerRef(cards);
         nextTick(() => {
           for(let row in cards.value[index].search.days_months_years.years.years) {
             for(let col in (cards.value[index].search.days_months_years.years.years as YearSelectionType)[row]) {
@@ -354,6 +357,8 @@ onBeforeMount(() => {
       }
       else {
         emits('enable:excludebutton', true);
+        cards.value[index].search.days_months_years.dates = {};
+        triggerRef(cards);
       }
     }
   )
@@ -374,14 +379,14 @@ onBeforeUnmount(() => {
         @update:dayselectionandformat="($val: DaySelectionFormat) => { cards[index].search.days_months_years.days = $val; triggerCard(); }"
         :dayselectionandformat="((cards[index] as DateType).search.days_months_years.days as DaySelectionFormat)"
         :isoweek="(cards[index] as DateType).isoweek"
-        @signal:readyforexclude="($val: boolean) => isdayready = $val"
+        @signal:readyforexclude="($val: number) => isdayready = $val"
       ></DayPicker>
     </div>
     <div class="d-block" style="padding: 3.5px 0px;">
       <MonthPicker
         :notifytosendsignal="notifytosendsignal"
         @update:monthselectionandformat="($val: MonthSelectionFormat) => { cards[index].search.days_months_years.months = $val; triggerCard(); }"
-        @signal:readyforexclude="($val: boolean) => ismonthready = $val"
+        @signal:readyforexclude="($val: number) => ismonthready = $val"
         :monthselectionandformat="((cards[index] as DateType).search.days_months_years?.months as MonthSelectionFormat)"
       ></MonthPicker>
     </div>
@@ -390,7 +395,7 @@ onBeforeUnmount(() => {
         :title="'year'"
         :notifytosendsignal="notifytosendsignal"
         @update:yearselectionandformat="($val: YearSelectionFormat) => { cards[index].search.days_months_years.years = $val; triggerCard(); }"
-        @signal:readyforexclude="($val: boolean) => isyearready = $val"
+        @signal:readyforexclude="($val: number) => isyearready = $val"
         :maxyear="(parseInt(cmaxyear) as number)"
         :minyear="(parseInt(cminyear) as number)"
         :yearselectionandformat="((cards[index] as DateType).search.days_months_years.years as YearSelectionFormat)"

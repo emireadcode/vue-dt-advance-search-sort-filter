@@ -5063,7 +5063,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     week
                   ].checked = true;
                 }
-                deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                deselectOrSelectTyTmForWeekBoxClick(
+                  visiblecalendar, 
+                  year, 
+                  month, 
+                  week, 
+                  'SELECT'
+                );
               }
             }
           }
@@ -7452,7 +7458,6 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ) as number;
                   }
                   if(deselectedcount > 0 || deselected) {
-                    
                     ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                       11
                     ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -7466,6 +7471,19 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
+                    console.log(((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
+                      11
+                    ] as YearMonthClickable<{}>['calendar']).weeks[
+                      (
+                        Object.values(
+                          ((visiblecalendar.value as VisibleCalendarType).selections[
+                            year-1
+                          ].months[
+                            11
+                          ] as YearMonthClickable<{}>['calendar']).weeks
+                        ).length - 1
+                      )
+                    ]);
                     deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year-1, 
@@ -7517,7 +7535,6 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     );
                   }
                   else {
-                    
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
                         11
@@ -8109,7 +8126,6 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               }
               else {
                 if(deselected) {
-                  
                   ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                     month
                   ] as YearMonthClickable<{}>['calendar']).weeks[
@@ -8131,7 +8147,6 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                   );
                 }
                 else {
-                  
                   if(weekHasHighlightedOrSelected(
                     ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                       month
@@ -8161,8 +8176,12 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
               ) {
                 if(
                   (
-                    ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[0] as YearMonthClickable<{}>['calendar']).weeks
-                  )[0].days[0].day !== 1
+                    (visiblecalendar.value as VisibleCalendarType).selections[
+                      year+1
+                    ].months[
+                      0
+                    ] as YearMonthClickable<{}>['calendar']
+                  ).weeks[0].days[0].day !== 1
                 ) {
                   if(
                     ( 
@@ -8220,6 +8239,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
+                    console.log(
+                      ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
+                        0
+                      ] as YearMonthClickable<{}>['calendar']).weeks[
+                        0
+                      ]
+                    );
                     deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year+1, 

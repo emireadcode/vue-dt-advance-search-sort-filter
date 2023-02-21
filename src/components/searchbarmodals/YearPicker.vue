@@ -29,7 +29,7 @@ const
   }>(),
   emits = defineEmits<{
     (e: "update:yearselectionandformat", action: YearSelectionFormat): void;
-    (e: "signal:readyforexclude", action: boolean): void;
+    (e: "signal:readyforexclude", action: number): void;
   }>(),
   holder = shallowRef<YearSelectionFormat>(),
   years = shallowRef<YearSelectionType>(),
@@ -84,6 +84,7 @@ onBeforeUnmount(() => {
   unwatchlessthan();
   unwatchmultipleselectcount();
   unwatchrangecount();
+  unwatchnotifytosendsignal();
 });
 
 onMounted(() => {
@@ -100,10 +101,10 @@ onMounted(() => {
     (x) => {
       if((holder.value as YearSelectionFormat).format !== "RANGE") {
         if(x > 0) {
-          emits('signal:readyforexclude', true);
+          emits('signal:readyforexclude', multipleselectcount.value);
         }
         else {
-          emits('signal:readyforexclude', false);
+          emits('signal:readyforexclude', multipleselectcount.value);
         }
       }
     }
@@ -113,10 +114,10 @@ onMounted(() => {
     (x) => {
       if ((holder.value as YearSelectionFormat).format === "RANGE") {
         if(x === 2) {
-          emits('signal:readyforexclude', true);
+          emits('signal:readyforexclude', rangecount.value);
         }
         else {
-          emits('signal:readyforexclude', false);
+          emits('signal:readyforexclude', 0);
         }
       }
     }

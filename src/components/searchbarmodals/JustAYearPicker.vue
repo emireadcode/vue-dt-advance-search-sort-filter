@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { onBeforeMount, shallowRef, type ShallowRef, ref, computed, triggerRef } from "vue";
+import { inject, onBeforeMount, shallowRef, type ShallowRef, ref, computed, triggerRef } from "vue";
+import type { RangeSelectionParamsType, VisibleCalendarType } from "../types/dd_mm_yy_types";
 import { calculateRemainder } from "../utility/days_months_years_utility_fns";
 
 type JustAYearPickerType = {
@@ -8,7 +9,7 @@ type JustAYearPickerType = {
       [col: number]: {
         year: number;
         ref: HTMLLabelElement | null;
-        status: 'ENABLE' | 'DISABLE';
+        status: 'ENABLE' | 'DISABLE' | 'LOCKED';
         selected: 'SELECTED' | 'DESELECTED';
       }
     }
@@ -16,6 +17,11 @@ type JustAYearPickerType = {
 };
 
 const
+  jumptoweek = inject('jumptoweek') as {
+    selections: VisibleCalendarType['selections'];
+    from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY';
+    rangeselectionparams: RangeSelectionParamsType;
+  },
   props = defineProps<{
     minyear: number;
     maxyear: number;
@@ -47,12 +53,12 @@ function fillJustAYearPickerArray(
     remainder = calculateRemainder(
       mxyear, 
       mnyear,
-      27
+      27 /*row = 3 * col = 9 = 27 */
     ), 
     maxyear = mxyear + remainder,
     minyear = mnyear
   ;
-  
+
   for(let year=minyear; year<=maxyear; year++) {
     if(years.value) {
       if(index in years.value) {
@@ -63,7 +69,76 @@ function fillJustAYearPickerArray(
               year: year,
               ref: null,
               selected: 'DESELECTED',
-              status: (year <= mxyear && year >= mnyear)? 'ENABLE' : 'DISABLE'
+              status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
+                year in jumptoweek.selections? 
+                'ENABLE' 
+                : 
+                (
+                  (year <= mxyear && year >= mnyear)? 
+                  'LOCKED' 
+                  : 
+                  'DISABLE'
+                )
+              ) 
+              : 
+              (
+                (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
+                  (year <= mxyear && year >= mnyear)? 
+                  'ENABLE' 
+                  : 
+                  'DISABLE'
+                ) 
+                : 
+                (
+                  (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
+                  (
+                    (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
+                    'ENABLE'
+                    :
+                    (
+                      (year <= mxyear && year >= mnyear)? 
+                      'LOCKED' 
+                      : 
+                      'DISABLE'
+                    )
+                  )
+                  :
+                  (
+                    (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
+                    (
+                      (
+                        year >= jumptoweek.rangeselectionparams.rangelastselection.year
+                        &&
+                        year <= jumptoweek.rangeselectionparams.rangefirstselection.year
+                      )?
+                      'ENABLE'
+                      :
+                      (
+                        (year <= mxyear && year >= mnyear)? 
+                        'LOCKED' 
+                        : 
+                        'DISABLE'
+                      )
+                    )
+                    :
+                    (
+                      (
+                        year <= jumptoweek.rangeselectionparams.rangelastselection.year
+                        &&
+                        year >= jumptoweek.rangeselectionparams.rangefirstselection.year
+                      )?
+                      'ENABLE'
+                      :
+                      (
+                        (year <= mxyear && year >= mnyear)? 
+                        'LOCKED' 
+                        : 
+                        'DISABLE'
+                      )
+                    )
+                  )
+                )
+              )
             }
           } as JustAYearPickerType[number][number];
         }
@@ -75,7 +150,76 @@ function fillJustAYearPickerArray(
                 year: year,
                 ref: null,
                 selected: 'DESELECTED',
-                status: (year <= mxyear && year >= mnyear)? 'ENABLE' : 'DISABLE'
+                status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
+                  year in jumptoweek.selections? 
+                  'ENABLE' 
+                  : 
+                  (
+                    (year <= mxyear && year >= mnyear)? 
+                    'LOCKED' 
+                    : 
+                    'DISABLE'
+                  )
+                ) 
+                : 
+                (
+                  (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
+                    (year <= mxyear && year >= mnyear)? 
+                    'ENABLE' 
+                    : 
+                    'DISABLE'
+                  ) 
+                  : 
+                  (
+                    (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
+                    (
+                      (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
+                      'ENABLE'
+                      :
+                      (
+                        (year <= mxyear && year >= mnyear)? 
+                        'LOCKED' 
+                        : 
+                        'DISABLE'
+                      )
+                    )
+                    :
+                    (
+                      (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
+                      (
+                        (
+                          year >= jumptoweek.rangeselectionparams.rangelastselection.year
+                          &&
+                          year <= jumptoweek.rangeselectionparams.rangefirstselection.year
+                        )?
+                        'ENABLE'
+                        :
+                        (
+                          (year <= mxyear && year >= mnyear)? 
+                          'LOCKED' 
+                          : 
+                          'DISABLE'
+                        )
+                      )
+                      :
+                      (
+                        (
+                          year <= jumptoweek.rangeselectionparams.rangelastselection.year
+                          &&
+                          year >= jumptoweek.rangeselectionparams.rangefirstselection.year
+                        )?
+                        'ENABLE'
+                        :
+                        (
+                          (year <= mxyear && year >= mnyear)? 
+                          'LOCKED' 
+                          : 
+                          'DISABLE'
+                        )
+                      )
+                    )
+                  )
+                )
               }
             }
           } as JustAYearPickerType[number];
@@ -91,7 +235,76 @@ function fillJustAYearPickerArray(
                 year: year,
                 ref: null,
                 selected: 'DESELECTED',
-                status: (year <= mxyear && year >= mnyear)? 'ENABLE' : 'DISABLE'
+                status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
+                  year in jumptoweek.selections? 
+                  'ENABLE' 
+                  : 
+                  (
+                    (year <= mxyear && year >= mnyear)? 
+                    'LOCKED' 
+                    : 
+                    'DISABLE'
+                  )
+                ) 
+                : 
+                (
+                  (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
+                    (year <= mxyear && year >= mnyear)? 
+                    'ENABLE' 
+                    : 
+                    'DISABLE'
+                  ) 
+                  : 
+                  (
+                    (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
+                    (
+                      (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
+                      'ENABLE'
+                      :
+                      (
+                        (year <= mxyear && year >= mnyear)? 
+                        'LOCKED' 
+                        : 
+                        'DISABLE'
+                      )
+                    )
+                    :
+                    (
+                      (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
+                      (
+                        (
+                          year >= jumptoweek.rangeselectionparams.rangelastselection.year
+                          &&
+                          year <= jumptoweek.rangeselectionparams.rangefirstselection.year
+                        )?
+                        'ENABLE'
+                        :
+                        (
+                          (year <= mxyear && year >= mnyear)? 
+                          'LOCKED' 
+                          : 
+                          'DISABLE'
+                        )
+                      )
+                      :
+                      (
+                        (
+                          year <= jumptoweek.rangeselectionparams.rangelastselection.year
+                          &&
+                          year >= jumptoweek.rangeselectionparams.rangefirstselection.year
+                        )?
+                        'ENABLE'
+                        :
+                        (
+                          (year <= mxyear && year >= mnyear)? 
+                          'LOCKED' 
+                          : 
+                          'DISABLE'
+                        )
+                      )
+                    )
+                  )
+                )
               }
             }
           }
@@ -107,7 +320,76 @@ function fillJustAYearPickerArray(
               year: year,
               ref: null,
               selected: 'DESELECTED',
-              status: (year <= mxyear && year >= mnyear)? 'ENABLE' : 'DISABLE'
+              status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
+                year in jumptoweek.selections? 
+                'ENABLE' 
+                : 
+                (
+                  (year <= mxyear && year >= mnyear)? 
+                  'LOCKED' 
+                  : 
+                  'DISABLE'
+                )
+              ) 
+              : 
+              (
+                (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
+                  (year <= mxyear && year >= mnyear)? 
+                  'ENABLE' 
+                  : 
+                  'DISABLE'
+                ) 
+                : 
+                (
+                  (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
+                  (
+                    (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
+                    'ENABLE'
+                    :
+                    (
+                      (year <= mxyear && year >= mnyear)? 
+                      'LOCKED' 
+                      : 
+                      'DISABLE'
+                    )
+                  )
+                  :
+                  (
+                    (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
+                    (
+                      (
+                        year >= jumptoweek.rangeselectionparams.rangelastselection.year
+                        &&
+                        year <= jumptoweek.rangeselectionparams.rangefirstselection.year
+                      )?
+                      'ENABLE'
+                      :
+                      (
+                        (year <= mxyear && year >= mnyear)? 
+                        'LOCKED' 
+                        : 
+                        'DISABLE'
+                      )
+                    )
+                    :
+                    (
+                      (
+                        year <= jumptoweek.rangeselectionparams.rangelastselection.year
+                        &&
+                        year >= jumptoweek.rangeselectionparams.rangefirstselection.year
+                      )?
+                      'ENABLE'
+                      :
+                      (
+                        (year <= mxyear && year >= mnyear)? 
+                        'LOCKED' 
+                        : 
+                        'DISABLE'
+                      )
+                    )
+                  )
+                )
+              )
             }
           }
         }
@@ -258,7 +540,8 @@ const compYearsLength = computed(() => {
               @keypress.enter="selectYearAndEmitSignal(rindex, cindex)"
               @click="selectYearAndEmitSignal(rindex, cindex)"
               class="w-100"
-              style="float: left; line-height: 2em; height: 2em"
+              style="float: left;"
+              :style="jumptoweek.from === 'DAYS-MONTHS-YEARS'? ' line-height: 2.3em; height: 2.3em' : ' line-height: 2em; height: 2em'"
             >
               <input
                 @keypress.enter.stop=""
@@ -270,15 +553,15 @@ const compYearsLength = computed(() => {
               />
               <span
                 :class="[col.status === 'ENABLE'? 'cursor-pointer' : '']"
-                class="font-family text-center d-block letter-spacing"
-                style="font-size: 1rem; line-height: 2em; height: 2em"
+                class="font-family text-center d-block letter-spacing h-100"
+                style="font-size: 1rem;"
                 :style="
                   col.status === 'ENABLE' ? (
                     col.selected === 'SELECTED'?
                     'background-color: green; color: #fff;'
                     :
                     'background-color: #E8E8E8; color: black; text-shadow:none;'
-                  ) : 'background-color: #fff; color: #fff; text-shadow:none;'
+                  ) : col.status === 'LOCKED' ? 'text-shadow: none; background-color: yellow; color: #fff;' : 'background-color: #fff; color: #fff; text-shadow:none;'
                 "
               >
                 {{ col.year }}

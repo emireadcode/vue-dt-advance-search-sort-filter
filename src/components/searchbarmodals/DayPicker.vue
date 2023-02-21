@@ -29,7 +29,7 @@ const
   }>(),
   emits = defineEmits<{
     (e: "update:dayselectionandformat", action: DaySelectionFormat): void;
-    (e: "signal:readyforexclude", action: boolean): void;
+    (e: "signal:readyforexclude", action: number): void;
   }>(),
   holder = shallowRef<DaySelectionFormat>(),
   days = shallowRef<DaySelectionType>(),
@@ -176,6 +176,7 @@ onBeforeUnmount(() => {
   unwatchformat();
   unwatchrangecount();
   unwatchmultipleselectcount();
+  unwatchnotifytosendsignal();
 });
 
 onMounted(() => {
@@ -192,10 +193,10 @@ onMounted(() => {
     (x) => {
       if((holder.value as DaySelectionFormat).format === "MULTIPLE-OR-SINGLE") {
         if(x > 0) {
-          emits('signal:readyforexclude', true);
+          emits('signal:readyforexclude', multipleselectcount.value);
         }
         else {
-          emits('signal:readyforexclude', false);
+          emits('signal:readyforexclude', multipleselectcount.value);
         }
       }
     }
@@ -205,10 +206,10 @@ onMounted(() => {
     (x) => {
       if ((holder.value as DaySelectionFormat).format === "RANGE") {
         if(x === 2) {
-          emits('signal:readyforexclude', true);
+          emits('signal:readyforexclude', rangecount.value);
         }
         else {
-          emits('signal:readyforexclude', false);
+          emits('signal:readyforexclude', 0);
         }
       }
     }
