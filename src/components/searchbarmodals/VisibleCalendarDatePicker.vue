@@ -124,8 +124,8 @@ let
   unwatchresetcalendarsignal: WatchStopHandle
 ;
 
-function ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox() {
-  if((props.selections && !rangeselectionparams.value.excludedates) || rangeselectionparams.value.excludedates) {
+function ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox() {
+  if((Object.keys(props.selections).length > 0 && !rangeselectionparams.value.excludedates) || rangeselectionparams.value.excludedates) {
     if(
       (
         (visiblecalendar.value as VisibleCalendarType).current.year in (visiblecalendar.value as VisibleCalendarType).selections
@@ -245,7 +245,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
         calendartoshowmonthandweek = 'CURRENT';
       }
       else {
@@ -303,7 +303,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     props.maxdate,
                     visiblecalendar as ShallowRef<VisibleCalendarType>
                   ) as YearMonthClickable<PositionTrackerType>['calendar'];
-                  ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+                  ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
                   calendartoshowmonthandweek = 'CURRENT';
                 }
                 else {
@@ -352,7 +352,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
             props.maxdate,
             visiblecalendar as ShallowRef<VisibleCalendarType>
           ) as YearMonthClickable<PositionTrackerType>['calendar'];
-          ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+          ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
           calendartoshowmonthandweek = 'CURRENT';
         }
         else {
@@ -388,7 +388,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
-            ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+            ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
             calendartoshowmonthandweek = 'CURRENT';
           }
           else {
@@ -447,7 +447,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
         nextTick(() => {
           if(
             (
@@ -475,6 +475,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
                 ).ref as HTMLDivElement
               ).style.backgroundColor='transparent';
+              triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
@@ -508,6 +509,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
               ).ref as HTMLDivElement
             ).style.backgroundColor='transparent';
+            triggerRef(visiblecalendar);
             clearTimeout(time);
           }, 1000);
         }
@@ -542,6 +544,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
                 ).ref as HTMLDivElement
               ).style.backgroundColor='transparent';
+              triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
@@ -573,6 +576,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
                 ).ref as HTMLDivElement
               ).style.backgroundColor='transparent';
+              triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
@@ -596,7 +600,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
         calendartoshowmonthandweek = 'CURRENT';
       }
       else {
@@ -654,7 +658,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     props.maxdate,
                     visiblecalendar as ShallowRef<VisibleCalendarType>
                   ) as YearMonthClickable<PositionTrackerType>['calendar'];
-                  ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+                  ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
                   calendartoshowmonthandweek = 'CURRENT';
                 }
                 else {
@@ -703,7 +707,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
             props.maxdate,
             visiblecalendar as ShallowRef<VisibleCalendarType>
           ) as YearMonthClickable<PositionTrackerType>['calendar'];
-          ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+          ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
           calendartoshowmonthandweek = 'CURRENT';
         }
         else {
@@ -739,7 +743,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
-            ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+            ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
             calendartoshowmonthandweek = 'CURRENT';
           }
           else {
@@ -797,7 +801,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
       }
       else {
         (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year+1;
@@ -811,7 +815,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
       }
 
       nextTick(() => {
@@ -841,6 +845,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
               ).ref as HTMLDivElement
             ).style.backgroundColor='transparent';
+            triggerRef(visiblecalendar);
             clearTimeout(time);
           }, 1000);
         }
@@ -870,6 +875,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
               ).ref as HTMLDivElement
             ).style.backgroundColor='transparent';
+            triggerRef(visiblecalendar);
             clearTimeout(time);
           }, 1000);
         }
@@ -904,6 +910,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
                 ).ref as HTMLDivElement
               ).style.backgroundColor='transparent';
+              triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
@@ -935,6 +942,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
                 ).ref as HTMLDivElement
               ).style.backgroundColor='transparent';
+              triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
@@ -3088,40 +3096,44 @@ onBeforeUnmount(() => {
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              day.day ===
+                              ((visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              'background-color: blue; color: #fff;'
+                              : (
+                                day.day ===
+                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
+                                    (visiblecalendar as VisibleCalendarType).previous.month
+                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
                                 ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                                   (visiblecalendar as VisibleCalendarType).previous.month
-                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                (visiblecalendar as VisibleCalendarType).previous.month
-                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                (visiblecalendar as VisibleCalendarType).previous.month
-                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                ? 'background-color:green;color: #fff !important'
-                                : day.day ===
+                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
+                                ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
+                                  (visiblecalendar as VisibleCalendarType).previous.month
+                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
+                                  ? 'background-color:green;color: #fff !important'
+                                  : day.day ===
+                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
+                                        (visiblecalendar as VisibleCalendarType).previous.month
+                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
                                     ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                                       (visiblecalendar as VisibleCalendarType).previous.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                    (visiblecalendar as VisibleCalendarType).previous.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                    (visiblecalendar as VisibleCalendarType).previous.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                ? 'color: black !important;text-shadow:none'
-                                : day.day ===
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
                                     ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
                                       (visiblecalendar as VisibleCalendarType).previous.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                    (visiblecalendar as VisibleCalendarType).previous.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                    (visiblecalendar as VisibleCalendarType).previous.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                ? 'background-color:grey;color: #fff !important'
-                                : 'color: gray !important;text-shadow:none'
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
+                                  ? 'color: black !important;text-shadow:none'
+                                  : day.day ===
+                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
+                                        (visiblecalendar as VisibleCalendarType).previous.month
+                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
+                                      (visiblecalendar as VisibleCalendarType).previous.month
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
+                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
+                                      (visiblecalendar as VisibleCalendarType).previous.month
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
+                                  ? 'background-color:grey;color: #fff !important'
+                                  : 'color: gray !important;text-shadow:none'
+                              )
                             "
                           >
                             {{ day.day }}
@@ -3151,9 +3163,13 @@ onBeforeUnmount(() => {
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              day.status === 'DISABLE'
+                              ((visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              'background-color: blue; color: #fff;'
+                              : (
+                                day.status === 'DISABLE'
                                 ? 'color: gray !important;text-shadow:none'
                                 : 'color: black !important;text-shadow:none'
+                              )
                             "
                           >
                             {{ day.day }}
@@ -3622,40 +3638,44 @@ onBeforeUnmount(() => {
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              day.day ===
+                              ((visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              'background-color: blue; color: #fff;'
+                              : (
+                                day.day ===
+                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
+                                    (visiblecalendar as VisibleCalendarType).current.month
+                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
                                 ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                                   (visiblecalendar as VisibleCalendarType).current.month
-                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                (visiblecalendar as VisibleCalendarType).current.month
-                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
-                              ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                (visiblecalendar as VisibleCalendarType).current.month
-                              ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                ? 'background-color:green;color: #fff !important'
-                                : day.day ===
+                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
+                                ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
+                                  (visiblecalendar as VisibleCalendarType).current.month
+                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
+                                  ? 'background-color:green;color: #fff !important'
+                                  : day.day ===
+                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
+                                        (visiblecalendar as VisibleCalendarType).current.month
+                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
                                     ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                                       (visiblecalendar as VisibleCalendarType).current.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                    (visiblecalendar as VisibleCalendarType).current.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                    (visiblecalendar as VisibleCalendarType).current.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                ? 'color: black !important;text-shadow:none'
-                                : day.day ===
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
                                     ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
                                       (visiblecalendar as VisibleCalendarType).current.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                    (visiblecalendar as VisibleCalendarType).current.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                    (visiblecalendar as VisibleCalendarType).current.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                ? 'background-color:grey;color: #fff !important'
-                                : 'color: gray !important;text-shadow:none'
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
+                                  ? 'color: black !important;text-shadow:none'
+                                  : day.day ===
+                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
+                                        (visiblecalendar as VisibleCalendarType).current.month
+                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
+                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
+                                      (visiblecalendar as VisibleCalendarType).current.month
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
+                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
+                                      (visiblecalendar as VisibleCalendarType).current.month
+                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
+                                  ? 'background-color:grey;color: #fff !important'
+                                  : 'color: gray !important;text-shadow:none'
+                              )
                             "
                           >
                             {{ day.day }}
@@ -3685,9 +3705,13 @@ onBeforeUnmount(() => {
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              day.status === 'DISABLE'
-                                ? 'color: gray !important;text-shadow:none'
-                                : 'color: black !important;text-shadow:none'
+                              ((visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              'background-color: blue; color: #fff;'
+                              : (
+                                day.status === 'DISABLE'
+                                  ? 'color: gray !important;text-shadow:none'
+                                  : 'color: black !important;text-shadow:none'
+                              )
                             "
                           >
                             {{ day.day }}

@@ -39,7 +39,28 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
     vc: VisibleCalendarType['selections'] = {},
     size = (weeks+(54-weeks))
   ;
-  if(props.from === 'DD-MM-YYYY') {
+  if(
+    (
+      props.rangeselectionparams.excludedates 
+      && 
+      props.rangeselectionparams.rangefirstselection.date 
+      &&
+      props.rangeselectionparams.rangelastselection.date
+    )
+    ||
+    (
+      props.from === 'DD-MM-YYYY'
+      &&
+      !
+      (
+        props.rangeselectionparams.excludedates 
+        && 
+        props.rangeselectionparams.rangefirstselection.date 
+        &&
+        props.rangeselectionparams.rangelastselection.date
+      )
+    )
+  ) {
     for(let i=0; i<weeks; i++) {
       const {month} = determineMonthAndWeek(
         props.isoweek,
@@ -79,6 +100,8 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
       }
     }
     if(
+      props.rangeselectionparams.excludedates
+      &&
       props.rangeselectionparams.rangefirstselection.date
       &&
       props.rangeselectionparams.rangelastselection.date
