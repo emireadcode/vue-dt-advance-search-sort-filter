@@ -402,7 +402,7 @@ onBeforeUnmount(() => {
       ></YearPicker>
     </div>
     <template v-if="openexcludewindow">
-      <div class="w-100 h-100 position-absolute t-0 l-0" style="z-index: 1400;padding: 5px 9px;">
+      <div class="w-100 h-100 position-absolute t-0 l-0" style="z-index: 1400;padding: 2px 9px;">
         <div class="d-block h-100" style="background-color: #fff;">
           <div class="d-block" style="padding: 0 0 3px 0;">
             <div
@@ -422,7 +422,7 @@ onBeforeUnmount(() => {
               </a>
             </div>
           </div>
-          <div class="d-block" style="background-color: #E8E8E8;">
+          <div class="d-block" style="background-color: #fff;">
             <VisibleCalendarDatePicker
               :from="'DAYS-MONTHS-YEARS'"
               :selectionformat="'MULTIPLE-OR-SINGLE'"

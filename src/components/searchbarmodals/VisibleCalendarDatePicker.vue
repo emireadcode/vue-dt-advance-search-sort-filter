@@ -42,6 +42,8 @@ import {
   determineMonthAndWeek,
 } from "../utility/dd_mm_yy_utility_fns";
 import JumpToWeek from "./JumpToWeek.vue";
+import DropDownYearPicker from "./DropDownYearPicker.vue";
+import DropDownMonthPicker from "./DropDownMonthPicker.vue";
 
 const 
   props = defineProps<{
@@ -94,7 +96,9 @@ const
     inselectionmode: true,
     excludedates: props.excludedates as boolean,
   }),
-  jumptoweekclicked = ref(false)
+  jumptoweekclicked = ref(false),
+  monthoryeardropdownclicked = ref(''),
+  monthoryeardropdownclickcount = ref(0)
 ;
 
 provide('jumptoweek', {
@@ -117,10 +121,92 @@ let
   unwatchselectionformat: WatchStopHandle,
   unwatchrangeselectcount: WatchStopHandle,
   unwatchexcludedates: WatchStopHandle,
-  unwatchresetcalendarsignal: WatchStopHandle,
-  maxdate = '',
-  mindate = ''
+  unwatchresetcalendarsignal: WatchStopHandle
 ;
+
+function ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox() {
+  if((props.selections && !rangeselectionparams.value.excludedates) || rangeselectionparams.value.excludedates) {
+    if(
+      (
+        (visiblecalendar.value as VisibleCalendarType).current.year in (visiblecalendar.value as VisibleCalendarType).selections
+      )
+    ) {
+      if(
+        !((visiblecalendar.value as VisibleCalendarType).current.month in (visiblecalendar.value as VisibleCalendarType).selections[
+          (visiblecalendar.value as VisibleCalendarType).current.year
+        ].months)
+      ) {
+        (visiblecalendar.value as VisibleCalendarType).current.calendar.tm = [
+          {checked: false, status: 'DISABLE'},
+          {checked: false, status: 'DISABLE'},
+          {checked: false, status: 'DISABLE'},
+          {checked: false, status: 'DISABLE'},
+          {checked: false, status: 'DISABLE'},
+          {checked: false, status: 'DISABLE'},
+          {checked: false, status: 'DISABLE'}
+        ];
+        for(let w in ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks) {
+          ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+            w
+          ].checked = false;
+          for(let d in ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+            w
+          ].days) {
+            ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+              w
+            ].days[d].status = 'DISABLE';
+            ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+              w
+            ].days[d].readonlystatus = 'DISABLE';
+            ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+              w
+            ].days[d].selected = 'LOCKED'
+          }
+        }
+      }
+    }
+    else {
+      (visiblecalendar.value as VisibleCalendarType).current.ty[
+        (visiblecalendar.value as VisibleCalendarType).current.year
+      ] = [
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'}
+      ];
+      (visiblecalendar.value as VisibleCalendarType).current.calendar.tm = [
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'},
+        {checked: false, status: 'DISABLE'}
+      ];
+      for(let w in ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks) {
+        ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+          w
+        ].checked = false;
+        for(let d in ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+          w
+        ].days) {
+          ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+            w
+          ].days[d].status = 'DISABLE';
+          ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+            w
+          ].days[d].readonlystatus = 'DISABLE';
+          ((visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[
+            w
+          ].days[d].selected = 'LOCKED'
+        }
+      }
+    }
+  }
+}
 
 function assignWeekRef($el: HTMLDivElement, weekindex: number, weektype: 'PREVIOUS' | 'CURRENT') {
   if(weektype === 'PREVIOUS') {
@@ -135,11 +221,728 @@ function assignWeekRef($el: HTMLDivElement, weekindex: number, weektype: 'PREVIO
   }
 }
 
-function determineMonthAndWeekInJumpToWeek(yearandweek: {year: number; week: number;}) {
+function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; week: number;}) {
   const {week, month} = determineMonthAndWeek(
     props.isoweek,
     yearandweek
   );
+  let calendartoshowmonthandweek = '';
+  if(
+    yearandweek.year === (visiblecalendar.value as VisibleCalendarType).first.year
+  ) {
+    if(
+      (visiblecalendar.value as VisibleCalendarType).current.year === (visiblecalendar.value as VisibleCalendarType).previous.year
+    ) {
+      if(yearandweek.year > (visiblecalendar.value as VisibleCalendarType).current.year) {
+        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+        (visiblecalendar.value as VisibleCalendarType).current.month = month;
+        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+        (visiblecalendar.value as VisibleCalendarType).current.year,
+        (visiblecalendar.value as VisibleCalendarType).current.month,
+          'PREVIOUS-OR-CURRENT',
+          props.isoweek,
+          props.mindate,
+          props.maxdate,
+          visiblecalendar as ShallowRef<VisibleCalendarType>
+        ) as YearMonthClickable<PositionTrackerType>['calendar'];
+        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        calendartoshowmonthandweek = 'CURRENT';
+      }
+      else {
+        if(yearandweek.year <= (visiblecalendar.value as VisibleCalendarType).previous.year) {
+          if(yearandweek.year < (visiblecalendar.value as VisibleCalendarType).previous.year) {
+            (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+            (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+              (visiblecalendar.value as VisibleCalendarType).previous.year,
+              (visiblecalendar.value as VisibleCalendarType).previous.month,
+              'PREVIOUS-OR-CURRENT',
+              props.isoweek,
+              props.mindate,
+              props.maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
+            ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            calendartoshowmonthandweek = 'PREVIOUS';
+          }
+          else {
+            if(
+              month === (visiblecalendar.value as VisibleCalendarType).previous.month
+              ||
+              month === (visiblecalendar.value as VisibleCalendarType).current.month
+            ) {
+              if(month === (visiblecalendar.value as VisibleCalendarType).previous.month) {
+                calendartoshowmonthandweek = 'PREVIOUS';
+              }
+              else {
+                calendartoshowmonthandweek = 'CURRENT';
+              }
+            }
+            else {
+              if(
+                (
+                  month > (visiblecalendar.value as VisibleCalendarType).current.month
+                  ||
+                  month > (visiblecalendar.value as VisibleCalendarType).previous.month
+                )
+                ||
+                month < (visiblecalendar.value as VisibleCalendarType).previous.month
+              ) {
+                if(
+                  month > (visiblecalendar.value as VisibleCalendarType).current.month
+                  ||
+                  month > (visiblecalendar.value as VisibleCalendarType).previous.month
+                ) {
+                  (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+                  (visiblecalendar.value as VisibleCalendarType).current.month = month;
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+                  (visiblecalendar.value as VisibleCalendarType).current.year,
+                  (visiblecalendar.value as VisibleCalendarType).current.month,
+                    'PREVIOUS-OR-CURRENT',
+                    props.isoweek,
+                    props.mindate,
+                    props.maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
+                  ) as YearMonthClickable<PositionTrackerType>['calendar'];
+                  ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+                  calendartoshowmonthandweek = 'CURRENT';
+                }
+                else {
+                  (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+                  (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+                    (visiblecalendar.value as VisibleCalendarType).previous.year,
+                    (visiblecalendar.value as VisibleCalendarType).previous.month,
+                    'PREVIOUS-OR-CURRENT',
+                    props.isoweek,
+                    props.mindate,
+                    props.maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
+                  ) as YearMonthClickable<PositionTrackerType>['calendar'];
+                  calendartoshowmonthandweek = 'PREVIOUS';
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    else {
+      if(
+        (
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).current.year
+          ||
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).previous.year
+        )
+        ||
+        yearandweek.year < (visiblecalendar.value as VisibleCalendarType).previous.year
+      ) {
+        if(
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).current.year
+          ||
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).previous.year
+        ) {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).current.month = month;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+          calendartoshowmonthandweek = 'CURRENT';
+        }
+        else {
+          (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+          (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+            (visiblecalendar.value as VisibleCalendarType).previous.year,
+            (visiblecalendar.value as VisibleCalendarType).previous.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          calendartoshowmonthandweek = 'PREVIOUS';
+        }
+      }
+      else {
+        if(
+          yearandweek.year === (visiblecalendar.value as VisibleCalendarType).previous.year
+          ||
+          yearandweek.year === (visiblecalendar.value as VisibleCalendarType).current.year
+        ) {
+          if(yearandweek.year === (visiblecalendar.value as VisibleCalendarType).current.year) {
+            (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+            (visiblecalendar.value as VisibleCalendarType).current.month = month;
+            (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+            (visiblecalendar.value as VisibleCalendarType).current.year,
+            (visiblecalendar.value as VisibleCalendarType).current.month,
+              'PREVIOUS-OR-CURRENT',
+              props.isoweek,
+              props.mindate,
+              props.maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
+            ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+            calendartoshowmonthandweek = 'CURRENT';
+          }
+          else {
+            (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+            (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+              (visiblecalendar.value as VisibleCalendarType).previous.year,
+              (visiblecalendar.value as VisibleCalendarType).previous.month,
+              'PREVIOUS-OR-CURRENT',
+              props.isoweek,
+              props.mindate,
+              props.maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
+            ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            calendartoshowmonthandweek = 'PREVIOUS';
+          }
+        }
+      }
+    }
+
+    if(
+      week === (
+        Object.keys(
+          (
+            (calendartoshowmonthandweek === 'PREVIOUS')?
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            :
+            (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+          ).weeks
+        ).length - 1
+      )
+      &&
+      (
+        (calendartoshowmonthandweek === 'PREVIOUS')?
+        (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+        :
+        (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+      ).weeks[
+        week
+      ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+    ) {
+      if(calendartoshowmonthandweek === 'CURRENT') {
+        let currentcopy = JSON.parse(JSON.stringify((visiblecalendar.value as VisibleCalendarType).current));
+        (visiblecalendar.value as VisibleCalendarType).previous = currentcopy;
+      }
+
+      if((month + 1) <= (visiblecalendar.value as VisibleCalendarType).first.month) {
+        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+        (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
+        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+        (visiblecalendar.value as VisibleCalendarType).current.year,
+        (visiblecalendar.value as VisibleCalendarType).current.month,
+          'PREVIOUS-OR-CURRENT',
+          props.isoweek,
+          props.mindate,
+          props.maxdate,
+          visiblecalendar as ShallowRef<VisibleCalendarType>
+        ) as YearMonthClickable<PositionTrackerType>['calendar'];
+        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        nextTick(() => {
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[
+                0
+              ]
+            ).ref
+          ) {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='blue';
+                  
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                  ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+                ).ref as HTMLDivElement
+              ).style.backgroundColor='transparent';
+              clearTimeout(time);
+            }, 1000);
+          }
+        });
+      }
+
+      nextTick(() => {
+        if(
+          (
+            (
+              (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            ).weeks[
+              week
+            ]
+          ).ref
+        ) {
+          (
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+            ).ref as HTMLDivElement
+          ).style.backgroundColor='blue';
+                  
+          let time: NodeJS.Timeout;
+          time = setTimeout(() => {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='transparent';
+            clearTimeout(time);
+          }, 1000);
+        }
+      });
+    }
+    else {
+      nextTick(() => {
+        if(calendartoshowmonthandweek === 'PREVIOUS') {
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[
+                week
+              ]
+            ).ref
+          ) {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='blue';
+                    
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+                ).ref as HTMLDivElement
+              ).style.backgroundColor='transparent';
+              clearTimeout(time);
+            }, 1000);
+          }
+        }
+        else {
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[
+                week
+              ]
+            ).ref
+          ) {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='blue';
+                    
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+                ).ref as HTMLDivElement
+              ).style.backgroundColor='transparent';
+              clearTimeout(time);
+            }, 1000);
+          }
+        }
+      });
+    }
+  }
+  else {
+    if(
+      (visiblecalendar.value as VisibleCalendarType).current.year === (visiblecalendar.value as VisibleCalendarType).previous.year
+    ) {
+      if(yearandweek.year > (visiblecalendar.value as VisibleCalendarType).current.year) {
+        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+        (visiblecalendar.value as VisibleCalendarType).current.month = month;
+        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+        (visiblecalendar.value as VisibleCalendarType).current.year,
+        (visiblecalendar.value as VisibleCalendarType).current.month,
+          'PREVIOUS-OR-CURRENT',
+          props.isoweek,
+          props.mindate,
+          props.maxdate,
+          visiblecalendar as ShallowRef<VisibleCalendarType>
+        ) as YearMonthClickable<PositionTrackerType>['calendar'];
+        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+        calendartoshowmonthandweek = 'CURRENT';
+      }
+      else {
+        if(yearandweek.year <= (visiblecalendar.value as VisibleCalendarType).previous.year) {
+          if(yearandweek.year < (visiblecalendar.value as VisibleCalendarType).previous.year) {
+            (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+            (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+              (visiblecalendar.value as VisibleCalendarType).previous.year,
+              (visiblecalendar.value as VisibleCalendarType).previous.month,
+              'PREVIOUS-OR-CURRENT',
+              props.isoweek,
+              props.mindate,
+              props.maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
+            ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            calendartoshowmonthandweek = 'PREVIOUS';
+          }
+          else {
+            if(
+              month === (visiblecalendar.value as VisibleCalendarType).previous.month
+              ||
+              month === (visiblecalendar.value as VisibleCalendarType).current.month
+            ) {
+              if(month === (visiblecalendar.value as VisibleCalendarType).previous.month) {
+                calendartoshowmonthandweek = 'PREVIOUS';
+              }
+              else {
+                calendartoshowmonthandweek = 'CURRENT';
+              }
+            }
+            else {
+              if(
+                (
+                  month > (visiblecalendar.value as VisibleCalendarType).current.month
+                  ||
+                  month > (visiblecalendar.value as VisibleCalendarType).previous.month
+                )
+                ||
+                month < (visiblecalendar.value as VisibleCalendarType).previous.month
+              ) {
+                if(
+                  month > (visiblecalendar.value as VisibleCalendarType).current.month
+                  ||
+                  month > (visiblecalendar.value as VisibleCalendarType).previous.month
+                ) {
+                  (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+                  (visiblecalendar.value as VisibleCalendarType).current.month = month;
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+                  (visiblecalendar.value as VisibleCalendarType).current.year,
+                  (visiblecalendar.value as VisibleCalendarType).current.month,
+                    'PREVIOUS-OR-CURRENT',
+                    props.isoweek,
+                    props.mindate,
+                    props.maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
+                  ) as YearMonthClickable<PositionTrackerType>['calendar'];
+                  ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+                  calendartoshowmonthandweek = 'CURRENT';
+                }
+                else {
+                  (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+                  (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+                    (visiblecalendar.value as VisibleCalendarType).previous.year,
+                    (visiblecalendar.value as VisibleCalendarType).previous.month,
+                    'PREVIOUS-OR-CURRENT',
+                    props.isoweek,
+                    props.mindate,
+                    props.maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
+                  ) as YearMonthClickable<PositionTrackerType>['calendar'];
+                  calendartoshowmonthandweek = 'PREVIOUS';
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    else {
+      if(
+        (
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).current.year
+          ||
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).previous.year
+        )
+        ||
+        yearandweek.year < (visiblecalendar.value as VisibleCalendarType).previous.year
+      ) {
+        if(
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).current.year
+          ||
+          yearandweek.year > (visiblecalendar.value as VisibleCalendarType).previous.year
+        ) {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).current.month = month;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+          calendartoshowmonthandweek = 'CURRENT';
+        }
+        else {
+          (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+          (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+            (visiblecalendar.value as VisibleCalendarType).previous.year,
+            (visiblecalendar.value as VisibleCalendarType).previous.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          calendartoshowmonthandweek = 'PREVIOUS';
+        }
+      }
+      else {
+        if(
+          yearandweek.year === (visiblecalendar.value as VisibleCalendarType).previous.year
+          ||
+          yearandweek.year === (visiblecalendar.value as VisibleCalendarType).current.year
+        ) {
+          if(yearandweek.year === (visiblecalendar.value as VisibleCalendarType).current.year) {
+            (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+            (visiblecalendar.value as VisibleCalendarType).current.month = month;
+            (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+            (visiblecalendar.value as VisibleCalendarType).current.year,
+            (visiblecalendar.value as VisibleCalendarType).current.month,
+              'PREVIOUS-OR-CURRENT',
+              props.isoweek,
+              props.mindate,
+              props.maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
+            ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+            calendartoshowmonthandweek = 'CURRENT';
+          }
+          else {
+            (visiblecalendar.value as VisibleCalendarType).previous.year = yearandweek.year;
+            (visiblecalendar.value as VisibleCalendarType).previous.month = month;
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar = buildCalendar(
+              (visiblecalendar.value as VisibleCalendarType).previous.year,
+              (visiblecalendar.value as VisibleCalendarType).previous.month,
+              'PREVIOUS-OR-CURRENT',
+              props.isoweek,
+              props.mindate,
+              props.maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
+            ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            calendartoshowmonthandweek = 'PREVIOUS';
+          }
+        }
+      }
+    }
+
+    if(
+      week === (
+        Object.keys(
+          (
+            (calendartoshowmonthandweek === 'PREVIOUS')?
+            (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            :
+            (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+          ).weeks
+        ).length - 1
+      )
+      &&
+      (
+        (calendartoshowmonthandweek === 'PREVIOUS')?
+        (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+        :
+        (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+      ).weeks[
+        week
+      ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+    ) {
+      if(calendartoshowmonthandweek === 'CURRENT') {
+        let currentcopy = JSON.parse(JSON.stringify((visiblecalendar.value as VisibleCalendarType).current));
+        (visiblecalendar.value as VisibleCalendarType).previous = currentcopy;
+      }
+      if((month + 1) <= 11) {
+        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+        (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
+        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+        (visiblecalendar.value as VisibleCalendarType).current.year,
+        (visiblecalendar.value as VisibleCalendarType).current.month,
+          'PREVIOUS-OR-CURRENT',
+          props.isoweek,
+          props.mindate,
+          props.maxdate,
+          visiblecalendar as ShallowRef<VisibleCalendarType>
+        ) as YearMonthClickable<PositionTrackerType>['calendar'];
+        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+      }
+      else {
+        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year+1;
+        (visiblecalendar.value as VisibleCalendarType).current.month = 0;
+        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+        (visiblecalendar.value as VisibleCalendarType).current.year,
+        (visiblecalendar.value as VisibleCalendarType).current.month,
+          'PREVIOUS-OR-CURRENT',
+          props.isoweek,
+          props.mindate,
+          props.maxdate,
+          visiblecalendar as ShallowRef<VisibleCalendarType>
+        ) as YearMonthClickable<PositionTrackerType>['calendar'];
+        ensureNewCalendarNotInSelectionDoNotEnableTyTMandWeekCheckBox();
+      }
+
+      nextTick(() => {
+        if(
+          (
+            (
+              (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            ).weeks[
+              week
+            ]
+          ).ref
+        ) {
+          (
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+            ).ref as HTMLDivElement
+          ).style.backgroundColor='blue';
+                  
+          let time: NodeJS.Timeout;
+          time = setTimeout(() => {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='transparent';
+            clearTimeout(time);
+          }, 1000);
+        }
+        if(
+          (
+            (
+              (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            ).weeks[
+              0
+            ]
+          ).ref
+        ) {
+          (
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+            ).ref as HTMLDivElement
+          ).style.backgroundColor='blue';
+                  
+          let time: NodeJS.Timeout;
+          time = setTimeout(() => {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='transparent';
+            clearTimeout(time);
+          }, 1000);
+        }
+      });
+    }
+    else {
+      nextTick(() => {
+        if(calendartoshowmonthandweek === 'PREVIOUS') {
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[
+                week
+              ]
+            ).ref
+          ) {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='blue';
+                    
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+                ).ref as HTMLDivElement
+              ).style.backgroundColor='transparent';
+              clearTimeout(time);
+            }, 1000);
+          }
+        }
+        else {
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[
+                week
+              ]
+            ).ref
+          ) {
+            (
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+              ).ref as HTMLDivElement
+            ).style.backgroundColor='blue';
+                    
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
+                ).ref as HTMLDivElement
+              ).style.backgroundColor='transparent';
+              clearTimeout(time);
+            }, 1000);
+          }
+        }
+      });
+    }
+  }
+  triggerRef(visiblecalendar);
 }
 
 function handleTyTmClicked(
@@ -207,16 +1010,14 @@ function weekCheckboxClicked(checked: boolean, weekindex: string, vcalendartype:
       visiblecalendar as ShallowRef<VisibleCalendarType>,
       'WEEK-BOX',
       props.isoweek,
-      mindate,
-      maxdate
+      props.mindate,
+      props.maxdate
     );
   }
 }
 
 function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]['days'][number]) {
-  alert(day.status + ' ' + day.readonlystatus);
   if(day.status === 'ENABLE') {
-    alert((rangeselectionparams.value as RangeSelectionParamsType).inselectionmode);
     if(!(rangeselectionparams.value as RangeSelectionParamsType).inselectionmode) {
       (rangeselectionparams.value as RangeSelectionParamsType).inselectionmode = true;
       triggerRef(rangeselectionparams);
@@ -229,8 +1030,8 @@ function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'
           props.selectionformat,
           day.date,
           true,
-          mindate as string,
-          maxdate as string,
+          props.mindate,
+          props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>,
           rangeselectionparams as ShallowRef<RangeSelectionParamsType>
         );
@@ -252,10 +1053,12 @@ function handleDateClick(day: YearMonthClickable<PositionTrackerType>['calendar'
 }
 
 function clickNext() {
+  monthoryeardropdownclickcount.value = 0;
+  monthoryeardropdownclicked.value = '';
   clickForward(
     props.isoweek, 
-    maxdate, 
-    mindate, 
+    props.maxdate, 
+    props.mindate, 
     visiblecalendar as ShallowRef<VisibleCalendarType>
   );
   if(props.excludedates) {
@@ -340,14 +1143,17 @@ function clickNext() {
         }
       }
     }
+    triggerRef(visiblecalendar);
   }
 }
 
 function clickPrevious() {
+  monthoryeardropdownclickcount.value = 0;
+  monthoryeardropdownclicked.value = '';
   clickBackward(
     props.isoweek, 
-    maxdate, 
-    mindate, 
+    props.maxdate, 
+    props.mindate, 
     visiblecalendar as ShallowRef<VisibleCalendarType>
   );
   if(props.excludedates) {
@@ -432,6 +1238,7 @@ function clickPrevious() {
         }
       }
     }
+    triggerRef(visiblecalendar);
   }
 }
 
@@ -452,8 +1259,8 @@ function trackMouseMovement(event: { pageX: number; pageY: number; }) {
     rangeselectionparams as ShallowRef<RangeSelectionParamsType>,
     event,
     props.isoweek, 
-    mindate, 
-    maxdate, 
+    props.mindate, 
+    props.maxdate, 
     props.selectionformat as 'RANGE',
     visiblecalendar as ShallowRef<VisibleCalendarType>,
     loadingMovement
@@ -517,13 +1324,11 @@ const currentyearandmonthinselections = computed(() => {
 });
 
 onBeforeMount(() => {
-  (maxdate as string) = props.maxdate;
-  (mindate as string) = props.mindate;
   ((rangeselectionparams.value as RangeSelectionParamsType).excludedates as boolean) = props.excludedates as boolean;
   triggerRef(rangeselectionparams);
   visiblecalendar.value = fillVisibleCalendarArray(
-    maxdate,
-    mindate,
+    props.maxdate,
+    props.mindate,
     props.isoweek
   );
   (visiblecalendar.value as VisibleCalendarType).selections = props.selections as VisibleCalendarType['selections'];
@@ -1687,6 +2492,8 @@ onMounted(() => {
   unwatchselectionformat = watch(
     () => props.selectionformat,
     (x) => {
+      monthoryeardropdownclickcount.value = 0;
+      monthoryeardropdownclicked.value = '';
       rangeselectionparams.value.rangeselectcount = 0;
       rangeselectionparams.value.excludedates = false;
       rangeselectionparams.value.inselectionmode = false;
@@ -1792,13 +2599,13 @@ onBeforeUnmount(() => {
 
 <template>
   <div 
-    :style="from==='DD-MM-YYYY'? 'height: 381.2px;' : 'height: 426.5px;'"
+    :style="from==='DD-MM-YYYY'? 'height: 381.2px;' : 'height: 429.84px;'"
     class="d-block shadow-sm"
   >
     <div class="d-block" style="padding: 7px 2px;">
       <button 
-        @keypress.enter="jumptoweekclicked=!jumptoweekclicked"
-        @click="jumptoweekclicked=!jumptoweekclicked"
+        @keypress.enter="{ jumptoweekclicked=!jumptoweekclicked; monthoryeardropdownclickcount = 0; monthoryeardropdownclicked = ''; }"
+        @click="{ jumptoweekclicked=!jumptoweekclicked; monthoryeardropdownclickcount = 0; monthoryeardropdownclicked = ''; }"
         class="btn w-100" 
         style="padding:2px;"
         :style="from==='DD-MM-YYYY'? 'background-color: #E8E8E8;' : 'background-color: #f0e68c;'"
@@ -1817,12 +2624,11 @@ onBeforeUnmount(() => {
     <div class="d-block position-relative">
       <template v-if="jumptoweekclicked">
         <div 
-          class="position-absolute t-0 w-100 p-0 m-0" 
-          style="background-color: #fff;"
-          :style="from==='DD-MM-YYYY'? 'height:339px;' : 'height:383px;'"
+          class="position-absolute t-0 w-100 p-0 m-0"
+          :style="from==='DD-MM-YYYY'? 'height:339px;' : 'height:385.84px;'"
         >
           <JumpToWeek
-            @receive:yearandweek="($val) => { jumptoweekclicked = false; determineMonthAndWeekInJumpToWeek($val); }"
+            @receive:yearandweek="($val) => { jumptoweekclicked = false; determineMonthAndWeekAndShowWeekInCalendar($val); }"
           ></JumpToWeek>
         </div>
       </template>
@@ -1830,44 +2636,137 @@ onBeforeUnmount(() => {
         class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
       >
         <div class="flex-w-50 align-self-stretch" style="padding: 0 2px">
-          <div
-            style="padding: 10px 0"
-            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
-          >
-            <div class="flex-grow-0 flex-shrink-0 align-self-stretch">
-              <a
-                @keypress.enter="clickPrevious()"
-                @click="clickPrevious()"
-                style="height: 25px; width: 25px; border-radius: 50%"
-                class="flex-box align-items-center justify-content-center underline-none cursor-pointer text-center"
-              >
-                <svg
-                  version="1.1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 32 32"
-                  style="height: 20px;width: 20px;color: black;stroke: currentcolor;fill: currentcolor;"
+          <div class="d-block">
+            <div
+              style="padding: 7.5px 0"
+              class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
+            >
+              <div class="flex-grow-0 flex-shrink-0 align-self-stretch">
+                <a
+                  @keypress.enter="clickPrevious()"
+                  @click="clickPrevious()"
+                  :class="[
+                    (
+                      (visiblecalendar as VisibleCalendarType).current.year === (visiblecalendar as VisibleCalendarType).previous.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).previous.year === (visiblecalendar as VisibleCalendarType).last.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).previous.month === (visiblecalendar as VisibleCalendarType).last.month
+                    )?
+                    '' : 'cursor-pointer'
+                  ]"
+                  style="height: 30px; width: 30px; border-radius: 50%;color: #fff;"
+                  :style="
+                    (
+                      (visiblecalendar as VisibleCalendarType).current.year === (visiblecalendar as VisibleCalendarType).previous.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).previous.year === (visiblecalendar as VisibleCalendarType).last.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).previous.month === (visiblecalendar as VisibleCalendarType).last.month
+                    )?
+                    'background-color: #E8E8E8;'
+                    :
+                    'background-color: green;'
+                  "
+                  class="flex-box align-items-center justify-content-center underline-none text-center"
                 >
-                  <path
-                    d="M20.943 23.057l-7.057-7.057c0 0 7.057-7.057 7.057-7.057 0.52-0.52 0.52-1.365 0-1.885s-1.365-0.52-1.885 0l-8 8c-0.521 0.521-0.521 1.365 0 1.885l8 8c0.52 0.52 1.365 0.52 1.885 0s0.52-1.365 0-1.885z"
-                  ></path>
-                </svg>
-              </a>
-            </div>
-            <div class="flex-fill align-self-stretch">
-              <div
-                class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
-              >
-                <div class="flex-w-50 align-self-stretch">
-                  <a class="d-block font-family underline-none cursor-pointer">
-                    {{ months[(visiblecalendar as VisibleCalendarType).previous.month] }}
-                  </a>
-                </div>
-                <div class="flex-w-50 align-self-stretch">
-                  <a class="d-block font-family underline-none cursor-pointer">
-                    {{ (visiblecalendar as VisibleCalendarType).previous.year }}
-                  </a>
+                  <svg
+                    version="1.1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 32 32"
+                    style="height: 20px;width: 20px;color: currentcolor;stroke: currentcolor;fill: currentcolor;"
+                  >
+                    <path
+                      d="M20.943 23.057l-7.057-7.057c0 0 7.057-7.057 7.057-7.057 0.52-0.52 0.52-1.365 0-1.885s-1.365-0.52-1.885 0l-8 8c-0.521 0.521-0.521 1.365 0 1.885l8 8c0.52 0.52 1.365 0.52 1.885 0s0.52-1.365 0-1.885z"
+                    ></path>
+                  </svg>
+                </a>
+              </div>
+              <div class="flex-fill align-self-stretch">
+                <div
+                  class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
+                >
+                  <div class="flex-w-50 align-self-stretch" style="padding-left: 5px;padding-right:5px;">
+                    <button 
+                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      class="w-100 month-or-year-link btn cursor-pointer"
+                      style="padding: 2px 0"
+                    >
+                      <span class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100">
+                        <span class="flex-fill text-center font-family">
+                          {{ months[(visiblecalendar as VisibleCalendarType).previous.month] }}
+                        </span>
+                        <span style="padding-right: 10px;">
+                          <img 
+                            :src="(monthoryeardropdownclicked === 'MONTH-PREVIOUS')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
+                            style="width:10px;height:10px;"
+                          />
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                  <div class="flex-w-50 align-self-stretch">
+                    <button 
+                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      class="w-100 month-or-year-link btn cursor-pointer"
+                      style="padding: 2px 0"
+                    >
+                      <span class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100">
+                        <span class="flex-fill text-center font-family">
+                          {{ (visiblecalendar as VisibleCalendarType).previous.year }}
+                        </span>
+                        <span style="padding-right: 10px;">
+                          <img 
+                            :src="(monthoryeardropdownclicked === 'YEAR-PREVIOUS')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
+                            style="width:10px;height:10px;" 
+                          />
+                        </span>
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
+            </div>
+            <div class="d-block position-relative">
+              <template v-if="monthoryeardropdownclicked === 'MONTH-PREVIOUS' || monthoryeardropdownclicked === 'YEAR-PREVIOUS'">
+                <template v-if="monthoryeardropdownclicked === 'MONTH-PREVIOUS'">
+                  <template v-if="monthoryeardropdownclickcount === 1">
+                    <div 
+                      style="background-color: #fff;" 
+                      class="w-100 position-absolute l-0 t-0"
+                      :style="from === 'DD-MM-YYYY'? 'height: 293px;' : 'height: 340.9px;'"
+                    >
+                      <DropDownMonthPicker
+                        :month="(visiblecalendar as VisibleCalendarType).previous.month" 
+                        :year="(visiblecalendar as VisibleCalendarType).previous.year"
+                        :counterpartmonth="(visiblecalendar as VisibleCalendarType).current.month"
+                        :counterpartyear="(visiblecalendar as VisibleCalendarType).current.year"
+                        iam="PREVIOUS"
+                      ></DropDownMonthPicker>
+                    </div>
+                  </template>
+                </template>
+                <template v-else>
+                  <template v-if="monthoryeardropdownclickcount === 1">
+                    <div 
+                      style="background-color: #fff;" 
+                      class="w-100 position-absolute l-0 t-0"
+                      :style="from === 'DD-MM-YYYY'? 'height: 293px;' : 'height: 340.9px;'"
+                    >
+                      <DropDownYearPicker
+                        from="YEAR-PREVIOUS"
+                        :currentyear="(visiblecalendar as VisibleCalendarType).previous.year"
+                        :rowlimit="4"
+                        :collimit="3" 
+                        @receive:year="($val: number) => {
+                        }"
+                      ></DropDownYearPicker>
+                    </div>
+                  </template>
+                </template>
+              </template>
             </div>
           </div>
           <template v-if="((from === 'DD-MM-YYYY' && selectionformat === 'RANGE' && (excludedates !== undefined && excludedates)) || (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE') || (from === 'DAYS-MONTHS-YEARS' && selectionformat === 'MULTIPLE-OR-SINGLE'))">
@@ -1894,7 +2793,7 @@ onBeforeUnmount(() => {
                         <div class="d-block p-0 m-0">
                           <input
                             v-model="(visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].ty[tyindex].checked"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             :disabled="(visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].ty[tyindex].status === 'ENABLE'? false : true"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
@@ -1922,7 +2821,7 @@ onBeforeUnmount(() => {
                         <div class="d-block p-0 m-0">
                           <input
                             v-model="(visiblecalendar as VisibleCalendarType).previous.ty[(visiblecalendar as VisibleCalendarType).previous.year][tyindex].checked"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             :disabled="((selectionformat==='RANGE' && excludedates) || (from === 'DAYS-MONTHS-YEARS' && selectionformat === 'MULTIPLE-OR-SINGLE'))? true : (visiblecalendar as VisibleCalendarType).previous.ty[(visiblecalendar as VisibleCalendarType).previous.year][tyindex].status === 'ENABLE'? false : true"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
@@ -1964,7 +2863,7 @@ onBeforeUnmount(() => {
                             ].months[
                               (visiblecalendar as VisibleCalendarType).previous.month
                             ] as YearMonthClickable<{}>['calendar']).tm[tmindex].status === 'ENABLE'? false : true"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
                             @change="handleTyTmClicked(
@@ -1983,7 +2882,7 @@ onBeforeUnmount(() => {
                         <template v-else>
                           <input
                             v-model="((visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm[tmindex].checked"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             :disabled="((selectionformat==='RANGE' && excludedates) || (from === 'DAYS-MONTHS-YEARS' && selectionformat === 'MULTIPLE-OR-SINGLE'))? true : ((visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm[tmindex].status === 'ENABLE'? false : true"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
@@ -2022,6 +2921,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <div
+            style="background-color: #E8E8E8;"
             id="previousvisiblecalendarbox"
             class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
           >
@@ -2030,28 +2930,28 @@ onBeforeUnmount(() => {
                 <div
                   :ref="($el) => assignWeekRef($el as HTMLDivElement, weekindex, 'PREVIOUS')"
                   style="background-color: transparent;"
-                  class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
+                  class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center"
                 >
                   <template v-if="((props.excludedates !== undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
                     <div
                       class="flex-w-12-dot-5 m-0 align-self-stretch" style="padding:0 2px 0 0;"
                     >
                       <div
-                        class="m-0 w-100 h-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+                        class="m-0 w-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
                         style="float: left;"
                         :style="
                           (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                          'padding:0.068rem 0;'
+                          'padding:0.068rem 0;line-height: 1.836em; height: 1.836em;'
                           : (
                             (from === 'DD-MM-YYYY')?
                             (
                               (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                              'padding:0.068rem 0;'
+                              'padding:0.068rem 0;line-height: 1.836em; height: 1.836em;'
                               :
-                              'padding:0;'
+                              'padding:0;line-height: 2.73em; height: 2.73em;'
                             )
                             :
-                            'padding:0;'
+                            'padding:0;line-height: 2.3rem; height: 2.3rem;'
                           )
                         "
                       >
@@ -2063,7 +2963,7 @@ onBeforeUnmount(() => {
                                 (visiblecalendar as VisibleCalendarType).previous.month
                               ] as YearMonthClickable<{}>['calendar']
                             ).weeks[weekindex].checked"
-                            class="m-0 p-0 border flex-w-100"
+                            class="m-0 p-0 border-black  flex-w-100 h-100"
                             :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
                             @change="weekCheckboxClicked((
                               (visiblecalendar as VisibleCalendarType).selections[
@@ -2081,28 +2981,13 @@ onBeforeUnmount(() => {
                             ).weeks[weekindex])"
                             type="checkbox"
                             style="float: left;"
-                            :style="
-                              (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.73em; height: 1.73em;'
-                              : (
-                                (from === 'DD-MM-YYYY')?
-                                (
-                                  (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                  'line-height: 1.73em; height: 1.73em;'
-                                  :
-                                  'line-height: 2.73em; height: 2.73em;'
-                                )
-                                :
-                                'line-height: 2.3rem; height: 2.3rem;'
-                              )
-                            "
                           />
                         </template>
                         <template v-else>
                           <input v-model="(
                               (visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
                             ).weeks[weekindex].checked"
-                            class="m-0 p-0 border flex-w-100"
+                            class="m-0 p-0 border-black  flex-w-100 h-100"
                             :key="(visiblecalendar as VisibleCalendarType).previous.year+'_'+(visiblecalendar as VisibleCalendarType).previous.month+'_'+weekindex"
                             @change="weekCheckboxClicked((
                               (visiblecalendar as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
@@ -2110,21 +2995,6 @@ onBeforeUnmount(() => {
                             :disabled="weekHasEnable(week)"
                             type="checkbox"
                             style="float: left;"
-                            :style="
-                              (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.73em; height: 1.73em;'
-                              : (
-                                (from === 'DD-MM-YYYY')?
-                                (
-                                  (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                  'line-height: 1.73em; height: 1.73em;'
-                                  :
-                                  'line-height: 2.73em; height: 2.73em;'
-                                )
-                                :
-                                'line-height: 2.3rem; height: 2.3rem;'
-                              )
-                            "
                           />
                         </template>
                       </div>
@@ -2147,17 +3017,17 @@ onBeforeUnmount(() => {
                     style="float: left;"
                     :style="
                       (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                      'line-height: 1.73em; height: 1.73em;'
+                      'line-height: 1.836em; height: 1.836em;'
                       : (
                         (from === 'DD-MM-YYYY')?
                         (
                           (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                          'line-height: 1.73em; height: 1.73em;'
+                          'line-height: 1.836em; height: 1.836em;'
                           :
                           'line-height: 2.73em; height: 2.73em;'
                         )
                         :
-                        'line-height: 2.3rem; height: 2.3rem;'
+                        'line-height: 2.34rem; height: 2.34rem;'
                       )
                     "
                   >
@@ -2170,20 +3040,20 @@ onBeforeUnmount(() => {
                       :disabled="day.status === 'DISABLE' ? true : false"
                       :class="[day.status === 'DISABLE'?'':'cursor-pointer']"
                       class="w-100"
-                      style="float: left;border: 1px solid #fff;"
+                      style="float: left;outline: 1px solid #fff;"
                       :style="
                         (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                        'line-height: 1.73em; height: 1.73em;'
+                        'line-height: 1.836em; height: 1.836em;'
                         : (
                           (from === 'DD-MM-YYYY')?
                           (
                             (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                            'line-height: 1.73em; height: 1.73em;'
+                            'line-height: 1.836em; height: 1.836em;'
                             :
                             'line-height: 2.73em; height: 2.73em;'
                           )
                           :
-                          'line-height: 2.3rem; height: 2.3rem;'
+                          'line-height: 2.34rem; height: 2.34rem;'
                         )
                       "
                     >
@@ -2199,17 +3069,17 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.73em; height: 1.73em;'
+                            'line-height: 1.836em; height: 1.836em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.73em; height: 1.73em;'
+                                'line-height: 1.836em; height: 1.836em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )
                               :
-                              'line-height: 2.3rem; height: 2.3rem;'
+                              'line-height: 2.34rem; height: 2.34rem;'
                             )
                           "
                         >
@@ -2262,17 +3132,17 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.73em; height: 1.73em;'
+                            'line-height: 1.836em; height: 1.836em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.73em; height: 1.73em;'
+                                'line-height: 1.836em; height: 1.836em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )
                               :
-                              'line-height: 2.3rem; height: 2.3rem;'
+                              'line-height: 2.34rem; height: 2.34rem;'
                             )
                           "
                         >
@@ -2298,44 +3168,137 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <div class="flex-w-50 align-self-stretch" style="padding: 0 2px">
-          <div
-            style="padding: 10px 0"
-            class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
-          >
-            <div class="flex-fill align-self-stretch">
-              <div
-                class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
-              >
-                <div class="flex-w-50 align-self-stretch">
-                  <a class="d-block font-family underline-none cursor-pointer">
-                    {{ months[(visiblecalendar as VisibleCalendarType).current.month] }}
-                  </a>
-                </div>
-                <div class="flex-w-50 align-self-stretch">
-                  <a class="d-block font-family underline-none cursor-pointer">
-                    {{ (visiblecalendar as VisibleCalendarType).current.year }}
-                  </a>
+          <div class="d-block">
+            <div
+              style="padding: 7.5px 0"
+              class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
+            >
+              <div class="flex-fill align-self-stretch">
+                <div
+                  class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100"
+                >
+                  <div class="flex-w-50 align-self-stretch">
+                    <button 
+                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      class="w-100 month-or-year-link btn cursor-pointer"
+                      style="padding: 2px 0"
+                    >
+                      <span class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100">
+                        <span class="flex-fill text-center font-family">
+                          {{ months[(visiblecalendar as VisibleCalendarType).current.month] }}
+                        </span>
+                        <span style="padding-right: 10px;">
+                          <img 
+                            :src="(monthoryeardropdownclicked === 'MONTH-CURRENT')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
+                            style="width:10px;height:10px;"
+                          />
+                        </span>
+                      </span>
+                    </button>
+                  </div>
+                  <div class="flex-w-50 align-self-stretch" style="padding-left:5px;padding-right: 5px;">
+                    <button 
+                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      class="w-100 month-or-year-link btn cursor-pointer"
+                      style="padding: 2px 0"
+                    >
+                      <span class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100">
+                        <span class="flex-fill text-center font-family">
+                          {{ (visiblecalendar as VisibleCalendarType).current.year }}
+                        </span>
+                        <span style="padding-right: 10px;">
+                          <img 
+                            :src="(monthoryeardropdownclicked === 'YEAR-CURRENT')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
+                            style="width:10px;height:10px;"
+                          />
+                        </span>
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="flex-grow-0 flex-shrink-0 align-self-stretch">
-              <a
-                @keypress.enter="clickNext()"
-                @click="clickNext()"
-                style="height: 25px; width: 25px; border-radius: 50%"
-                class="flex-box align-items-center justify-content-center underline-none cursor-pointer text-center"
-              >
-                <svg
-                  version="1.1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 32 32"
-                  style="height: 20px;width: 20px;color: black;stroke: currentcolor;fill: currentcolor;"
+              <div class="flex-grow-0 flex-shrink-0 align-self-stretch">
+                <a
+                  @keypress.enter="clickNext()"
+                  @click="clickNext()"
+                  :class="[
+                    (
+                      (visiblecalendar as VisibleCalendarType).current.year === (visiblecalendar as VisibleCalendarType).previous.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).current.year === (visiblecalendar as VisibleCalendarType).first.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).current.month === (visiblecalendar as VisibleCalendarType).first.month
+                    )? 
+                    '' : 'cursor-pointer'
+                  ]"
+                  style="height: 30px; width: 30px; border-radius: 50%;color: #fff;"
+                  :style="
+                    (
+                      (visiblecalendar as VisibleCalendarType).current.year === (visiblecalendar as VisibleCalendarType).previous.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).current.year === (visiblecalendar as VisibleCalendarType).first.year
+                      &&
+                      (visiblecalendar as VisibleCalendarType).current.month === (visiblecalendar as VisibleCalendarType).first.month
+                    )?
+                    'background-color: #E8E8E8;'
+                    :
+                    'background-color: green;'
+                  "
+                  class="flex-box align-items-center justify-content-center underline-none text-center"
                 >
-                  <path
-                    d="M12.943 24.943l8-8c0.521-0.521 0.521-1.365 0-1.885l-8-8c-0.52-0.52-1.365-0.52-1.885 0s-0.52 1.365 0 1.885l7.057 7.057c0 0-7.057 7.057-7.057 7.057-0.52 0.52-0.52 1.365 0 1.885s1.365 0.52 1.885 0z"
-                  ></path>
-                </svg>
-              </a>
+                  <svg
+                    version="1.1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 32 32"
+                    style="height: 20px;width: 20px;color: currentcolor;stroke: currentcolor;fill: currentcolor;"
+                  >
+                    <path
+                      d="M12.943 24.943l8-8c0.521-0.521 0.521-1.365 0-1.885l-8-8c-0.52-0.52-1.365-0.52-1.885 0s-0.52 1.365 0 1.885l7.057 7.057c0 0-7.057 7.057-7.057 7.057-0.52 0.52-0.52 1.365 0 1.885s1.365 0.52 1.885 0z"
+                    ></path>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <div class="d-block position-relative">
+              <template v-if="monthoryeardropdownclicked === 'MONTH-CURRENT' || monthoryeardropdownclicked === 'YEAR-CURRENT'">
+                <template v-if="monthoryeardropdownclicked === 'MONTH-CURRENT'">
+                  <template v-if="monthoryeardropdownclickcount === 1">
+                    <div
+                      style="background-color: #fff;"
+                      class="w-100 position-absolute l-0 t-0"
+                      :style="from === 'DD-MM-YYYY'? 'height: 293px;' : 'height: 340.9px;'"
+                    >
+                      <DropDownMonthPicker 
+                        :month="(visiblecalendar as VisibleCalendarType).current.month" 
+                        :year="(visiblecalendar as VisibleCalendarType).current.year"
+                        :counterpartmonth="(visiblecalendar as VisibleCalendarType).previous.month"
+                        :counterpartyear="(visiblecalendar as VisibleCalendarType).previous.year"
+                        iam="CURRENT"
+                      ></DropDownMonthPicker>
+                    </div>
+                  </template>
+                </template>
+                <template v-else>
+                  <template v-if="monthoryeardropdownclickcount === 1">
+                    <div
+                      style="background-color: #fff;"
+                      class="w-100 position-absolute l-0 t-0"
+                      :style="from === 'DD-MM-YYYY'? 'height: 293px;' : 'height: 340.9px;'"
+                    >
+                      <DropDownYearPicker
+                        from="YEAR-CURRENT"
+                        :currentyear="(visiblecalendar as VisibleCalendarType).current.year"
+                        :rowlimit="4" 
+                        :collimit="3" 
+                        @receive:year="($val: number) => { 
+                        }"
+                      ></DropDownYearPicker>
+                    </div>
+                  </template>
+                </template>
+              </template>
             </div>
           </div>
           <template v-if="((from === 'DD-MM-YYYY' && selectionformat === 'RANGE' && (excludedates !== undefined && excludedates)) || (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE') || (from === 'DAYS-MONTHS-YEARS' && selectionformat === 'MULTIPLE-OR-SINGLE'))">
@@ -2362,7 +3325,7 @@ onBeforeUnmount(() => {
                         <div class="d-block p-0 m-0">
                           <input
                             v-model="(visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].ty[tyindex].checked"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             :disabled="(visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].ty[tyindex].status === 'ENABLE'? false : true"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
@@ -2390,7 +3353,7 @@ onBeforeUnmount(() => {
                         <div class="d-block p-0 m-0">
                           <input
                             v-model="(visiblecalendar as VisibleCalendarType).current.ty[(visiblecalendar as VisibleCalendarType).current.year][tyindex].checked"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             :disabled="((selectionformat==='RANGE' && excludedates) || (from === 'DAYS-MONTHS-YEARS' && selectionformat === 'MULTIPLE-OR-SINGLE'))? true : (visiblecalendar as VisibleCalendarType).current.ty[(visiblecalendar as VisibleCalendarType).current.year][tyindex].status === 'ENABLE'? false : true"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
@@ -2432,7 +3395,7 @@ onBeforeUnmount(() => {
                             ].months[
                               (visiblecalendar as VisibleCalendarType).current.month
                             ] as YearMonthClickable<{}>['calendar']).tm[tmindex].status === 'ENABLE'? false : true"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
                             @change="handleTyTmClicked(
@@ -2451,7 +3414,7 @@ onBeforeUnmount(() => {
                         <template v-else>
                           <input
                             v-model="((visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm[tmindex].checked"
-                            class="m-0 p-0 border w-100"
+                            class="m-0 p-0 border-black  w-100"
                             :disabled="((selectionformat==='RANGE' && excludedates) || (from === 'DAYS-MONTHS-YEARS' && selectionformat === 'MULTIPLE-OR-SINGLE'))? true : ((visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']).tm[tmindex].status === 'ENABLE'? false : true"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
@@ -2491,6 +3454,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <div
+            style="background-color: #E8E8E8;"
             id="currentvisiblecalendarbox"
             class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
           >
@@ -2499,28 +3463,28 @@ onBeforeUnmount(() => {
                 <div
                   :ref="($el) => assignWeekRef($el as HTMLDivElement, weekindex, 'CURRENT')"
                   style="background-color: transparent;"
-                  class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
+                  class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center"
                 >
                   <template v-if="((props.excludedates!==undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')">
                     <div
                       class="flex-w-12-dot-5 m-0 align-self-stretch" style="padding:0 2px 0 0;"
                     >
                       <div
-                        class="m-0 w-100 h-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
+                        class="m-0 w-100 flex-box flex-direction-row flex-nowrap justify-content-center align-items-center"
                         style="float: left;"
                         :style="
                           (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                          'padding:0.068rem 0;'
+                          'padding:0.068rem 0;line-height: 1.836em; height: 1.836em;'
                           : (
                             (from === 'DD-MM-YYYY')?
                             (
                               (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                              'padding:0.068rem 0;'
+                              'padding:0.068rem 0;line-height: 1.836em; height: 1.836em;'
                               :
-                              'padding:0;'
+                              'padding:0;line-height: 2.73em; height: 2.73em;'
                             )
                             :
-                            'padding:0;'
+                            'padding:0;line-height: 2.3rem; height: 2.3rem;'
                           )
                         "
                       >
@@ -2532,7 +3496,7 @@ onBeforeUnmount(() => {
                                 (visiblecalendar as VisibleCalendarType).current.month
                               ] as YearMonthClickable<PositionTrackerType>['calendar']
                             ).weeks[weekindex].checked"
-                            class="m-0 p-0 border flex-w-100"
+                            class="m-0 p-0 border-black  flex-w-100 h-100"
                             :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
                             @change="weekCheckboxClicked((
                               (visiblecalendar as VisibleCalendarType).selections[
@@ -2550,29 +3514,13 @@ onBeforeUnmount(() => {
                             ).weeks[weekindex])"
                             type="checkbox"
                             style="float: left;"
-                            :style="
-                              (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.73em; height: 1.73em;'
-                              : (
-                                (from === 'DD-MM-YYYY')?
-                                (
-                                  (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                  'line-height: 1.73em; height: 1.73em;'
-                                  :
-                                  'line-height: 2.73em; height: 2.73em;'
-                                )
-                                :
-                                'line-height: 2.3rem; height: 2.3rem;'
-                              )
-                            "
                           />
                         </template>
                         <template v-else>
                           <input v-model="(
-                                (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                              ).weeks[weekindex].checked
-                            "
-                            class="m-0 p-0 border flex-w-100" 
+                              (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                            ).weeks[weekindex].checked"
+                            class="m-0 p-0 border-black  flex-w-100 h-100" 
                             :key="(visiblecalendar as VisibleCalendarType).current.year+'_'+(visiblecalendar as VisibleCalendarType).current.month+'_'+weekindex"
                             @change="weekCheckboxClicked((
                                 (visiblecalendar as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
@@ -2581,21 +3529,6 @@ onBeforeUnmount(() => {
                             :disabled="weekHasEnable(week)"
                             type="checkbox"
                             style="float: left;"
-                            :style="
-                              (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                              'line-height: 1.73em; height: 1.73em;'
-                              : (
-                                (from === 'DD-MM-YYYY')?
-                                (
-                                  (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                  'line-height: 1.73em; height: 1.73em;'
-                                  :
-                                  'line-height: 2.73em; height: 2.73em;'
-                                )
-                                :
-                                'line-height: 2.3rem; height: 2.3rem;'
-                              )
-                            "
                           />
                         </template>
                       </div>
@@ -2618,17 +3551,17 @@ onBeforeUnmount(() => {
                     style="float: left;"
                     :style="
                       (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                      'line-height: 1.73em; height: 1.73em;'
+                      'line-height: 1.836em; height: 1.836em;'
                       : (
                         (from === 'DD-MM-YYYY')?
                         (
                           (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                          'line-height: 1.73em; height: 1.73em;'
+                          'line-height: 1.836em; height: 1.836em;'
                           :
                           'line-height: 2.73em; height: 2.73em;'
                         )
                         :
-                        'line-height: 2.3rem; height: 2.3rem;'
+                        'line-height: 2.34rem; height: 2.34rem;'
                       )
                     "
                   >
@@ -2641,20 +3574,20 @@ onBeforeUnmount(() => {
                       :disabled="day.status === 'DISABLE' ? true : false"
                       class="w-100"
                       :class="[day.status === 'DISABLE'?'':'cursor-pointer']"
-                      style="float: left;border: 1px solid #fff;"
+                      style="float: left;outline: 1px solid #fff;"
                       :style="
                         (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                        'line-height: 1.73em; height: 1.73em;'
+                        'line-height: 1.836em; height: 1.836em;'
                         : (
                           (from === 'DD-MM-YYYY')?
                           (
                             (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                            'line-height: 1.73em; height: 1.73em;'
+                            'line-height: 1.836em; height: 1.836em;'
                             :
                             'line-height: 2.73em; height: 2.73em;'
                           )
                           :
-                          'line-height: 2.3rem; height: 2.3rem;'
+                          'line-height: 2.34rem; height: 2.34rem;'
                         )
                       "
                     >
@@ -2670,17 +3603,17 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.73em; height: 1.73em;'
+                            'line-height: 1.836em; height: 1.836em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.73em; height: 1.73em;'
+                                'line-height: 1.836em; height: 1.836em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )
                               :
-                              'line-height: 2.3rem; height: 2.3rem;'
+                              'line-height: 2.34rem; height: 2.34rem;'
                             )
                           "
                         >
@@ -2733,17 +3666,17 @@ onBeforeUnmount(() => {
                         <div
                           :style="
                             (from === 'DD-MM-YYYY' && selectionformat === 'MULTIPLE-OR-SINGLE')?
-                            'line-height: 1.73em; height: 1.73em;'
+                            'line-height: 1.836em; height: 1.836em;'
                             : (
                               (from === 'DD-MM-YYYY')?
                               (
                                 (props.excludedates!==undefined && props.excludedates && selectionformat === 'RANGE')?
-                                'line-height: 1.73em; height: 1.73em;'
+                                'line-height: 1.836em; height: 1.836em;'
                                 :
                                 'line-height: 2.73em; height: 2.73em;'
                               )
                               :
-                              'line-height: 2.3rem; height: 2.3rem;'
+                              'line-height: 2.34rem; height: 2.34rem;'
                             )
                           "
                         >
@@ -2780,5 +3713,8 @@ label input + span {
 input:checked + span {
   color: #ffffff;
   text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+}
+.month-or-year-link:hover {
+  background-color: #E8E8E8;
 }
 </style>

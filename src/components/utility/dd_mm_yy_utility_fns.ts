@@ -1,11 +1,11 @@
 import {
   getDate,
-  getISOWeeksInYear,
   getWeeksInMonth,
   getDaysInMonth,
   getMonth,
   startOfWeek,
   startOfISOWeek,
+  endOfISOWeek,
   getWeekYear,
   getISOWeekYear,
   format,
@@ -14,9 +14,6 @@ import {
   differenceInCalendarYears,
   differenceInCalendarISOWeekYears,
 } from "date-fns";
-import type {
-  DateType
-} from "../types/SupportedDatatypesTypeDeclaration";
 import {
   nextTick,
   type ShallowRef,
@@ -138,16 +135,10 @@ export function getYearMonthAndDate(isoweek: boolean, pastedorclickeddate: strin
     day,
     teststringdate = "";
   if (isclickedstatus) {
-    if (isoweek) {
       let splitedfdate = pastedorclickeddate.split("-");
       year = splitedfdate[0];
       month = parseInt(splitedfdate[1]) - 1;
       day = parseInt(splitedfdate[2]);
-    } else {
-      year = getWeekYear(new Date(pastedorclickeddate));
-      month = getMonth(new Date(pastedorclickeddate));
-      day = getDate(new Date(pastedorclickeddate));
-    }
   } else {
     try {
       let fdate = format(new Date(pastedorclickeddate), "yyyy-MM-dd"),
@@ -575,16 +566,59 @@ export function determineMonthAndWeek(isoweek: boolean, yearandweek: {year: numb
   let week = 0, monthcontainingweek = -1, mainweek = -1;
   for(let month=0; month<12; month++) {
     if(isoweek) {
-      if(
-        differenceInCalendarDays(
-          new Date(yearandweek.year, month, 1),
-          startOfISOWeek(new Date(yearandweek.year, month, 1))
-        ) > 0
-      ) {
-        week+=(getWeeksInMonth(new Date(yearandweek.year, month, 1)) - 1);
+      let vc: VisibleCalendarType['selections'] = {};
+      if(yearandweek.year in (vc as VisibleCalendarType['selections'])) {
+        if(!(month in (vc as VisibleCalendarType['selections'])[yearandweek.year].months)) {
+          (vc as VisibleCalendarType['selections'])[yearandweek.year].months = {
+            ...(vc as VisibleCalendarType['selections'])[yearandweek.year].months,
+            [month]: buildCalendar(
+              yearandweek.year,
+              month,
+              'SELECTIONS',
+              isoweek,
+              ''+startOfISOWeek(new Date(yearandweek.year, 0, 1)),
+              ''+endOfISOWeek(new Date(yearandweek.year, 11, getDaysInMonth(new Date(yearandweek.year, 11, 1))))
+            )
+          };
+        }
       }
       else {
-        week+=getWeeksInMonth(new Date(yearandweek.year, month, 1));
+        (vc as VisibleCalendarType['selections']) = {
+          ...(vc as VisibleCalendarType['selections']),
+          [yearandweek.year]: {
+            months: {
+              [month]: buildCalendar(
+                yearandweek.year,
+                month,
+                'SELECTIONS',
+                isoweek,
+                ''+startOfISOWeek(new Date(yearandweek.year, 0, 1)),
+                ''+endOfISOWeek(new Date(yearandweek.year, 11, getDaysInMonth(new Date(yearandweek.year, 11, 1))))
+              )
+            }
+          }
+        } as VisibleCalendarType['selections'];
+      }
+      if((vc as VisibleCalendarType['selections'])[yearandweek.year].months[month].weeks[0].days[0].day !== 1) {
+        week+=(Object.keys(
+          (vc as VisibleCalendarType['selections'])[yearandweek.year].months[month].weeks
+        ).length - 1);
+      }
+      else {
+        week+=(Object.keys(
+          (vc as VisibleCalendarType['selections'])[yearandweek.year].months[month].weeks
+        ).length);
+      }
+      if(yearandweek.week <= week) {
+        mainweek = (
+          (
+            Object.keys(
+              (vc as VisibleCalendarType['selections'])[yearandweek.year].months[month].weeks
+            ).length
+          ) - (week - yearandweek.week)
+        )-1;
+        monthcontainingweek = month;
+        break;
       }
     }
     else {
@@ -599,8 +633,6 @@ export function determineMonthAndWeek(isoweek: boolean, yearandweek: {year: numb
       else {
         week+=getWeeksInMonth(new Date(yearandweek.year, month, 1));
       }
-    }
-    if(week > 0) {
       if(yearandweek.week <= week) {
         mainweek = (getWeeksInMonth(new Date(yearandweek.year, month, 1)) - (week - yearandweek.week))-1;
         monthcontainingweek = month;
@@ -697,7 +729,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate
+              maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
             ),
           };
           if(month === 0) {
@@ -713,7 +746,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     },
                     ty: [
@@ -738,7 +772,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -762,7 +797,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -788,7 +824,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                           "SELECTIONS",
                           isoweek,
                           mindate,
-                          maxdate 
+                          maxdate,
+                          visiblecalendar as ShallowRef<VisibleCalendarType>
                         ),
                       },
                       ty: [
@@ -813,7 +850,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     };
                   }
@@ -830,7 +868,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     };
                   }
@@ -853,7 +892,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -869,7 +909,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     };
                   }
@@ -892,7 +933,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     },
                     ty: [
@@ -917,7 +959,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   }
                 }
@@ -941,7 +984,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -967,7 +1011,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                           "SELECTIONS",
                           isoweek,
                           mindate,
-                          maxdate 
+                          maxdate,
+                          visiblecalendar as ShallowRef<VisibleCalendarType>
                         ),
                       },
                       ty: [
@@ -992,7 +1037,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     };
                   }
@@ -1009,7 +1055,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     };
                   }
@@ -1032,7 +1079,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -1048,7 +1096,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     };
                   }
@@ -1069,7 +1118,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate 
+                maxdate,
+                visiblecalendar as ShallowRef<VisibleCalendarType>
               ),
             },
             ty: [
@@ -1096,7 +1146,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   },
                   ty: [
@@ -1121,7 +1172,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate 
+                    maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
                   ),
                 };
               }
@@ -1143,7 +1195,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate 
+                    maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
                   ),
                 };
               }
@@ -1169,7 +1222,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                         "SELECTIONS",
                         isoweek,
                         mindate,
-                        maxdate 
+                        maxdate,
+                        visiblecalendar as ShallowRef<VisibleCalendarType>
                       ),
                     },
                     ty: [
@@ -1194,7 +1248,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -1211,7 +1266,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -1234,7 +1290,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate 
+                    maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
                   ),
                 };
               }
@@ -1250,7 +1307,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                       "SELECTIONS",
                       isoweek,
                       mindate,
-                      maxdate 
+                      maxdate,
+                      visiblecalendar as ShallowRef<VisibleCalendarType>
                     ),
                   };
                 }
@@ -1270,7 +1328,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate 
+              maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
             ),
           },
           ty: [
@@ -1296,7 +1355,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate 
+                  maxdate,
+                  visiblecalendar as ShallowRef<VisibleCalendarType>
                 ),
               },
               ty: [
@@ -1326,7 +1386,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate 
+                maxdate,
+                visiblecalendar as ShallowRef<VisibleCalendarType>
               ),
             };
           }
@@ -1350,7 +1411,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate 
+                    maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
                   ),
                 },
                 ty: [
@@ -1375,7 +1437,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate 
+                  maxdate,
+                  visiblecalendar as ShallowRef<VisibleCalendarType>
                 ),
               };
             }
@@ -1396,7 +1459,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate 
+                maxdate,
+                visiblecalendar as ShallowRef<VisibleCalendarType>
               ),
             };
           }
@@ -1410,7 +1474,8 @@ export function selectOrDeselectDaysInWeekForMultipleSelection(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate 
+                  maxdate,
+                  visiblecalendar as ShallowRef<VisibleCalendarType>
                 ),
               };
             }
@@ -4392,7 +4457,7 @@ function deselectOrSelectTyTmForWeekBoxClick(
           (
             visiblecalendar.value as VisibleCalendarType
           ).selections[
-          year
+            year
           ].months[month] as YearMonthClickable<{}>['calendar']
         ).weeks[week].days[d].status === 'ENABLE'
         &&
@@ -4435,7 +4500,7 @@ function deselectOrSelectTyTmForWeekBoxClick(
         minyear = ''+getWeekYear(new Date(mindate));
         maxyear = ''+getWeekYear(new Date(maxdate));
       }
-      maxmonth = ''+getMonth(new Date(mindate));
+      maxmonth = ''+getMonth(new Date(maxdate));
       minmonth = ''+getMonth(new Date(mindate));
 
       if(year > parseInt(minyear) && year < parseInt(maxyear)) {
@@ -4472,7 +4537,7 @@ function deselectOrSelectTyTmForWeekBoxClick(
         (
           visiblecalendar.value as VisibleCalendarType
         ).selections[
-        year
+          year
         ].months[month] as YearMonthClickable<{}>['calendar']
       ).weeks[week].days
     ) {
@@ -7471,19 +7536,6 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                         ).length - 1
                       )
                     ].checked = false;
-                    console.log(((visiblecalendar.value as VisibleCalendarType).selections[year-1].months[
-                      11
-                    ] as YearMonthClickable<{}>['calendar']).weeks[
-                      (
-                        Object.values(
-                          ((visiblecalendar.value as VisibleCalendarType).selections[
-                            year-1
-                          ].months[
-                            11
-                          ] as YearMonthClickable<{}>['calendar']).weeks
-                        ).length - 1
-                      )
-                    ]);
                     deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year-1, 
@@ -7589,7 +7641,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(
+                      visiblecalendar, 
+                      year, 
+                      month, 
+                      week, 
+                      'SELECT'
+                    );
                   }
                 }
                 else {
@@ -7630,7 +7688,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(
+                      visiblecalendar, 
+                      year, 
+                      month, 
+                      week, 
+                      'SELECT'
+                    );
                   }
                 }
               }
@@ -7672,7 +7736,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(
+                    visiblecalendar, 
+                    year, 
+                    month, 
+                    week, 
+                    'SELECT'
+                  );
                 }
               }
             }
@@ -7780,12 +7850,16 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                   }
                   else {
                     
-                    if(weekHasHighlightedOrSelected(
-                    ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
-                      month + 1
-                    ] as YearMonthClickable<{}>['calendar']).weeks[
-                      0
-                    ])
+                    if(
+                      weekHasHighlightedOrSelected(
+                        (
+                          (visiblecalendar.value as VisibleCalendarType).selections[year].months[
+                            month + 1
+                          ] as YearMonthClickable<{}>['calendar']
+                        ).weeks[
+                          0
+                        ]
+                      )
                     ) {
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month + 1
@@ -7793,7 +7867,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month+1, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(
+                      visiblecalendar, 
+                      year, 
+                      month+1, 
+                      0, 
+                      'SELECT'
+                    );
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -7807,7 +7887,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                         week
                       ].checked = true;
                     }
-                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(
+                      visiblecalendar, 
+                      year, 
+                      month, 
+                      week, 
+                      'SELECT'
+                    );
                   }
                 }
                 else {
@@ -7890,7 +7976,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                       week
                     ].checked = true;
                   }
-                  deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year, month, week, 'SELECT');
+                  deselectOrSelectTyTmForWeekBoxClick(
+                    visiblecalendar, 
+                    year, 
+                    month, 
+                    week, 
+                    'SELECT'
+                  );
                 }
               }
             }
@@ -8239,13 +8331,6 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                     ] as YearMonthClickable<{}>['calendar']).weeks[
                       0
                     ].checked = false;
-                    console.log(
-                      ((visiblecalendar.value as VisibleCalendarType).selections[year+1].months[
-                        0
-                      ] as YearMonthClickable<{}>['calendar']).weeks[
-                        0
-                      ]
-                    );
                     deselectOrSelectTyTmForWeekBoxClick(
                       visiblecalendar, 
                       year+1, 
@@ -8295,7 +8380,13 @@ export function highlightOrDeselectDaysInWeekForRangeSelection(
                         0
                       ].checked = true;
                     }
-                    deselectOrSelectTyTmForWeekBoxClick(visiblecalendar, year+1, 0, 0, 'SELECT');
+                    deselectOrSelectTyTmForWeekBoxClick(
+                      visiblecalendar, 
+                      year+1, 
+                      0, 
+                      0, 
+                      'SELECT'
+                    );
                     if(weekHasHighlightedOrSelected(
                       ((visiblecalendar.value as VisibleCalendarType).selections[year].months[
                         month
@@ -9205,6 +9296,10 @@ function handleRangeSelection(
           (
             (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
           ).weeks[week].days[day].status === 'ENABLE'
+          &&
+          (
+            (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+          ).weeks[week].days[day].readonlystatus === 'ENABLE'
         ) {
           if(params.value.rangeselectcount === 0) {
             deselectAll(visiblecalendar);
@@ -9221,8 +9316,12 @@ function handleRangeSelection(
           if(params.value.rangeselectcount === 1) {
             deselectAll(visiblecalendar);
             (
-              (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
+              (visiblecalendar.value as VisibleCalendarType).selections[
+                year
+              ].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
             ).weeks[week].days[day].selected = "SELECTED";
+
+            triggerRef(visiblecalendar);
             params.value.rangefirstselection = {
               date: (
                 (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
@@ -10624,7 +10723,8 @@ export function handleDateSelectHighlightDeselect(
             "SELECTIONS",
             isoweek,
             mindate,
-            maxdate 
+            maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
           ),
         } as VisibleCalendarType['selections'][number]['months'];
         handleDateSelectHighlightDeselect(
@@ -10650,7 +10750,8 @@ export function handleDateSelectHighlightDeselect(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate 
+              maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
             ),
           },
           ty: [
@@ -10686,7 +10787,8 @@ export function handleDateSelectHighlightDeselect(
             "SELECTIONS",
             isoweek,
             mindate,
-            maxdate 
+            maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
           ),
         },
         ty: [
@@ -11519,7 +11621,8 @@ export function handleTyTm(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate 
+                maxdate,
+                visiblecalendar as ShallowRef<VisibleCalendarType>
               ),
             };
             (visiblecalendar.value as VisibleCalendarType).selections[year].months[
@@ -11539,7 +11642,8 @@ export function handleTyTm(
                     "SELECTIONS",
                     isoweek,
                     mindate,
-                    maxdate 
+                    maxdate,
+                    visiblecalendar as ShallowRef<VisibleCalendarType>
                   ),
                 },
                 ty: [
@@ -11570,7 +11674,8 @@ export function handleTyTm(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate 
+                  maxdate,
+                  visiblecalendar as ShallowRef<VisibleCalendarType>
                 ),
               },
               ty: [
@@ -11764,7 +11869,8 @@ export function handleTyTm(
                 "SELECTIONS",
                 isoweek,
                 mindate,
-                maxdate 
+                maxdate,
+                visiblecalendar as ShallowRef<VisibleCalendarType>
               ),
             };
           }
@@ -11780,7 +11886,8 @@ export function handleTyTm(
                   "SELECTIONS",
                   isoweek,
                   mindate,
-                  maxdate 
+                  maxdate,
+                  visiblecalendar as ShallowRef<VisibleCalendarType>
                 ),
               };
             }
@@ -11812,7 +11919,8 @@ export function handleTyTm(
               "SELECTIONS",
               isoweek,
               mindate,
-              maxdate 
+              maxdate,
+              visiblecalendar as ShallowRef<VisibleCalendarType>
             ),
           };
         }
@@ -12007,7 +12115,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months)) {
           (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months = {
             ...(visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months,
-            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate )
+            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
           };
         }
       }
@@ -12017,7 +12125,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
         if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months)) {
           (visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months = {
             ...(visiblecalendar.value as VisibleCalendarType).selections[rfirstselection.year].months,
-            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate )
+            [j]: buildCalendar(rfirstselection.year, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
           };
         }
       }
@@ -12032,7 +12140,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
               if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                 (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                   ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                  [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate )
+                  [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                 };
               }
             }
@@ -12045,7 +12153,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                     ...(visiblecalendar.value as VisibleCalendarType).selections,
                     [i]: {
                       months: {
-                        [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate)
+                        [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                       },
                       ty: [
                         {checked: false, status: 'ENABLE'}, 
@@ -12063,7 +12171,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                   if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                     (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                       ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate)
+                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                     };
                   }
                 }
@@ -12072,7 +12180,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                 if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                   (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                     ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate)
+                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                   };
                 }
               }
@@ -12087,7 +12195,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                   ...(visiblecalendar.value as VisibleCalendarType).selections,
                   [i]: {
                     months: {
-                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate),
+                      [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>),
                     },
                     ty: [
                       {checked: false, status: 'ENABLE'}, 
@@ -12105,7 +12213,7 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
                 if(!(j in (visiblecalendar.value as VisibleCalendarType).selections[i].months)) {
                   (visiblecalendar.value as VisibleCalendarType).selections[i].months = {
                     ...(visiblecalendar.value as VisibleCalendarType).selections[i].months,
-                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate )
+                    [j]: buildCalendar(i, j, "SELECTIONS", isoweek, mindate, maxdate, visiblecalendar as ShallowRef<VisibleCalendarType>)
                   };
                 }
               }
@@ -12633,7 +12741,51 @@ export function findRangeSelectionMaxAndMinDate(params: ShallowRef<RangeSelectio
 export function calculateWeeksInAYear(year: number, isoweek: boolean) {
   let numberofweeksinayear = 0;
   if(isoweek) {
-    numberofweeksinayear = getISOWeeksInYear(year);
+    let vc: VisibleCalendarType['selections'] = {};
+    for(let month=0; month<12; month++) {
+      if(year in (vc as VisibleCalendarType['selections'])) {
+        if(!(month in (vc as VisibleCalendarType['selections'])[year].months)) {
+          (vc as VisibleCalendarType['selections'])[year].months = {
+            ...(vc as VisibleCalendarType['selections'])[year].months,
+            [month]: buildCalendar(
+              year,
+              month,
+              'SELECTIONS',
+              isoweek,
+              ''+startOfISOWeek(new Date(year, 0, 1)),
+              ''+endOfISOWeek(new Date(year, 11, getDaysInMonth(new Date(year, 11, 1))))
+            )
+          };
+        }
+      }
+      else {
+        (vc as VisibleCalendarType['selections']) = {
+          ...(vc as VisibleCalendarType['selections']),
+          [year]: {
+            months: {
+              [month]: buildCalendar(
+                year,
+                month,
+                'SELECTIONS',
+                isoweek,
+                ''+startOfISOWeek(new Date(year, 0, 1)),
+                ''+endOfISOWeek(new Date(year, 11, getDaysInMonth(new Date(year, 11, 1))))
+              )
+            }
+          }
+        } as VisibleCalendarType['selections'];
+      }
+      if((vc as VisibleCalendarType['selections'])[year].months[month].weeks[0].days[0].day !== 1) {
+        numberofweeksinayear+=(Object.keys(
+          (vc as VisibleCalendarType['selections'])[year].months[month].weeks
+        ).length - 1);
+      }
+      else {
+        numberofweeksinayear+=(Object.keys(
+          (vc as VisibleCalendarType['selections'])[year].months[month].weeks
+        ).length);
+      }
+    }
   }
   else {
     for(let month=0; month<12; month++) {
@@ -12650,5 +12802,6 @@ export function calculateWeeksInAYear(year: number, isoweek: boolean) {
       }
     }
   }
+
   return numberofweeksinayear;
 }

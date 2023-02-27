@@ -82,16 +82,16 @@ onBeforeMount(() => {
             class="flex-box flex-direction-row w-100 h-100 flex-nowrap justify-content-center align-items-center p-0 m-0"
             @click.self="() => { accessibility.refreshundoredoclosecontainerref?.focus(); accessibility.refreshundoredoclosetabindex = true; accessibility.updateAccessibility(); }"
           >
-            <div class="flex-w-25 align-self-stretch border text-center p-1">
+            <div class="flex-w-25 align-self-stretch border-black text-center p-1">
               <RefreshUndoRedoCloseButton btn-img-name="refresh.png" btn-title="Refresh"></RefreshUndoRedoCloseButton> 
             </div>
-            <div class="flex-w-25 align-self-stretch border text-center p-1">
+            <div class="flex-w-25 align-self-stretch border-black text-center p-1">
               <RefreshUndoRedoCloseButton btn-img-name="undo.png" btn-title="Undo"></RefreshUndoRedoCloseButton> 
             </div>
-            <div class="flex-w-25 align-self-stretch border text-center p-1">
+            <div class="flex-w-25 align-self-stretch border-black text-center p-1">
               <RefreshUndoRedoCloseButton btn-img-name="redo.png" btn-title="Redo"></RefreshUndoRedoCloseButton> 
             </div>
-            <div class="flex-w-25 align-self-stretch border text-center p-1">
+            <div class="flex-w-25 align-self-stretch border-black text-center p-1">
               <RefreshUndoRedoCloseButton @modal:close="($val: boolean) => emits('modal:close', $val)" btn-img-name="close.png" btn-title="Close"></RefreshUndoRedoCloseButton> 
             </div>
           </div>

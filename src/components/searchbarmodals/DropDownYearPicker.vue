@@ -3,7 +3,7 @@ import { inject, onBeforeMount, shallowRef, type ShallowRef, ref, computed, trig
 import type { RangeSelectionParamsType, VisibleCalendarType } from "../types/dd_mm_yy_types";
 import { calculateRemainder } from "../utility/days_months_years_utility_fns";
 
-type JustAYearPickerType = {
+type DropdownYearPickerType = {
   [page: number]: {
     [row: number]: {
       [col: number]: {
@@ -21,18 +21,22 @@ const
     selections: VisibleCalendarType['selections'];
     from: 'DAYS-MONTHS-YEARS' | 'DD-MM-YYYY';
     rangeselectionparams: RangeSelectionParamsType;
+    maxdate: string;
+    mindate: string;
   },
   props = defineProps<{
-    minyear: number;
-    maxyear: number;
+    from?: 'YEAR-PREVIOUS' | 'YEAR-CURRENT' | undefined;
+    currentyear?: number | undefined;
     rowlimit: number;
     collimit: number;
   }>(),
   emits = defineEmits<{
     (e: "receive:year", action: number): void;
   }>(),
-  justayearpickerarray = shallowRef<JustAYearPickerType>(),
-  page = ref(0)
+  justayearpickerarray = shallowRef<DropdownYearPickerType>(),
+  page = ref(0),
+  maxyear = parseInt((jumptoweek.maxdate).split('-')[0]),
+  minyear = parseInt((jumptoweek.mindate).split('-')[0])
 ;
 
 let previous = {r: -1, c: -1, p: -1};
@@ -44,16 +48,15 @@ function fillJustAYearPickerArray(
   collimit: number
 ) {
 
-  let index = 0, row = 0, col = 0, counter = 0, years = shallowRef<JustAYearPickerType>();
+  let index = 0, row = 0, col = 0, counter = 0, years = shallowRef<DropdownYearPickerType>();
 
   //let remainder = calculateRemainder(2022, 1945, 27), maxyear = 2022 + remainder;
   //for(let year=1945; year<=maxyear; year++) {
-
   let 
     remainder = calculateRemainder(
       mxyear, 
       mnyear,
-      27 /*row = 3 * col = 9 = 27 */
+      (rowlimit*collimit)
     ), 
     maxyear = mxyear + remainder,
     minyear = mnyear
@@ -140,7 +143,7 @@ function fillJustAYearPickerArray(
                 )
               )
             }
-          } as JustAYearPickerType[number][number];
+          } as DropdownYearPickerType[number][number];
         }
         else {
           years.value[index] = {
@@ -222,7 +225,7 @@ function fillJustAYearPickerArray(
                 )
               }
             }
-          } as JustAYearPickerType[number];
+          } as DropdownYearPickerType[number];
         }
         col++;
       }
@@ -308,7 +311,7 @@ function fillJustAYearPickerArray(
               }
             }
           }
-        } as JustAYearPickerType;
+        } as DropdownYearPickerType;
         col++;
       }
     }
@@ -393,7 +396,7 @@ function fillJustAYearPickerArray(
             }
           }
         }
-      } as JustAYearPickerType;
+      } as DropdownYearPickerType;
       col++;
     }
     if(col === collimit) {
@@ -412,13 +415,17 @@ function fillJustAYearPickerArray(
 }
 
 function selectYearAndEmitSignal(rindex: number, cindex: number) {
-  if((justayearpickerarray.value as JustAYearPickerType)[page.value][rindex][cindex].status === 'ENABLE') {
+  if(
+    props.currentyear !== (justayearpickerarray.value as DropdownYearPickerType)[page.value][rindex][cindex].year
+    &&
+    (justayearpickerarray.value as DropdownYearPickerType)[page.value][rindex][cindex].status === 'ENABLE'
+  ) {
     if(previous.r !== -1 && previous.c !== -1 && previous.p !== -1) {
-      (justayearpickerarray.value as JustAYearPickerType)[previous.p][previous.r][previous.c].selected = 'DESELECTED';
+      (justayearpickerarray.value as DropdownYearPickerType)[previous.p][previous.r][previous.c].selected = 'DESELECTED';
     }
-    emits('receive:year', (justayearpickerarray.value as JustAYearPickerType)[page.value][rindex][cindex].year);
-    (justayearpickerarray.value as JustAYearPickerType)[page.value][rindex][cindex].selected = 
-    (justayearpickerarray.value as JustAYearPickerType)[page.value][rindex][cindex].selected === 'DESELECTED'? 'SELECTED' : 'DESELECTED';
+    emits('receive:year', (justayearpickerarray.value as DropdownYearPickerType)[page.value][rindex][cindex].year);
+    (justayearpickerarray.value as DropdownYearPickerType)[page.value][rindex][cindex].selected = 
+    (justayearpickerarray.value as DropdownYearPickerType)[page.value][rindex][cindex].selected === 'DESELECTED'? 'SELECTED' : 'DESELECTED';
     triggerRef(justayearpickerarray);
     previous = {
       r: rindex,
@@ -431,17 +438,18 @@ function selectYearAndEmitSignal(rindex: number, cindex: number) {
 onBeforeMount(() => {
   justayearpickerarray.value = (
     fillJustAYearPickerArray(
-      props.maxyear, 
-      props.minyear,
+      maxyear, 
+      minyear,
       props.rowlimit,
       props.collimit
-    ) as ShallowRef<JustAYearPickerType>
-  ).value as JustAYearPickerType;
+    ) as ShallowRef<DropdownYearPickerType>
+  ).value as DropdownYearPickerType;
+  triggerRef(justayearpickerarray);
   page.value = Object.keys(justayearpickerarray.value).length - 1;
 });
 
 const compYearsLength = computed(() => {
-  return Object.keys(justayearpickerarray.value as JustAYearPickerType).length;
+  return Object.keys(justayearpickerarray.value as DropdownYearPickerType).length;
 });
 
 </script>
@@ -529,7 +537,7 @@ const compYearsLength = computed(() => {
       style="padding: 2px 0;"
       class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
     >
-      <template v-for="(row, rindex) in (justayearpickerarray as JustAYearPickerType)[page]">
+      <template v-for="(row, rindex) in (justayearpickerarray as DropdownYearPickerType)[page]">
         <template v-for="(col, cindex) in row">
           <div
             class="flex-w-100-over-3 overflow-hidden"
@@ -541,7 +549,17 @@ const compYearsLength = computed(() => {
               @click="selectYearAndEmitSignal(rindex, cindex)"
               class="w-100"
               style="float: left;"
-              :style="jumptoweek.from === 'DAYS-MONTHS-YEARS'? ' line-height: 2.3em; height: 2.3em' : ' line-height: 2em; height: 2em'"
+              :style="
+                (props.from !== undefined && (props.from === 'YEAR-PREVIOUS' || props.from === 'YEAR-CURRENT'))? 
+                (
+                  jumptoweek.from === 'DAYS-MONTHS-YEARS'?
+                  'line-height: 4.565em; height: 4.565em;'
+                  :
+                  'line-height: 3.8em; height: 3.8em;'
+                ) : (
+                  jumptoweek.from === 'DAYS-MONTHS-YEARS'? 'line-height: 2.32em; height: 2.32em;' : 'line-height: 2em; height: 2em;'
+                )
+              "
             >
               <input
                 @keypress.enter.stop=""
@@ -552,16 +570,18 @@ const compYearsLength = computed(() => {
                 style="pointer-events: auto"
               />
               <span
-                :class="[col.status === 'ENABLE'? 'cursor-pointer' : '']"
+                :class="[(props.currentyear !== undefined && col.year === props.currentyear)? '' : (col.status === 'ENABLE'? 'cursor-pointer' : '')]"
                 class="font-family text-center d-block letter-spacing h-100"
                 style="font-size: 1rem;"
                 :style="
-                  col.status === 'ENABLE' ? (
-                    col.selected === 'SELECTED'?
-                    'background-color: green; color: #fff;'
-                    :
-                    'background-color: #E8E8E8; color: black; text-shadow:none;'
-                  ) : col.status === 'LOCKED' ? 'text-shadow: none; background-color: yellow; color: #fff;' : 'background-color: #fff; color: #fff; text-shadow:none;'
+                  (props.currentyear !== undefined && col.year === props.currentyear)? 'text-shadow: none; background-color: yellow; color: #fff;' : (
+                    col.status === 'ENABLE' ? (
+                      col.selected === 'SELECTED'?
+                      'background-color: green; color: #fff;'
+                      :
+                      'background-color: #E8E8E8; color: black; text-shadow:none;'
+                    ) : col.status === 'LOCKED' ? 'text-shadow: none; background-color: yellow; color: #fff;' : 'background-color: #fff; color: #fff; text-shadow:none;'
+                  )
                 "
               >
                 {{ col.year }}

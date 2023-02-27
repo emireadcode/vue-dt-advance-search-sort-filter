@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 import { triggerRef, shallowRef, ref, inject, nextTick } from "vue";
 import { buildCalendar, calculateWeeksInAYear, determineMonthAndWeek, weekHasEnable } from "../utility/dd_mm_yy_utility_fns";
-import JustAYearPicker from "./JustAYearPicker.vue";
-import type { RangeSelectionParamsType, VisibleCalendarType, YearMonthClickable } from "../types/dd_mm_yy_types";
+import DropDownYearPicker from "./DropDownYearPicker.vue";
+import type { RangeSelectionParamsType, VisibleCalendarType } from "../types/dd_mm_yy_types";
 
-type JustAWeekPickerType = {
+type DropDownYearPickerType = {
   [row: number]: {
     [col: number]: {
       week: number;
       ref: HTMLLabelElement | null;
-      status: 'ENABLE' | 'DISABLE';
+      status: 'ENABLE' | 'DISABLE' | 'LOCKED';
       selected: 'SELECTED' | 'DESELECTED';
     }
   }
@@ -27,9 +27,7 @@ const
   emits = defineEmits<{
     (e: "receive:yearandweek", action: {week: number; year: number;}): void;
   }>(),
-  numberofweeksinayear = shallowRef<JustAWeekPickerType>(),
-  cmaxyear = parseInt((props.maxdate).split('-')[0]),
-  cminyear = parseInt((props.mindate).split('-')[0]),
+  numberofweeksinayear = shallowRef<DropDownYearPickerType>(),
   year = ref(0)
 ;
 
@@ -37,8 +35,9 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
   let 
     row = 0, 
     col = 0, 
-    weeksinayear = shallowRef<JustAWeekPickerType>(),
-    vc: VisibleCalendarType['selections'] = {}
+    weeksinayear = shallowRef<DropDownYearPickerType>(),
+    vc: VisibleCalendarType['selections'] = {},
+    size = (weeks+(54-weeks))
   ;
   if(props.from === 'DD-MM-YYYY') {
     for(let i=0; i<weeks; i++) {
@@ -139,7 +138,7 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
     }
   }
   
-  for(let i=0; i<weeks; i++) {
+  for(let i=0; i<size; i++) {
     const {week, month} = determineMonthAndWeek(
       props.isoweek,
       {year: year.value, week: i+1}
@@ -151,52 +150,55 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
           [col]: {
             week: i+1,
             ref: null,
-            status: (props.from === 'DAYS-MONTHS-YEARS')?
+            status: (i > (weeks-1))? 'LOCKED' : 
             (
+              (props.from === 'DAYS-MONTHS-YEARS')?
               (
-                year.value in (props.selections as VisibleCalendarType['selections'])
-                &&
-                month in (props.selections as VisibleCalendarType['selections'])[year.value].months
-                &&
-                month >= 0
-                &&
-                week >= 0
-                &&
-                !weekHasEnable(
-                  (props.selections as VisibleCalendarType['selections'])[year.value].months[
-                    month
-                  ].weeks[
-                    week
-                  ]
-                )
-              )?
-              'ENABLE' : 'DISABLE'
-            )
-            : 
-            (
+                (
+                  year.value in (props.selections as VisibleCalendarType['selections'])
+                  &&
+                  month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                  &&
+                  month >= 0
+                  &&
+                  week >= 0
+                  &&
+                  !weekHasEnable(
+                    (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                      month
+                    ].weeks[
+                      week
+                    ]
+                  )
+                )?
+                'ENABLE' : 'DISABLE'
+              )
+              : 
               (
-                year.value in (vc as VisibleCalendarType['selections'])
-                &&
-                month in (vc as VisibleCalendarType['selections'])[year.value].months
-                &&
-                month >= 0
-                &&
-                week >= 0
-                &&
-                !weekHasEnable(
-                  (vc as VisibleCalendarType['selections'])[year.value].months[
-                    month
-                  ].weeks[
-                    week
-                  ]
-                )
-              )?
-              'ENABLE' : 'DISABLE'
+                (
+                  year.value in (vc as VisibleCalendarType['selections'])
+                  &&
+                  month in (vc as VisibleCalendarType['selections'])[year.value].months
+                  &&
+                  month >= 0
+                  &&
+                  week >= 0
+                  &&
+                  !weekHasEnable(
+                    (vc as VisibleCalendarType['selections'])[year.value].months[
+                      month
+                    ].weeks[
+                      week
+                    ]
+                  )
+                )?
+                'ENABLE' : 'DISABLE'
+              )
             )
             ,
             selected: 'DESELECTED'
           }
-        } as JustAWeekPickerType[number];
+        } as DropDownYearPickerType[number];
       }
       else {
         weeksinayear.value = {
@@ -205,7 +207,68 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
             [col]: {
               week: i+1,
               ref: null,
-              status: (props.from === 'DAYS-MONTHS-YEARS')?
+              status: (i > (weeks-1))? 'LOCKED' : 
+              (
+                (props.from === 'DAYS-MONTHS-YEARS')?
+                (
+                  (
+                    year.value in (props.selections as VisibleCalendarType['selections'])
+                    &&
+                    month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                    &&
+                    month >= 0
+                    &&
+                    week >= 0
+                    &&
+                    !weekHasEnable(
+                      (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                        month
+                      ].weeks[
+                        week
+                      ]
+                    )
+                  )?
+                  'ENABLE' : 'DISABLE'
+                )
+                :
+                (
+                  (
+                    year.value in (vc as VisibleCalendarType['selections'])
+                    &&
+                    month in (vc as VisibleCalendarType['selections'])[year.value].months
+                    &&
+                    month >= 0
+                    &&
+                    week >= 0
+                    &&
+                    !weekHasEnable(
+                      (vc as VisibleCalendarType['selections'])[year.value].months[
+                        month
+                      ].weeks[
+                        week
+                      ]
+                    )
+                  )?
+                  'ENABLE' : 'DISABLE'
+                )
+              )
+              ,
+              selected: 'DESELECTED'
+            }
+          }
+        } as DropDownYearPickerType;
+      }
+      col++;
+    }
+    else {
+      weeksinayear.value = {
+        [row]: {
+          [col]: {
+            week: i+1,
+            ref: null,
+            status: (i > (weeks-1))? 'LOCKED' : 
+            (
+              (props.from === 'DAYS-MONTHS-YEARS')?
               (
                 (
                   year.value in (props.selections as VisibleCalendarType['selections'])
@@ -247,67 +310,12 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
                 )?
                 'ENABLE' : 'DISABLE'
               )
-              ,
-              selected: 'DESELECTED'
-            }
-          }
-        } as JustAWeekPickerType;
-      }
-      col++;
-    }
-    else {
-      weeksinayear.value = {
-        [row]: {
-          [col]: {
-            week: i+1,
-            ref: null,
-            status: (props.from === 'DAYS-MONTHS-YEARS')?
-            (
-              (
-                year.value in (props.selections as VisibleCalendarType['selections'])
-                &&
-                month in (props.selections as VisibleCalendarType['selections'])[year.value].months
-                &&
-                month >= 0
-                &&
-                week >= 0
-                &&
-                !weekHasEnable(
-                  (props.selections as VisibleCalendarType['selections'])[year.value].months[
-                    month
-                  ].weeks[
-                    week
-                  ]
-                )
-              )?
-              'ENABLE' : 'DISABLE'
-            )
-            :
-            (
-              (
-                year.value in (vc as VisibleCalendarType['selections'])
-                &&
-                month in (vc as VisibleCalendarType['selections'])[year.value].months
-                &&
-                month >= 0
-                &&
-                week >= 0
-                &&
-                !weekHasEnable(
-                  (vc as VisibleCalendarType['selections'])[year.value].months[
-                    month
-                  ].weeks[
-                    week
-                  ]
-                )
-              )?
-              'ENABLE' : 'DISABLE'
             )
             ,
             selected: 'DESELECTED'
           }
         }
-      } as JustAWeekPickerType;
+      } as DropDownYearPickerType;
       col++;
     }
     if(col === collimit) {
@@ -320,12 +328,12 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
 }
 
 function selectJustAWeek(rindex: number, cindex: number) {
-  if((numberofweeksinayear.value as JustAWeekPickerType)[rindex][cindex].status === 'ENABLE') {
-    (numberofweeksinayear.value as JustAWeekPickerType)[rindex][cindex].selected = 'SELECTED';
+  if((numberofweeksinayear.value as DropDownYearPickerType)[rindex][cindex].status === 'ENABLE') {
+    (numberofweeksinayear.value as DropDownYearPickerType)[rindex][cindex].selected = 'SELECTED';
     triggerRef(numberofweeksinayear);
     let time: NodeJS.Timeout;
     time = setTimeout(() => {
-      emits('receive:yearandweek', {year: year.value as number, week: (numberofweeksinayear.value as JustAWeekPickerType)[rindex][cindex].week});
+      emits('receive:yearandweek', {year: year.value as number, week: (numberofweeksinayear.value as DropDownYearPickerType)[rindex][cindex].week});
     }, 200);
   }
 }
@@ -338,16 +346,14 @@ function selectJustAWeek(rindex: number, cindex: number) {
     class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100 h-100"
   >
     <div class="flex-w-50 align-self-stretch shadow-sm" style="padding:0.126rem;">
-      <JustAYearPicker 
-        :maxyear="cmaxyear" 
-        :minyear="cminyear" 
+      <DropDownYearPicker 
         :rowlimit="9" 
         :collimit="3" 
         @receive:year="($val: number) => { 
           year = $val;
           numberofweeksinayear = formWeeksRowColArrayInAYear(calculateWeeksInAYear($val, props.isoweek), 6); 
         }"
-      ></JustAYearPicker>
+      ></DropDownYearPicker>
     </div>
     <div class="flex-w-50 align-self-stretch shadow-sm" style="padding:0.126rem;">
       <div class="d-block text-center shadow-sm" style="background-color: lightgray;padding:10px;">
@@ -361,15 +367,16 @@ function selectJustAWeek(rindex: number, cindex: number) {
           <template v-for="(col, cindex) in row">
             <div
               class="flex-w-100-over-6 overflow-hidden"
-              style="float: left; outline: 1px solid #fff"
+              style="float: left;"
+              :style="col.status === 'LOCKED'? 'outline: 1px solid #fff;' : 'outline: 1px solid #fff'"
             >
               <label
                 :ref="(el) => col.ref = el as HTMLLabelElement"
                 @keypress.enter="selectJustAWeek(rindex, cindex)"
                 @click="selectJustAWeek(rindex, cindex)"
                 class="w-100"
-                style="float: left;"
-                :style="props.from === 'DAYS-MONTHS-YEARS'? ' line-height: 2.3em; height: 2.3em' : ' line-height: 2em; height: 2em'"
+                style="float: left; outline-"
+                :style="props.from === 'DAYS-MONTHS-YEARS'? ' line-height: 2.32em; height: 2.32em' : ' line-height: 2em; height: 2em'"
               >
                 <input
                   @keypress.enter.stop=""
@@ -389,10 +396,16 @@ function selectJustAWeek(rindex: number, cindex: number) {
                       'background-color: green; color: #fff;'
                       :
                       'background-color: #E8E8E8; color: black; text-shadow:none;'
-                    ) : 'background-color: yellow; color: #fff; text-shadow:none;'
+                    ) : 
+                    (
+                      col.status === 'DISABLE'? 
+                      'background-color: yellow; color: #fff; text-shadow:none;'
+                      :
+                      'background-color: #E8E8E8; text-shadow:none;'
+                    )
                   "
                 >
-                  {{ col.week }}
+                  {{ col.status === 'LOCKED'? '' : col.week }}
                 </span>
               </label>
             </div>

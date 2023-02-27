@@ -202,7 +202,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           table: 'payment',
           limit: 10,
           dateFormat: 'ddd dd mmm, yyyy',
-          isoweek: false,
+          isoweek: true,
         },
       ],
       timetypes: [
@@ -952,7 +952,7 @@ a.btn.disabled {
 .font-0-dot-90-rem {
   font-size: 0.9rem !important;
 }
-.border {
+.border-black {
   border: 1px solid black;
 }
 .font-family {
