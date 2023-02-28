@@ -124,7 +124,7 @@ let
   unwatchresetcalendarsignal: WatchStopHandle
 ;
 
-function ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox() {
+function completelyDisableNewCalendarNotInSelection() {
   if((Object.keys(props.selections).length > 0 && !rangeselectionparams.value.excludedates) || rangeselectionparams.value.excludedates) {
     if(
       (
@@ -222,11 +222,13 @@ function assignWeekRef($el: HTMLDivElement, weekindex: number, weektype: 'PREVIO
 }
 
 function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; week: number;}) {
+  nextTick(() => {
   const {week, month} = determineMonthAndWeek(
     props.isoweek,
     yearandweek
   );
   let calendartoshowmonthandweek = '';
+
   if(
     yearandweek.year === (visiblecalendar.value as VisibleCalendarType).first.year
   ) {
@@ -245,7 +247,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+        completelyDisableNewCalendarNotInSelection();
+        triggerRef(visiblecalendar);
         calendartoshowmonthandweek = 'CURRENT';
       }
       else {
@@ -262,6 +265,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            triggerRef(visiblecalendar);
             calendartoshowmonthandweek = 'PREVIOUS';
           }
           else {
@@ -303,7 +307,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     props.maxdate,
                     visiblecalendar as ShallowRef<VisibleCalendarType>
                   ) as YearMonthClickable<PositionTrackerType>['calendar'];
-                  ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+                  completelyDisableNewCalendarNotInSelection();
+                  triggerRef(visiblecalendar);
                   calendartoshowmonthandweek = 'CURRENT';
                 }
                 else {
@@ -318,6 +323,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     props.maxdate,
                     visiblecalendar as ShallowRef<VisibleCalendarType>
                   ) as YearMonthClickable<PositionTrackerType>['calendar'];
+                  triggerRef(visiblecalendar);
                   calendartoshowmonthandweek = 'PREVIOUS';
                 }
               }
@@ -352,7 +358,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
             props.maxdate,
             visiblecalendar as ShallowRef<VisibleCalendarType>
           ) as YearMonthClickable<PositionTrackerType>['calendar'];
-          ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
           calendartoshowmonthandweek = 'CURRENT';
         }
         else {
@@ -367,6 +374,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
             props.maxdate,
             visiblecalendar as ShallowRef<VisibleCalendarType>
           ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          triggerRef(visiblecalendar);
           calendartoshowmonthandweek = 'PREVIOUS';
         }
       }
@@ -388,7 +396,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
-            ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+            completelyDisableNewCalendarNotInSelection();
+            triggerRef(visiblecalendar);
             calendartoshowmonthandweek = 'CURRENT';
           }
           else {
@@ -403,185 +412,282 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            triggerRef(visiblecalendar);
             calendartoshowmonthandweek = 'PREVIOUS';
           }
         }
       }
     }
 
-    if(
-      week === (
-        Object.keys(
-          (
-            (calendartoshowmonthandweek === 'PREVIOUS')?
-            (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-            :
-            (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-          ).weeks
-        ).length - 1
-      )
-      &&
-      (
-        (calendartoshowmonthandweek === 'PREVIOUS')?
-        (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-        :
-        (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-      ).weeks[
-        week
-      ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
-    ) {
-      if(calendartoshowmonthandweek === 'CURRENT') {
-        let currentcopy = JSON.parse(JSON.stringify((visiblecalendar.value as VisibleCalendarType).current));
-        (visiblecalendar.value as VisibleCalendarType).previous = currentcopy;
-      }
-
-      if((month + 1) <= (visiblecalendar.value as VisibleCalendarType).first.month) {
-        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
-        (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
-        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
-        (visiblecalendar.value as VisibleCalendarType).current.year,
-        (visiblecalendar.value as VisibleCalendarType).current.month,
-          'PREVIOUS-OR-CURRENT',
-          props.isoweek,
-          props.mindate,
-          props.maxdate,
-          visiblecalendar as ShallowRef<VisibleCalendarType>
-        ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
-        nextTick(() => {
-          if(
+    if(calendartoshowmonthandweek === 'PREVIOUS') {
+      if(
+        week === (
+          Object.keys(
             (
-              (
-                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[
-                0
-              ]
-            ).ref
-          ) {
+              (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            ).weeks
+          ).length - 1
+        )
+        &&
+        (
+          (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+        ).weeks[
+          week
+        ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+      ) {
+        if((month + 1) <= (visiblecalendar.value as VisibleCalendarType).first.month) {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
+          
+          nextTick(() => {
+            console.log(
             (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0].ref
+            );
+            if(
               (
                 (
                   (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='blue';
-                  
+                ).weeks[0].ref as HTMLDivElement
+              )
+            ) {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0].ref as HTMLDivElement
+              ).style.backgroundColor = 'blue';
+              triggerRef(visiblecalendar);
+                        
+              let time: NodeJS.Timeout;
+              time = setTimeout(() => {
+                (
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                  ).weeks[0].ref as HTMLDivElement
+                ).style.backgroundColor = 'transparent';
+                triggerRef(visiblecalendar);
+                clearTimeout(time);
+              }, 1000);
+            }
+          });
+        }
+
+        nextTick(() => {
+          console.log(
+          (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref
+          );
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            )
+          ) {
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
             let time: NodeJS.Timeout;
             time = setTimeout(() => {
               (
                 (
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                  ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-                ).ref as HTMLDivElement
-              ).style.backgroundColor='transparent';
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
               triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
         });
       }
-
-      nextTick(() => {
-        if(
+      else {
+        nextTick(() => {
+          console.log(
           (
-            (
-              (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-            ).weeks[
-              week
-            ]
-          ).ref
-        ) {
-          (
-            (
-              (
                 (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-            ).ref as HTMLDivElement
-          ).style.backgroundColor='blue';
-                  
-          let time: NodeJS.Timeout;
-          time = setTimeout(() => {
-            (
-              (
-                (
-                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='transparent';
-            triggerRef(visiblecalendar);
-            clearTimeout(time);
-          }, 1000);
-        }
-      });
-    }
-    else {
-      nextTick(() => {
-        if(calendartoshowmonthandweek === 'PREVIOUS') {
+              ).weeks[week].ref
+          );
           if(
             (
               (
                 (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[
-                week
-              ]
-            ).ref
+              ).weeks[week].ref as HTMLDivElement
+            )
           ) {
             (
               (
-                (
-                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='blue';
-                    
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
             let time: NodeJS.Timeout;
             time = setTimeout(() => {
               (
                 (
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-                ).ref as HTMLDivElement
-              ).style.backgroundColor='transparent';
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
               triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
+        });
+      }
+    }
+    else {
+      if(
+        week === (
+          Object.keys(
+            (
+              (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            ).weeks
+          ).length - 1
+        )
+        &&
+        (
+          (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+        ).weeks[
+          week
+        ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+      ) {
+        let currentcopy = JSON.parse(JSON.stringify((visiblecalendar.value as VisibleCalendarType).current));
+        (visiblecalendar.value as VisibleCalendarType).previous = currentcopy;
+        triggerRef(visiblecalendar);
+
+        if((month + 1) <= (visiblecalendar.value as VisibleCalendarType).first.month) {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
+          
+          nextTick(() => {
+            console.log(
+            (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0].ref
+            );
+            if(
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0].ref as HTMLDivElement
+              )
+            ) {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0].ref as HTMLDivElement
+              ).style.backgroundColor = 'blue';
+              triggerRef(visiblecalendar);
+                        
+              let time: NodeJS.Timeout;
+              time = setTimeout(() => {
+                (
+                  (
+                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                  ).weeks[0].ref as HTMLDivElement
+                ).style.backgroundColor = 'transparent';
+                triggerRef(visiblecalendar);
+                clearTimeout(time);
+              }, 1000);
+            }
+          });
         }
-        else {
+
+        nextTick(() => {
+          console.log(
+          (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref
+          );
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            )
+          ) {
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
+              triggerRef(visiblecalendar);
+              clearTimeout(time);
+            }, 1000);
+          }
+        });
+      }
+      else {
+        nextTick(() => {
+          console.log(
+          (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref
+          );
           if(
             (
               (
                 (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[
-                week
-              ]
-            ).ref
+              ).weeks[week].ref as HTMLDivElement
+            )
           ) {
             (
               (
-                (
-                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='blue';
-                    
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
             let time: NodeJS.Timeout;
             time = setTimeout(() => {
               (
                 (
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-                ).ref as HTMLDivElement
-              ).style.backgroundColor='transparent';
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
               triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
-        }
-      });
+        });
+      }
     }
   }
   else {
@@ -600,7 +706,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
           props.maxdate,
           visiblecalendar as ShallowRef<VisibleCalendarType>
         ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+        completelyDisableNewCalendarNotInSelection();
+        triggerRef(visiblecalendar);
         calendartoshowmonthandweek = 'CURRENT';
       }
       else {
@@ -617,6 +724,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            triggerRef(visiblecalendar);
             calendartoshowmonthandweek = 'PREVIOUS';
           }
           else {
@@ -658,7 +766,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     props.maxdate,
                     visiblecalendar as ShallowRef<VisibleCalendarType>
                   ) as YearMonthClickable<PositionTrackerType>['calendar'];
-                  ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+                  completelyDisableNewCalendarNotInSelection();
+                  triggerRef(visiblecalendar);
                   calendartoshowmonthandweek = 'CURRENT';
                 }
                 else {
@@ -673,6 +782,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     props.maxdate,
                     visiblecalendar as ShallowRef<VisibleCalendarType>
                   ) as YearMonthClickable<PositionTrackerType>['calendar'];
+                  triggerRef(visiblecalendar);
                   calendartoshowmonthandweek = 'PREVIOUS';
                 }
               }
@@ -707,7 +817,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
             props.maxdate,
             visiblecalendar as ShallowRef<VisibleCalendarType>
           ) as YearMonthClickable<PositionTrackerType>['calendar'];
-          ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
           calendartoshowmonthandweek = 'CURRENT';
         }
         else {
@@ -722,6 +833,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
             props.maxdate,
             visiblecalendar as ShallowRef<VisibleCalendarType>
           ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          triggerRef(visiblecalendar);
           calendartoshowmonthandweek = 'PREVIOUS';
         }
       }
@@ -743,7 +855,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
-            ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
+            completelyDisableNewCalendarNotInSelection();
+            triggerRef(visiblecalendar);
             calendartoshowmonthandweek = 'CURRENT';
           }
           else {
@@ -758,199 +871,307 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
               props.maxdate,
               visiblecalendar as ShallowRef<VisibleCalendarType>
             ) as YearMonthClickable<PositionTrackerType>['calendar'];
+            triggerRef(visiblecalendar);
             calendartoshowmonthandweek = 'PREVIOUS';
           }
         }
       }
     }
 
-    if(
-      week === (
-        Object.keys(
-          (
-            (calendartoshowmonthandweek === 'PREVIOUS')?
-            (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-            :
-            (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-          ).weeks
-        ).length - 1
-      )
-      &&
-      (
-        (calendartoshowmonthandweek === 'PREVIOUS')?
-        (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-        :
-        (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-      ).weeks[
-        week
-      ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
-    ) {
-      if(calendartoshowmonthandweek === 'CURRENT') {
-        let currentcopy = JSON.parse(JSON.stringify((visiblecalendar.value as VisibleCalendarType).current));
-        (visiblecalendar.value as VisibleCalendarType).previous = currentcopy;
-      }
-      if((month + 1) <= 11) {
-        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
-        (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
-        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
-        (visiblecalendar.value as VisibleCalendarType).current.year,
-        (visiblecalendar.value as VisibleCalendarType).current.month,
-          'PREVIOUS-OR-CURRENT',
-          props.isoweek,
-          props.mindate,
-          props.maxdate,
-          visiblecalendar as ShallowRef<VisibleCalendarType>
-        ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
-      }
-      else {
-        (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year+1;
-        (visiblecalendar.value as VisibleCalendarType).current.month = 0;
-        (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
-        (visiblecalendar.value as VisibleCalendarType).current.year,
-        (visiblecalendar.value as VisibleCalendarType).current.month,
-          'PREVIOUS-OR-CURRENT',
-          props.isoweek,
-          props.mindate,
-          props.maxdate,
-          visiblecalendar as ShallowRef<VisibleCalendarType>
-        ) as YearMonthClickable<PositionTrackerType>['calendar'];
-        ensureNewCalendarNotInSelectionDoNotEnableTYTMAndWeekCheckBox();
-      }
-
-      nextTick(() => {
-        if(
-          (
+    if(calendartoshowmonthandweek === 'PREVIOUS') {
+      if(
+        week === (
+          Object.keys(
             (
               (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-            ).weeks[
-              week
-            ]
-          ).ref
-        ) {
-          (
-            (
-              (
-                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-            ).ref as HTMLDivElement
-          ).style.backgroundColor='blue';
-                  
-          let time: NodeJS.Timeout;
-          time = setTimeout(() => {
-            (
-              (
-                (
-                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='transparent';
-            triggerRef(visiblecalendar);
-            clearTimeout(time);
-          }, 1000);
-        }
-        if(
-          (
-            (
-              (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-            ).weeks[
-              0
-            ]
-          ).ref
-        ) {
-          (
-            (
-              (
-                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-            ).ref as HTMLDivElement
-          ).style.backgroundColor='blue';
-                  
-          let time: NodeJS.Timeout;
-          time = setTimeout(() => {
-            (
-              (
-                (
-                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[0] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='transparent';
-            triggerRef(visiblecalendar);
-            clearTimeout(time);
-          }, 1000);
-        }
-      });
-    }
-    else {
-      nextTick(() => {
-        if(calendartoshowmonthandweek === 'PREVIOUS') {
-          if(
-            (
-              (
-                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[
-                week
-              ]
-            ).ref
-          ) {
-            (
-              (
-                (
-                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='blue';
-                    
-            let time: NodeJS.Timeout;
-            time = setTimeout(() => {
-              (
-                (
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-                ).ref as HTMLDivElement
-              ).style.backgroundColor='transparent';
-              triggerRef(visiblecalendar);
-              clearTimeout(time);
-            }, 1000);
-          }
+            ).weeks
+          ).length - 1
+        )
+        &&
+        (
+          (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+        ).weeks[
+          week
+        ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+      ) {
+        if((month + 1) <= 11) {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
         }
         else {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year+1;
+          (visiblecalendar.value as VisibleCalendarType).current.month = 0;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
+        }
+        nextTick(() => {
+          console.log(
+          (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref
+          );
           if(
             (
               (
-                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-              ).weeks[
-                week
-              ]
-            ).ref
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            )
           ) {
             (
               (
-                (
-                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-              ).ref as HTMLDivElement
-            ).style.backgroundColor='blue';
-                    
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
             let time: NodeJS.Timeout;
             time = setTimeout(() => {
               (
                 (
-                  (
-                    (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
-                  ).weeks[week] as YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]
-                ).ref as HTMLDivElement
-              ).style.backgroundColor='transparent';
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
               triggerRef(visiblecalendar);
               clearTimeout(time);
             }, 1000);
           }
+
+          console.log(
+          (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[0].ref
+          );
+
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[0].ref as HTMLDivElement
+            )
+          ) {
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[0].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
+              triggerRef(visiblecalendar);
+              clearTimeout(time);
+            }, 1000);
+          }
+        });
+      }
+      else {
+        nextTick(() => {
+          console.log(
+          (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref
+          );
+          if(
+            (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              )
+          ) {
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
+              triggerRef(visiblecalendar);
+              clearTimeout(time);
+            }, 1000);
+          }
+        });
+      }
+    }
+    else {
+      if(
+        week === (
+          Object.keys(
+            (
+              (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+            ).weeks
+          ).length - 1
+        )
+        &&
+        (
+          (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+        ).weeks[
+          week
+        ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+      ) {
+        let currentcopy = JSON.parse(JSON.stringify((visiblecalendar.value as VisibleCalendarType).current));
+        (visiblecalendar.value as VisibleCalendarType).previous = currentcopy;
+        triggerRef(visiblecalendar);
+
+        if((month + 1) <= 11) {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year;
+          (visiblecalendar.value as VisibleCalendarType).current.month = month+1;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
         }
-      });
+        else {
+          (visiblecalendar.value as VisibleCalendarType).current.year = yearandweek.year+1;
+          (visiblecalendar.value as VisibleCalendarType).current.month = 0;
+          (visiblecalendar.value as VisibleCalendarType).current.calendar = buildCalendar(
+          (visiblecalendar.value as VisibleCalendarType).current.year,
+          (visiblecalendar.value as VisibleCalendarType).current.month,
+            'PREVIOUS-OR-CURRENT',
+            props.isoweek,
+            props.mindate,
+            props.maxdate,
+            visiblecalendar as ShallowRef<VisibleCalendarType>
+          ) as YearMonthClickable<PositionTrackerType>['calendar'];
+          completelyDisableNewCalendarNotInSelection();
+          triggerRef(visiblecalendar);
+        }
+        nextTick(() => {
+          console.log(
+            (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref
+          );
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            )
+          ) {
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).previous.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
+              triggerRef(visiblecalendar);
+              clearTimeout(time);
+            }, 1000);
+          }
+          console.log(
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[0].ref
+          )
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[0].ref as HTMLDivElement
+            )
+          ) {
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[0].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[0].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
+              triggerRef(visiblecalendar);
+              clearTimeout(time);
+            }, 1000);
+          }
+        });
+      }
+      else {
+        nextTick(() => {
+          console.log(
+          (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref
+          );
+          if(
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            )
+          ) {
+            (
+              (
+                (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+              ).weeks[week].ref as HTMLDivElement
+            ).style.backgroundColor = 'blue';
+            triggerRef(visiblecalendar);
+                        
+            let time: NodeJS.Timeout;
+            time = setTimeout(() => {
+              (
+                (
+                  (visiblecalendar.value as VisibleCalendarType).current.calendar as YearMonthClickable<PositionTrackerType>['calendar']
+                ).weeks[week].ref as HTMLDivElement
+              ).style.backgroundColor = 'transparent';
+              triggerRef(visiblecalendar);
+              clearTimeout(time);
+            }, 1000);
+          }
+        });
+      }
     }
   }
-  triggerRef(visiblecalendar);
+  });
 }
 
 function handleTyTmClicked(
@@ -3092,11 +3313,10 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
-                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              ((visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              ((visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue')?
                               'background-color: blue; color: #fff;'
                               : (
                                 day.day ===
@@ -3159,11 +3379,10 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
-                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              ((visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              ((visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue')?
                               'background-color: blue; color: #fff;'
                               : (
                                 day.status === 'DISABLE'
@@ -3634,11 +3853,10 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
-                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              ((visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              ((visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue')?
                               'background-color: blue; color: #fff;'
                               : (
                                 day.day ===
@@ -3701,11 +3919,10 @@ onBeforeUnmount(() => {
                           "
                         >
                           <span
-                            :title="day.date"
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              ((visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref && (visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor !== 'transparent')?
+                              ((visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue')?
                               'background-color: blue; color: #fff;'
                               : (
                                 day.status === 'DISABLE'
