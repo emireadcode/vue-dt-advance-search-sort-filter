@@ -202,7 +202,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           table: 'payment',
           limit: 10,
           dateFormat: 'ddd dd mmm, yyyy',
-          isoweek: true,
+          isoweek: false,
         },
       ],
       timetypes: [

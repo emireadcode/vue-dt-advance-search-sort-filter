@@ -194,7 +194,77 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
                     ]
                   )
                 )?
-                'ENABLE' : 'DISABLE'
+                'ENABLE' 
+                : (
+                  (
+                    month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                    &&
+                    month === 11 && week === (Object.keys(
+                      (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                        month
+                      ].weeks
+                    ).length - 1)
+                    &&
+                    (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                      month
+                    ].weeks[
+                      week
+                    ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                  )?
+                  (
+                    (
+                      (year.value + 1) in (props.selections as VisibleCalendarType['selections'])
+                      &&
+                      0 in (props.selections as VisibleCalendarType['selections'])[(year.value + 1)].months
+                      &&
+                      !weekHasEnable(
+                        (props.selections as VisibleCalendarType['selections'])[(year.value + 1)].months[
+                          0
+                        ].weeks[
+                          0
+                        ]
+                      )
+                    )?
+                    'ENABLE'
+                    :
+                    'DISABLE'
+                  )
+                  : (
+                    (
+                      month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                      &&
+                      week === (Object.keys(
+                        (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                          month
+                        ].weeks
+                      ).length - 1)
+                      &&
+                      (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                        month
+                      ].weeks[
+                        week
+                      ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                    )?
+                    (
+                      (
+                        (month + 1) in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                        &&
+                        !weekHasEnable(
+                          (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                            (month + 1)
+                          ].weeks[
+                            0
+                          ]
+                        )
+                      )?
+                      'ENABLE'
+                      :
+                      'DISABLE'
+                    )
+                    :
+                    'DISABLE'
+                  )
+                )
               )
               : 
               (
@@ -215,7 +285,8 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
                     ]
                   )
                 )?
-                'ENABLE' : 'DISABLE'
+                'ENABLE' 
+                : 'DISABLE'
               )
             )
             ,
@@ -251,7 +322,76 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
                       ]
                     )
                   )?
-                  'ENABLE' : 'DISABLE'
+                  'ENABLE' : (
+                    (
+                      month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                      &&
+                      month === 11 && week === (Object.keys(
+                        (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                          month
+                        ].weeks
+                      ).length - 1)
+                      &&
+                      (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                        month
+                      ].weeks[
+                        week
+                      ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                    )?
+                    (
+                      (
+                        (year.value + 1) in (props.selections as VisibleCalendarType['selections'])
+                        &&
+                        0 in (props.selections as VisibleCalendarType['selections'])[(year.value + 1)].months
+                        &&
+                        !weekHasEnable(
+                          (props.selections as VisibleCalendarType['selections'])[(year.value + 1)].months[
+                            0
+                          ].weeks[
+                            0
+                          ]
+                        )
+                      )?
+                      'ENABLE'
+                      :
+                      'DISABLE'
+                    )
+                    : (
+                      (
+                        month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                        &&
+                        week === (Object.keys(
+                          (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                            month
+                          ].weeks
+                        ).length - 1)
+                        &&
+                        (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                          month
+                        ].weeks[
+                          week
+                        ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                      )?
+                      (
+                        (
+                          (month + 1) in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                          &&
+                          !weekHasEnable(
+                            (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                              (month + 1)
+                            ].weeks[
+                              0
+                            ]
+                          )
+                        )?
+                        'ENABLE'
+                        :
+                        'DISABLE'
+                      )
+                      :
+                      'DISABLE'
+                    )
+                  )
                 )
                 :
                 (
@@ -310,7 +450,77 @@ function formWeeksRowColArrayInAYear(weeks: number, collimit: number) {
                     ]
                   )
                 )?
-                'ENABLE' : 'DISABLE'
+                'ENABLE'
+                : (
+                  (
+                    month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                    &&
+                    month === 11 && week === (Object.keys(
+                      (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                        month
+                      ].weeks
+                    ).length - 1)
+                    &&
+                    (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                      month
+                    ].weeks[
+                      week
+                    ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                  )?
+                  (
+                    (
+                      (year.value + 1) in (props.selections as VisibleCalendarType['selections'])
+                      &&
+                      0 in (props.selections as VisibleCalendarType['selections'])[(year.value + 1)].months
+                      &&
+                      !weekHasEnable(
+                        (props.selections as VisibleCalendarType['selections'])[(year.value + 1)].months[
+                          0
+                        ].weeks[
+                          0
+                        ]
+                      )
+                    )?
+                    'ENABLE'
+                    :
+                    'DISABLE'
+                  )
+                  : (
+                    (
+                      month in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                      &&
+                      week === (Object.keys(
+                        (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                          month
+                        ].weeks
+                      ).length - 1)
+                      &&
+                      (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                        month
+                      ].weeks[
+                        week
+                      ].days[6].day in [1, 2, 3, 4, 5, 6, 7, 7]
+                    )?
+                    (
+                      (
+                        (month + 1) in (props.selections as VisibleCalendarType['selections'])[year.value].months
+                        &&
+                        !weekHasEnable(
+                          (props.selections as VisibleCalendarType['selections'])[year.value].months[
+                            (month + 1)
+                          ].weeks[
+                            0
+                          ]
+                        )
+                      )?
+                      'ENABLE'
+                      :
+                      'DISABLE'
+                    )
+                    :
+                    'DISABLE'
+                  )
+                )
               )
               :
               (
