@@ -246,6 +246,11 @@ onMounted(() => {
           emits('signal:readyforexclude', multipleselectcount.value);
         }
       }
+      else {
+        if(rangecount.value === 0) {
+          emits('signal:readyforexclude', 0);
+        }
+      }
     }
   );
   unwatchrangecount = watch(
@@ -259,16 +264,21 @@ onMounted(() => {
           emits('signal:readyforexclude', 0);
         }
       }
+      else {
+        if(multipleselectcount.value === 0) {
+          emits('signal:readyforexclude', 0);
+        }
+      }
     }
   );
   unwatchformat = watch(
     () => (holder.value as MonthSelectionFormat).format,
     (x) => {
-      deselectAll();
-      unTrackMonthBoxMouseMovement();
       rangefirstselection.value = { month: -1 };
       rangecount.value = 0;
       multipleselectcount.value = 0;
+      deselectAll();
+      unTrackMonthBoxMouseMovement();
     }
   );
   window.addEventListener('resize', processDimensions, true);
@@ -281,6 +291,8 @@ onBeforeMount(() => {
   triggerHolder();
   months.value = fillMonthArray((holder.value as MonthSelectionFormat).format).value as MonthSelectionType;
   rangefirstselection.value = { month: -1 };
+  rangecount.value = 0;
+  multipleselectcount.value = 0;
   triggerRef(months);
 });
 

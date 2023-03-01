@@ -199,6 +199,11 @@ onMounted(() => {
           emits('signal:readyforexclude', multipleselectcount.value);
         }
       }
+      else {
+        if(rangecount.value === 0) {
+          emits('signal:readyforexclude', 0);
+        }
+      }
     }
   );
   unwatchrangecount = watch(
@@ -212,12 +217,16 @@ onMounted(() => {
           emits('signal:readyforexclude', 0);
         }
       }
+      else {
+        if(multipleselectcount.value === 0) {
+          emits('signal:readyforexclude', 0);
+        }
+      }
     }
   );
   unwatchformat = watch(
     () => (holder.value as DaySelectionFormat).format,
     (x) => {
-      (holder.value as DaySelectionFormat).format = x;
       deselectAll();
       unTrackDayBoxMouseMovement();
       rangefirstselection.value = { day: -1 };
@@ -231,9 +240,12 @@ onMounted(() => {
 
 onBeforeMount(() => {
   holder.value = JSON.parse(JSON.stringify(props.dayselectionandformat));
+  (holder.value as DaySelectionFormat).format = props.dayselectionandformat.format;
   triggerHolder();
   days.value = (fillDayArray(props.isoweek, (holder.value as DaySelectionFormat).format) as ShallowRef<DaySelectionType>).value as DaySelectionType;
   rangefirstselection.value = { day: -1 };
+  rangecount.value = 0;
+  multipleselectcount.value = 0;
   triggerRef(days);
 });
 

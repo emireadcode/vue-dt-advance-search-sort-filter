@@ -41,7 +41,8 @@ const
   lessthan = ref(""),
   greaterthan = ref(""),
   lessthanref = ref(),
-  greaterthanref = ref()
+  greaterthanref = ref(),
+  previousFormat = ref<'RANGE' | 'MULTIPLE-OR-SINGLE' | 'GREATER-THAN' | 'LESS-THAN' | ''>()
 ;
 
 const compYearsLength = computed(() => {
@@ -62,7 +63,9 @@ function addYearByClick(year: number, clickedorpasted: boolean) {
 
 onBeforeMount(() => {
   holder.value = JSON.parse(JSON.stringify(props.yearselectionandformat)) as YearSelectionFormat;
+  holder.value.format = props.yearselectionandformat.format;
   triggerRef(holder);
+  previousFormat.value = holder.value.format;
   rangefirstselection.value = { page: -1, year: -1 };
   rangecount.value = 0;
   multipleselectcount.value = 0;
@@ -107,6 +110,11 @@ onMounted(() => {
           emits('signal:readyforexclude', multipleselectcount.value);
         }
       }
+      else {
+        if(rangecount.value === 0) {
+          emits('signal:readyforexclude', 0);
+        }
+      }
     }
   );
   unwatchrangecount = watch(
@@ -120,16 +128,23 @@ onMounted(() => {
           emits('signal:readyforexclude', 0);
         }
       }
+      else {
+        if(multipleselectcount.value === 0) {
+          emits('signal:readyforexclude', 0);
+        }
+      }
     }
   );
   unwatchformat = watch(
     () => (holder.value as YearSelectionFormat).format,
     (x) => {
-      deselectAll(years as ShallowRef<YearSelectionType>);
-      unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, (holder.value as YearSelectionFormat).format as "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN");
-      rangefirstselection.value = { page: -1, year: -1 };
-      rangecount.value = 0;
-      multipleselectcount.value = 0;
+      if(x !== previousFormat.value) {
+        deselectAll(years as ShallowRef<YearSelectionType>);
+        unTrackYearBoxMouseMovement(page, years as ShallowRef<YearSelectionType>, rangefirstselection as Ref<YearRangeFirstSelectionType>, loadingMovement, (holder.value as YearSelectionFormat).format as "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN");
+        rangefirstselection.value = { page: -1, year: -1 };
+        rangecount.value = 0;
+        multipleselectcount.value = 0;
+      }
     }
   );
   unwatchgreaterthan = watch(
@@ -166,7 +181,6 @@ onMounted(() => {
                   for(let row in years.value[parseInt(p)]) {
                     for(let col in years.value[parseInt(p)][row]) {
                       if((years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).year > parseInt(x) && (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).status === 'ENABLE') {
-                        found = true;
                         (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
                         page.value = parseInt(p);
                         multipleselectcount.value++;
@@ -174,6 +188,9 @@ onMounted(() => {
                     }
                   }
                 }
+                previousFormat.value = 'GREATER-THAN';
+                (holder.value as YearSelectionFormat).format = 'GREATER-THAN';
+                triggerRef(holder);
                 triggerRef(years);
               }
             }
@@ -236,15 +253,16 @@ onMounted(() => {
                   for(let row in years.value[parseInt(p)]) {
                     for(let col in years.value[parseInt(p)][row]) {
                       if((years.value[parseInt(p)][row][parseInt(col)] as YearSelectionType[number][number][number]).year < parseInt(x) && (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).status === 'ENABLE') {
-                        found = true;
                         (years.value[parseInt(p)][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
                         page.value = parseInt(p);
-
                         multipleselectcount.value++;
                       }
                     }
                   }
                 }
+                previousFormat.value = 'LESS-THAN';
+                (holder.value as YearSelectionFormat).format = 'LESS-THAN';
+                triggerRef(holder);
                 triggerRef(years);
               }
             }
@@ -355,11 +373,7 @@ onMounted(() => {
           <div class="flex-fill text-center">
             <div
               class="d-inline-block align-middle"
-              style="
-                background-color: yellow;
-                width: 15px;
-                height: 15px;
-              "
+              style="background-color: yellow;width: 15px;height: 15px;"
             ></div>Out of Range
           </div>
         </div>
@@ -368,62 +382,65 @@ onMounted(() => {
     <div
       class="p-0 m-0 flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
     >
-      <div class="flex-w-50 align-self-stretch" style="padding-right: 3px">
-        <div class="d-block text-center" style="padding-bottom: 1.5px">
-          <img
-            src="/src/assets/icons/less-than.png"
-            style="width: 20px; height: 20px"
-            class="align-middle"
-          />
-        </div>
-        <div class="d-block">
-          <input
-            @keydown.space.prevent
-            :ref="
-              (el) => {
-                lessthanref = el;
-              }
-            "
-            @focus="
-              () => {
-                greaterthan = '';
-                (holder as YearSelectionFormat).format = 'LESS-THAN';
-              }
-            "
-            type="text"
-            v-model.trim="lessthan"
-            class="text-center w-100 align-middle"
-            style="height: 30px"
-          />
+      <div 
+        class="flex-w-50 align-self-stretch" 
+        style="padding-right: 3px"
+      >
+        <div 
+          class="d-block"
+          :style="(holder as YearSelectionFormat).format === 'LESS-THAN'? 'background-color: green;' : 'background-color: #fff;'"
+        >
+          <div class="d-block text-center" style="padding-bottom: 1.5px">
+            <img
+              src="/src/assets/icons/less-than.png"
+              style="width: 20px; height: 20px"
+              class="align-middle"
+            />
+          </div>
+          <div class="d-block">
+            <input
+              @keydown.space.prevent
+              :ref="
+                (el) => {
+                  lessthanref = el;
+                }
+              "
+              @focus="{ greaterthan=''; previousFormat = 'LESS-THAN'; (holder as YearSelectionFormat).format = 'LESS-THAN'; triggerHolder(); }"
+              type="text"
+              v-model.trim="lessthan"
+              class="text-center w-100 align-middle"
+              style="height: 30px"
+            />
+          </div>
         </div>
       </div>
       <div class="flex-w-50 align-self-stretch">
-        <div class="d-block text-center" style="padding-bottom: 1.5px">
-          <img
-            src="/src/assets/icons/greater-than.png"
-            style="width: 20px; height: 20px"
-            class="align-middle"
-          />
-        </div>
-        <div class="d-block">
-          <input
-            @keydown.space.prevent
-            :ref="
-              (el) => {
-                greaterthanref = el;
-              }
-            "
-            @focus="
-              () => {
-                lessthan = '';
-                (holder as YearSelectionFormat).format = 'GREATER-THAN';
-              }
-            "
-            type="text"
-            v-model.trim="greaterthan"
-            class="text-center w-100 align-middle"
-            style="height: 30px"
-          />
+        <div 
+          class="d-block"
+          :style="(holder as YearSelectionFormat).format === 'GREATER-THAN'? 'background-color: green;' : 'background-color: #fff;'"
+        >
+          <div class="d-block text-center" style="padding-bottom: 1.5px">
+            <img
+              src="/src/assets/icons/greater-than.png"
+              style="width: 20px; height: 20px"
+              class="align-middle"
+            />
+          </div>
+          <div class="d-block">
+            <input
+              @keydown.space.prevent
+              :ref="
+                (el) => {
+                  greaterthanref = el;
+                }
+              "
+              @focus="{ lessthan=''; previousFormat = 'GREATER-THAN'; (holder as YearSelectionFormat).format = 'GREATER-THAN'; triggerHolder(); }"
+              type="text"
+              v-model.trim="greaterthan"
+              class="text-center w-100 align-middle"
+              style="height: 30px"
+            />
+          </div>
         </div>
       </div>
     </div>

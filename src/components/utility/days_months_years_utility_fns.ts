@@ -635,6 +635,16 @@ export function addYear(page: Ref<number>, rangefirstselection: Ref<YearRangeFir
                       }
                       if(bothsideisnothighlighted) {
                         (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'DESELECTED';
+                        (
+                          years.value[
+                            highlightstoppedyearandpage.page
+                          ][
+                            highlightstoppedyearandpage.row
+                          ][
+                            highlightstoppedyearandpage.col
+                          ] as YearSelectionType[number][number][number]
+                        ).selected = 'DESELECTED';
+                        deselectAll(years);
                         rangefirstselection.value = { page: -1, year: -1 };
                         rangecount.value = 0;
                       }

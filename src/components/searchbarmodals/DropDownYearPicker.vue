@@ -85,86 +85,7 @@ function fillJustAYearPickerArray(
               ) 
               : 
               (
-                (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
-                  (year <= mxyear && year >= mnyear)? 
-                  'ENABLE' 
-                  : 
-                  'DISABLE'
-                ) 
-                : 
-                (
-                  (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
-                  (
-                    (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
-                    'ENABLE'
-                    :
-                    (
-                      (year <= mxyear && year >= mnyear)? 
-                      'LOCKED' 
-                      : 
-                      'DISABLE'
-                    )
-                  )
-                  :
-                  (
-                    (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
-                    (
-                      (
-                        year >= jumptoweek.rangeselectionparams.rangelastselection.year
-                        &&
-                        year <= jumptoweek.rangeselectionparams.rangefirstselection.year
-                      )?
-                      'ENABLE'
-                      :
-                      (
-                        (year <= mxyear && year >= mnyear)? 
-                        'LOCKED' 
-                        : 
-                        'DISABLE'
-                      )
-                    )
-                    :
-                    (
-                      (
-                        year <= jumptoweek.rangeselectionparams.rangelastselection.year
-                        &&
-                        year >= jumptoweek.rangeselectionparams.rangefirstselection.year
-                      )?
-                      'ENABLE'
-                      :
-                      (
-                        (year <= mxyear && year >= mnyear)? 
-                        'LOCKED' 
-                        : 
-                        'DISABLE'
-                      )
-                    )
-                  )
-                )
-              )
-            }
-          } as DropdownYearPickerType[number][number];
-        }
-        else {
-          years.value[index] = {
-            ...years.value[index],
-            [row]: {
-              [col]: {
-                year: year,
-                ref: null,
-                selected: 'DESELECTED',
-                status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
-                  year in jumptoweek.selections? 
-                  'ENABLE' 
-                  : 
-                  (
-                    (year <= mxyear && year >= mnyear)? 
-                    'LOCKED' 
-                    : 
-                    'DISABLE'
-                  )
-                ) 
-                : 
+                jumptoweek.rangeselectionparams.excludedates?
                 (
                   (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
                     (year <= mxyear && year >= mnyear)? 
@@ -221,6 +142,104 @@ function fillJustAYearPickerArray(
                         )
                       )
                     )
+                  )
+                )
+                :
+                (
+                  (year <= mxyear && year >= mnyear)? 
+                  'ENABLE' 
+                  : 
+                  'DISABLE'
+                )
+              )
+            }
+          } as DropdownYearPickerType[number][number];
+        }
+        else {
+          years.value[index] = {
+            ...years.value[index],
+            [row]: {
+              [col]: {
+                year: year,
+                ref: null,
+                selected: 'DESELECTED',
+                status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
+                  year in jumptoweek.selections? 
+                  'ENABLE' 
+                  : 
+                  (
+                    (year <= mxyear && year >= mnyear)? 
+                    'LOCKED' 
+                    : 
+                    'DISABLE'
+                  )
+                ) 
+                : (
+                  jumptoweek.rangeselectionparams.excludedates?
+                  (
+                    (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
+                      (year <= mxyear && year >= mnyear)? 
+                      'ENABLE' 
+                      : 
+                      'DISABLE'
+                    ) 
+                    : 
+                    (
+                      (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
+                      (
+                        (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
+                        'ENABLE'
+                        :
+                        (
+                          (year <= mxyear && year >= mnyear)? 
+                          'LOCKED' 
+                          : 
+                          'DISABLE'
+                        )
+                      )
+                      :
+                      (
+                        (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
+                        (
+                          (
+                            year >= jumptoweek.rangeselectionparams.rangelastselection.year
+                            &&
+                            year <= jumptoweek.rangeselectionparams.rangefirstselection.year
+                          )?
+                          'ENABLE'
+                          :
+                          (
+                            (year <= mxyear && year >= mnyear)? 
+                            'LOCKED' 
+                            : 
+                            'DISABLE'
+                          )
+                        )
+                        :
+                        (
+                          (
+                            year <= jumptoweek.rangeselectionparams.rangelastselection.year
+                            &&
+                            year >= jumptoweek.rangeselectionparams.rangefirstselection.year
+                          )?
+                          'ENABLE'
+                          :
+                          (
+                            (year <= mxyear && year >= mnyear)? 
+                            'LOCKED' 
+                            : 
+                            'DISABLE'
+                          )
+                        )
+                      )
+                    )
+                  )
+                  :
+                  (
+                    (year <= mxyear && year >= mnyear)? 
+                    'ENABLE' 
+                    : 
+                    'DISABLE'
                   )
                 )
               }
@@ -251,6 +270,103 @@ function fillJustAYearPickerArray(
                 ) 
                 : 
                 (
+                  jumptoweek.rangeselectionparams.excludedates?
+                  (
+                    (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
+                      (year <= mxyear && year >= mnyear)? 
+                      'ENABLE' 
+                      : 
+                      'DISABLE'
+                    ) 
+                    : 
+                    (
+                      (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
+                      (
+                        (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
+                        'ENABLE'
+                        :
+                        (
+                          (year <= mxyear && year >= mnyear)? 
+                          'LOCKED' 
+                          : 
+                          'DISABLE'
+                        )
+                      )
+                      :
+                      (
+                        (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
+                        (
+                          (
+                            year >= jumptoweek.rangeselectionparams.rangelastselection.year
+                            &&
+                            year <= jumptoweek.rangeselectionparams.rangefirstselection.year
+                          )?
+                          'ENABLE'
+                          :
+                          (
+                            (year <= mxyear && year >= mnyear)? 
+                            'LOCKED' 
+                            : 
+                            'DISABLE'
+                          )
+                        )
+                        :
+                        (
+                          (
+                            year <= jumptoweek.rangeselectionparams.rangelastselection.year
+                            &&
+                            year >= jumptoweek.rangeselectionparams.rangefirstselection.year
+                          )?
+                          'ENABLE'
+                          :
+                          (
+                            (year <= mxyear && year >= mnyear)? 
+                            'LOCKED' 
+                            : 
+                            'DISABLE'
+                          )
+                        )
+                      )
+                    )
+                  )
+                  :
+                  (
+                    (year <= mxyear && year >= mnyear)? 
+                    'ENABLE' 
+                    : 
+                    'DISABLE'
+                  )
+                )
+              }
+            }
+          }
+        } as DropdownYearPickerType;
+        col++;
+      }
+    }
+    else {
+      years.value = {
+        [index]: {
+          [row]: {
+            [col]: {
+              year: year,
+              ref: null,
+              selected: 'DESELECTED',
+              status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
+                year in jumptoweek.selections? 
+                'ENABLE' 
+                : 
+                (
+                  (year <= mxyear && year >= mnyear)? 
+                  'LOCKED' 
+                  : 
+                  'DISABLE'
+                )
+              ) 
+              : 
+              (
+                jumptoweek.rangeselectionparams.excludedates?
+                (
                   (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
                     (year <= mxyear && year >= mnyear)? 
                     'ENABLE' 
@@ -308,89 +424,12 @@ function fillJustAYearPickerArray(
                     )
                   )
                 )
-              }
-            }
-          }
-        } as DropdownYearPickerType;
-        col++;
-      }
-    }
-    else {
-      years.value = {
-        [index]: {
-          [row]: {
-            [col]: {
-              year: year,
-              ref: null,
-              selected: 'DESELECTED',
-              status: jumptoweek.from === 'DAYS-MONTHS-YEARS'? (
-                year in jumptoweek.selections? 
-                'ENABLE' 
-                : 
+                :
                 (
-                  (year <= mxyear && year >= mnyear)? 
-                  'LOCKED' 
-                  : 
-                  'DISABLE'
-                )
-              ) 
-              : 
-              (
-                (jumptoweek.rangeselectionparams.rangefirstselection.date === '' && jumptoweek.rangeselectionparams.rangelastselection.date === '')? (
                   (year <= mxyear && year >= mnyear)? 
                   'ENABLE' 
                   : 
                   'DISABLE'
-                ) 
-                : 
-                (
-                  (jumptoweek.rangeselectionparams.rangefirstselection.year === jumptoweek.rangeselectionparams.rangelastselection.year)?
-                  (
-                    (year === jumptoweek.rangeselectionparams.rangefirstselection.year)?
-                    'ENABLE'
-                    :
-                    (
-                      (year <= mxyear && year >= mnyear)? 
-                      'LOCKED' 
-                      : 
-                      'DISABLE'
-                    )
-                  )
-                  :
-                  (
-                    (jumptoweek.rangeselectionparams.rangefirstselection.year > jumptoweek.rangeselectionparams.rangelastselection.year)?
-                    (
-                      (
-                        year >= jumptoweek.rangeselectionparams.rangelastselection.year
-                        &&
-                        year <= jumptoweek.rangeselectionparams.rangefirstselection.year
-                      )?
-                      'ENABLE'
-                      :
-                      (
-                        (year <= mxyear && year >= mnyear)? 
-                        'LOCKED' 
-                        : 
-                        'DISABLE'
-                      )
-                    )
-                    :
-                    (
-                      (
-                        year <= jumptoweek.rangeselectionparams.rangelastselection.year
-                        &&
-                        year >= jumptoweek.rangeselectionparams.rangefirstselection.year
-                      )?
-                      'ENABLE'
-                      :
-                      (
-                        (year <= mxyear && year >= mnyear)? 
-                        'LOCKED' 
-                        : 
-                        'DISABLE'
-                      )
-                    )
-                  )
                 )
               )
             }

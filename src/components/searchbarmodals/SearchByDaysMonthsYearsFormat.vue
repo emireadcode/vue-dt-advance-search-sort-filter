@@ -356,9 +356,9 @@ onBeforeMount(() => {
         });
       }
       else {
-        emits('enable:excludebutton', true);
         cards.value[index].search.days_months_years.dates = {};
         triggerRef(cards);
+        emits('enable:excludebutton', true);
       }
     }
   )
