@@ -6,7 +6,7 @@ import type {
   DistinctRecordType,
   PrimitiveType
 } from "./types/SupportedDatatypesTypeDeclaration";
-import AdvanceSearchSortAndFilterModal from "./AdvanceSearchSortAndFilterModal.vue";
+import AdvanceSearchSortAndFilterModal from "../../frontend/src/components/AdvanceSearchSortAndFilterModal.vue";
 import { generateSearchSortAndFilterCards } from "./helperfunctions/createcards";
 
 let distinctRecordsError = null;

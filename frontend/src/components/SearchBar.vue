@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { inject, type ShallowRef, shallowRef, ref, onBeforeMount, triggerRef } from "vue";
 import type { PrimitiveType, NumberType, MultipleWordsStringType, NumberStringType, SingleWordStringType } from "./types/SupportedDatatypesTypeDeclaration";
-import Switchable from "./Switchable.vue";
+import Switchable from "../../frontend/src/components/Switchable.vue";
 import MapContainer from "./searchbarmodals/MapContainer.vue";
 import type { AccessibilityType } from "./types/accessibility";
 

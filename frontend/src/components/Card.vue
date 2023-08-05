@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { provide, inject, type ShallowRef } from "vue";
-import AscDescOrMix from './AscDescOrMix.vue';
-import FilterableResultDisplayer from './FilterableResultDisplayer.vue';
-import SearchBar from './SearchBar.vue';
+import AscDescOrMix from '../../frontend/src/components/AscDescOrMix.vue';
+import FilterableResultDisplayer from '../../frontend/src/components/FilterableResultDisplayer.vue';
+import SearchBar from '../../frontend/src/components/SearchBar.vue';
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 
 const

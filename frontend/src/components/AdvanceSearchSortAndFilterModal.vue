@@ -8,8 +8,8 @@ import {
 } from "./helperfunctions/accessibility";
 import type { PrimitiveType } from "./types/SupportedDatatypesTypeDeclaration";
 import type { AccessibilityType } from "./types/accessibility";
-import RefreshUndoRedoCloseButton from "./RefreshUndoRedoCloseButton.vue";
-import Card from "./Card.vue";
+import RefreshUndoRedoCloseButton from "../../frontend/src/components/RefreshUndoRedoCloseButton.vue";
+import Card from "../../frontend/src/components/Card.vue";
 
 const
   props = defineProps<{
