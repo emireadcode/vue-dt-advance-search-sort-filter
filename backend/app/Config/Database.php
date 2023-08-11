@@ -26,10 +26,10 @@ class Database extends Config
      */
     public array $default = [
         'DSN'      => '',
-        'hostname' => 'localhost',
-        'username' => '',
-        'password' => '',
-        'database' => '',
+        'hostname' => 'mysql',
+        'username' => 'root',
+        'password' => 'root',
+        'database' => 'sakila',
         'DBDriver' => 'MySQLi',
         'DBPrefix' => '',
         'pConnect' => false,

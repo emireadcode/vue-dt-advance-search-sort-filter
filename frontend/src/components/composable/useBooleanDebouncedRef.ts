@@ -1,20 +1,20 @@
-import { customRef } from "vue";
+import { customRef } from 'vue'
 
 export function useBooleanDebouncedRef(value: Boolean, delay = 2) {
-  let timeout: NodeJS.Timeout;
+  let timeout: ReturnType<typeof setTimeout>
   return customRef((track, trigger) => {
     return {
       get() {
-        track();
-        return value;
+        track()
+        return value
       },
       set(newValue) {
-        clearTimeout(timeout);
+        clearTimeout(timeout)
         timeout = setTimeout(() => {
-          value = newValue;
-          trigger();
-        }, delay);
-      },
-    };
-  });
+          value = newValue
+          trigger()
+        }, delay)
+      }
+    }
+  })
 }

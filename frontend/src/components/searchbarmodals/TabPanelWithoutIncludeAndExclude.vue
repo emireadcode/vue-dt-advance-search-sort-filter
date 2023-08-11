@@ -21,7 +21,7 @@ import type {
   SingleWordStringConcatenatedFieldType,
 } from "../types/SupportedDatatypesTypeDeclaration";
 import DescribeLabel from "./DescribeLabel.vue";
-import Paste from "./Paste.vue";
+import PasteCopied from "./PasteCopied.vue";
 import { addNewInputEntry } from "../helperfunctions/addnewlypastedandnewinputentry";
 import PastedItemAndNewlyInputedEntryDisplayer from "./PastedItemAndNewlyInputedEntryDisplayer.vue";
 import InclusiveNumberSearch from "./InclusiveNumberSearch.vue";
@@ -42,12 +42,13 @@ const
     (e: "show:atnumbersearchexcludenumberwindowopenerbutton", action: boolean): void;
   }>(),
   cards = inject("cards") as ShallowRef<(MultipleWordsStringType | SingleWordStringType | NumberStringType)[]>,
-  index = inject("index") as number
+  index = inject("index") as number,
+  cc = props
 ;
 
 let unwatchopenatnumbersearchexcludenumberwindow: WatchStopHandle;
 
-provide("concatfieldindex", props.concatfieldindex as number | undefined);
+provide("concatfieldindex", cc.concatfieldindex as number | undefined);
 
 if(props.concatfieldindex === undefined) {
   if(
@@ -88,7 +89,7 @@ async function addLocalNewInputEntry(newinputentry: string, inputtype: 'WORD') {
 
 async function addPastedItems(pasteditems: string[][], inputtype: 'WORD') {
   let 
-    time: NodeJS.Timeout[] = [], 
+    time: ReturnType<typeof setTimeout>[] = [], 
     timeIndex = 0
   ;
   for(let i=0; i<pasteditems.length; i++) {
@@ -232,7 +233,7 @@ onBeforeUnmount(() => {
             )
           "
         >
-          <img src="/src/assets/icons/add.png" class="wh-1-dot-25-rem align-middle" />
+          <img src="./icons/add.png" class="wh-1-dot-25-rem align-middle" />
         </a>
       </div>
     </div>
@@ -263,7 +264,7 @@ onBeforeUnmount(() => {
         </div>
       </template>
     </template>
-    <Paste
+    <PasteCopied
       :pastearea="
         ((cards[index].enableincludeandexcludesearch !== undefined && !cards[index].enableincludeandexcludesearch || cards[index].enableincludeandexcludesearch === undefined) && (cards[index].enableatnumbersearch !== undefined && cards[index].enableatnumbersearch))?
         (
@@ -277,7 +278,7 @@ onBeforeUnmount(() => {
       "
       :receiveclosepastemodalsignal="(holder as StringSearchType).closepaste"
       :title="((props.concatfieldindex === undefined)? cards[index].info : ((cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[props.concatfieldindex as number])).name"
-      :datatype="cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString'"
+      :datatype="(cards[index].info.datatype as 'NumberString' | 'SingleWordString' | 'MultipleWordsString')"
       :text-area-height="'height:357px;'"
       @return:newlypasteditems="($val: string[][]) => { addPastedItems($val, 'WORD'); showatnumbersearchexcludenumberwindowopenerbutton = false; emits('show:atnumbersearchexcludenumberwindowopenerbutton', false); }"
     >
@@ -301,7 +302,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </template>
-    </Paste>
+    </PasteCopied>
     <template v-if="showatnumbersearchexcludenumberwindowopenerbutton">
       <template v-if="
         ((concatfieldindex !== undefined)? (cards[index].concatenated as MultipleWordsStringConcatenatedFieldType | SingleWordStringConcatenatedFieldType)[concatfieldindex] : (cards[index] as MultipleWordsStringType | NumberStringType | SingleWordStringType)).enableatnumbersearch !== undefined
@@ -328,7 +329,7 @@ onBeforeUnmount(() => {
                     }"
                   >
                     <img
-                      src="/src/assets/icons/close.png"
+                      src="./icons/close.png"
                       class="align-middle"
                       style="width: 2.205rem; height: 2.205rem"
                     />
@@ -379,7 +380,7 @@ onBeforeUnmount(() => {
                   @keypress.enter="openOrCloseAtNumberSearchWindow(false)"
                 >
                   <img
-                    src="/src/assets/icons/close.png"
+                    src="./icons/close.png"
                     class="align-middle"
                     style="width: 2.205rem; height: 2.205rem"
                   />

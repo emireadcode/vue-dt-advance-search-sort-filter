@@ -38,10 +38,10 @@ export function getOffset(el: HTMLLabelElement) {
 
 export function getMonthDimensions(months: ShallowRef<MonthSelectionType>) {
   nextTick(() => {
-    for(let row in months.value) {
-      for(let col in months.value[row]) {
+    for(const row in months.value) {
+      for(const col in months.value[row]) {
         if((months.value[row][col] as MonthSelectionType[number][number]).ref) {
-          let offset = getOffset((months.value[row][col] as MonthSelectionType[number][number]).ref);
+          const offset = getOffset((months.value[row][col] as MonthSelectionType[number][number]).ref);
           if (offset) {
             (months.value[row][col] as MonthSelectionType[number][number]).x1 = offset.x1;
             (months.value[row][col] as MonthSelectionType[number][number]).y1 = offset.y1;
@@ -57,9 +57,9 @@ export function getMonthDimensions(months: ShallowRef<MonthSelectionType>) {
 
 export function getDayDimensions(days: ShallowRef<DaySelectionType>) {
   nextTick(() => {
-    for(let day in days.value) {
+    for(const day in days.value) {
       if((days.value[day] as unknown as DaySelectionType[number]).ref) {
-        let offset = getOffset((days.value[day] as unknown as DaySelectionType[number]).ref);
+        const offset = getOffset((days.value[day] as unknown as DaySelectionType[number]).ref);
         if (offset) {
           (days.value[day] as unknown as DaySelectionType[number]).x1 = offset.x1;
           (days.value[day] as unknown as DaySelectionType[number]).y1 = offset.y1;
@@ -74,10 +74,10 @@ export function getDayDimensions(days: ShallowRef<DaySelectionType>) {
 
 export function getYearDimensions(years: ShallowRef<YearSelectionType>, page: Ref<number>) {
   nextTick(() => {
-    for(let row in years.value[page.value]) {
-      for(let col in years.value[page.value][row]) {
+    for(const row in years.value[page.value]) {
+      for(const col in years.value[page.value][row]) {
         if((years.value[page.value][row][col] as YearSelectionType[number][number][number]).ref) {
-          let offset = getOffset((years.value[page.value][row][col] as YearSelectionType[number][number][number]).ref);
+          const offset = getOffset((years.value[page.value][row][col] as YearSelectionType[number][number][number]).ref);
           if (offset) {
             (years.value[page.value][row][col] as YearSelectionType[number][number][number]).x1 = offset.x1;
             (years.value[page.value][row][col] as YearSelectionType[number][number][number]).y1 = offset.y1;
@@ -92,14 +92,14 @@ export function getYearDimensions(years: ShallowRef<YearSelectionType>, page: Re
 }
 
 export function calculateRemainder(max: number, min: number, div: number) {
-  let diff = max - min, quotient = parseInt(""+(diff/div));
+  const diff = max - min, quotient = parseInt(""+(diff/div));
   return (((quotient + 1)*div) - diff) - 1;
 }
 
 export function whereisMouse(pointx: number, pointy: number, page: Ref<number>, years: ShallowRef<YearSelectionType>) {
   let result = {page: -1, year: -1, status: "DISABLE"}, found = false;
-  for(let row in years.value[page.value]) {
-    for(let col in years.value[page.value][row]) {
+  for(const row in years.value[page.value]) {
+    for(const col in years.value[page.value][row]) {
       if(
         (
           parseInt(row) === 0
@@ -153,14 +153,14 @@ export function mouseMovement(page: Ref<number>, years: ShallowRef<YearSelection
       loadingMovement.value = true;
       if (format === "RANGE") {
         if (rangefirstselection.value.year > -1) {
-          let mousePointed = whereisMouse(event.pageX, event.pageY, page, years);
+          const mousePointed = whereisMouse(event.pageX, event.pageY, page, years);
           xpoint.value = event.pageX;
           ypoint.value = event.pageY;
           pagepoint.value = mousePointed.page;
           if(mousePointed.status === "ENABLE" && mousePointed.year > -1 && mousePointed.page > -1) {
-            for(let p in years.value) {
-              for(let row in years.value[p]) {
-                for(let col in years.value[p][row]) {
+            for(const p in years.value) {
+              for(const row in years.value[p]) {
+                for(const col in years.value[p][row]) {
                   if((years.value[p][row][col] as YearSelectionType[number][number][number]).year > rangefirstselection.value.year) {
                     if((years.value[p][row][col] as YearSelectionType[number][number][number]).year <= mousePointed.year) {
                       (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'HIGHLIGHTED';
@@ -210,9 +210,9 @@ export function trackYearBoxMouseMovement(page: Ref<number>, years: ShallowRef<Y
 }
 
 export function deselectAll(years: ShallowRef<YearSelectionType>) {
-  for(let p in years.value) {
-    for(let row in years.value[p]) {
-      for(let col in years.value[p][row]) {
+  for(const p in years.value) {
+    for(const row in years.value[p]) {
+      for(const col in years.value[p][row]) {
         (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'DESELECTED';
       }
     }
@@ -222,9 +222,9 @@ export function deselectAll(years: ShallowRef<YearSelectionType>) {
 
 export function addYear(page: Ref<number>, rangefirstselection: Ref<YearRangeFirstSelectionType> | undefined, loadingMovement: Ref<boolean> | undefined, rangecount: Ref<number> | undefined, multipleselectcount: Ref<number> | undefined, year: number, clickedorpasted: boolean, years: ShallowRef<YearSelectionType>, format: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN" | "FROM-TO") {
   let found = false;
-  for(let p in years.value) {
-    for(let row in years.value[p]) {
-      for(let col in years.value[p][row]) {
+  for(const p in years.value) {
+    for(const row in years.value[p]) {
+      for(const col in years.value[p][row]) {
         if(year === (years.value[p][row][col] as YearSelectionType[number][number][number]).year) {
           if(format === 'RANGE') {
             if(rangecount && rangefirstselection && loadingMovement) {
@@ -237,7 +237,7 @@ export function addYear(page: Ref<number>, rangefirstselection: Ref<YearRangeFir
                     trackYearBoxMouseMovement(page, years, rangefirstselection, loadingMovement, format);
                   }
                   else {
-                    let avoidedgecases = whereisMouse(xpoint.value, ypoint.value, pagepoint, years);
+                    const avoidedgecases = whereisMouse(xpoint.value, ypoint.value, pagepoint, years);
                     if(avoidedgecases.year === (years.value[p][row][col] as YearSelectionType[number][number][number]).year) {
                       (years.value[p][row][col] as YearSelectionType[number][number][number]).selected = 'SELECTED';
                       rangefirstselection.value = { page: -1, year: -1 };
@@ -248,9 +248,9 @@ export function addYear(page: Ref<number>, rangefirstselection: Ref<YearRangeFir
                         onesideishighlighted = false,
                         highlightstoppedyearandpage = {year: 0, page: 0, row: 0, col: 0};
                       ;
-                      for(let k in years.value) {
-                        for(let r in years.value[k]) {
-                          for(let c in years.value[k][r]) {
+                      for(const k in years.value) {
+                        for(const r in years.value[k]) {
+                          for(const c in years.value[k][r]) {
                             if((years.value[k][r][c] as YearSelectionType[number][number][number]).year === rangefirstselection.value.year) {
                               if(parseInt(c) === 0) {
                                 if(parseInt(r) === 0) {
@@ -856,12 +856,13 @@ export function fillYearArray(
   yearselectionformat: "RANGE" | "MULTIPLE-OR-SINGLE" | "GREATER-THAN" | "LESS-THAN",
   page: Ref<number>
 ) {
-  let index = 0, row = 0, col = 0, counter = 0, years = shallowRef<YearSelectionType>();
+  let index = 0, row = 0, col = 0, counter = 0;
+  const years = shallowRef<YearSelectionType>();
 
   //let remainder = calculateRemainder(2022, 1945, 15), maxyear = 2022 + remainder;
   //for(let year=1945; year<=maxyear; year++) {
 
-  let 
+  const 
     remainder = calculateRemainder(
       _maxyear, 
       minyear,
@@ -973,7 +974,8 @@ export function fillYearArray(
 }
 
 export function fillMonthArray(monthselectionformat: "RANGE" | "MULTIPLE-OR-SINGLE") {
-  let row = 0, col = 0, months = shallowRef<MonthSelectionType>();
+  let row = 0, col = 0; 
+  const months = shallowRef<MonthSelectionType>();
   for(let index=0; index<monthNames.length; index++) {
     if(months.value) {
       if(row in months.value) {
@@ -1044,7 +1046,7 @@ export function fillMonthArray(monthselectionformat: "RANGE" | "MULTIPLE-OR-SING
 }
 
 export function fillDayArray(isoweek: boolean, dayselectionformat: "RANGE" | "MULTIPLE-OR-SINGLE") {
-  let days = shallowRef<DaySelectionType>();
+  const days = shallowRef<DaySelectionType>();
   for(let index=0; index< ((isoweek)? isodayNames.length: dayNames.length); index++) {
     days.value = {
       ...days.value,

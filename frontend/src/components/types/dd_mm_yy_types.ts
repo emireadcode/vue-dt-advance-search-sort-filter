@@ -1,5 +1,3 @@
-import type { DateType } from "./SupportedDatatypesTypeDeclaration";
-
 export type YearMonthClickable<T> = {
   month: number;
   year: number;

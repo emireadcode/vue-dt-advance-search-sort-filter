@@ -1,18 +1,5 @@
 <script setup lang="ts">
-import {
-  watch,
-  ref,
-  nextTick,
-  triggerRef,
-  shallowRef,
-  onMounted,
-  onBeforeMount,
-  onBeforeUnmount,
-  computed,
-  type WatchStopHandle,
-  type ShallowRef,
-  provide,
-} from "vue";
+import {type ShallowRef, computed, type WatchStopHandle, watch, provide, ref, nextTick, triggerRef, shallowRef, onMounted, onBeforeMount, onBeforeUnmount } from 'vue'
 import type {
   DateType
 } from "../types/SupportedDatatypesTypeDeclaration";
@@ -56,6 +43,7 @@ const
     mindate: string;
     maxdate: string;
   }>(),
+  cc = props,
   emits = defineEmits<{
     (e: "enable:excludebutton", action: boolean): void;
     (e: "update:selections", selections: DateType['search']['dd_mm_yyyy']['dates']): void;
@@ -94,7 +82,7 @@ const
     },
     rangeselectcount: 0,
     inselectionmode: true,
-    excludedates: props.excludedates as boolean,
+    excludedates: cc.excludedates as boolean,
   }),
   jumptoweekclicked = ref(false),
   monthoryeardropdownclicked = ref(''),
@@ -102,12 +90,12 @@ const
 ;
 
 provide('jumptoweek', {
-  selections: props.selections,
-  isoweek: props.isoweek,
-  from: props.from,
+  selections: cc.selections,
+  isoweek: cc.isoweek,
+  from: cc.from,
   rangeselectionparams: rangeselectionparams.value,
-  mindate: props.mindate,
-  maxdate: props.maxdate
+  mindate: cc.mindate,
+  maxdate: cc.maxdate
 } as {
   selections: VisibleCalendarType['selections'];
   isoweek: boolean;
@@ -471,8 +459,8 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     ).weeks[0].ref as HTMLDivElement
                   ).style.backgroundColor = 'blue';
                   triggerRef(visiblecalendar);
-                            
-                  let time: NodeJS.Timeout;
+                  
+                  let time: ReturnType<typeof setTimeout>;
                   time = setTimeout(() => {
                     (
                       (
@@ -501,7 +489,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).style.backgroundColor = 'blue';
                 triggerRef(visiblecalendar);
                             
-                let time: NodeJS.Timeout;
+                let time: ReturnType<typeof setTimeout>;
                 time = setTimeout(() => {
                   (
                     (
@@ -530,7 +518,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).style.backgroundColor = 'blue';
                 triggerRef(visiblecalendar);
                             
-                let time: NodeJS.Timeout;
+                let time: ReturnType<typeof setTimeout>;
                 time = setTimeout(() => {
                   (
                     (
@@ -604,7 +592,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     ).style.backgroundColor = 'blue';
                     triggerRef(visiblecalendar);
                               
-                    let time: NodeJS.Timeout;
+                    let time: ReturnType<typeof setTimeout>;
                     time = setTimeout(() => {
                       (
                         (
@@ -633,7 +621,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).style.backgroundColor = 'blue';
                   triggerRef(visiblecalendar);
                               
-                  let time: NodeJS.Timeout;
+                  let time: ReturnType<typeof setTimeout>;
                   time = setTimeout(() => {
                     (
                       (
@@ -663,7 +651,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).style.backgroundColor = 'blue';
                 triggerRef(visiblecalendar);
                             
-                let time: NodeJS.Timeout;
+                let time: ReturnType<typeof setTimeout>;
                 time = setTimeout(() => {
                   (
                     (
@@ -926,7 +914,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).style.backgroundColor = 'blue';
                 triggerRef(visiblecalendar);
                             
-                let time: NodeJS.Timeout;
+                let time: ReturnType<typeof setTimeout>;
                 time = setTimeout(() => {
                   (
                     (
@@ -951,7 +939,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).weeks[0].ref as HTMLDivElement
                 ).style.backgroundColor = 'blue';
                 triggerRef(visiblecalendar);
-                let time: NodeJS.Timeout;
+                let time: ReturnType<typeof setTimeout>;
                 time = setTimeout(() => {
                   (
                     (
@@ -980,7 +968,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).style.backgroundColor = 'blue';
                 triggerRef(visiblecalendar);
                             
-                let time: NodeJS.Timeout;
+                let time: ReturnType<typeof setTimeout>;
                 time = setTimeout(() => {
                   (
                     (
@@ -1051,7 +1039,6 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   props.maxdate,
                   visiblecalendar as ShallowRef<VisibleCalendarType>
                 ) as YearMonthClickable<PositionTrackerType>['calendar'];
-                console.log((visiblecalendar.value as VisibleCalendarType).current.calendar+' dksdkfksa');
                 triggerRef(visiblecalendar);
                 completelyDisableNewCalendarNotInSelection();
               }
@@ -1070,7 +1057,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                   ).style.backgroundColor = 'blue';
                   triggerRef(visiblecalendar);
                               
-                  let time: NodeJS.Timeout;
+                  let time: ReturnType<typeof setTimeout>;
                   time = setTimeout(() => {
                     (
                       (
@@ -1097,7 +1084,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                     ).weeks[0].ref as HTMLDivElement
                   ).style.backgroundColor = 'blue';
                   triggerRef(visiblecalendar);
-                  let time: NodeJS.Timeout;
+                  let time: ReturnType<typeof setTimeout>;
                   time = setTimeout(() => {
                     (
                       (
@@ -1127,7 +1114,7 @@ function determineMonthAndWeekAndShowWeekInCalendar(yearandweek: {year: number; 
                 ).style.backgroundColor = 'blue';
                 triggerRef(visiblecalendar);
                             
-                let time: NodeJS.Timeout;
+                let time: ReturnType<typeof setTimeout>;
                 time = setTimeout(() => {
                   (
                     (
@@ -2633,7 +2620,7 @@ onMounted(() => {
   );
   unwatchresetcalendarsignal = watch(
     () => (props.resetcalendarsignal as number),
-    (x) => {
+    () => {
       for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
         for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days) {
           if((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(''+week)].days[day].readonlystatus === "ENABLE") {
@@ -2692,7 +2679,7 @@ onMounted(() => {
   );
   unwatchselectionformat = watch(
     () => props.selectionformat,
-    (x) => {
+    () => {
       monthoryeardropdownclickcount.value = 0;
       monthoryeardropdownclicked.value = '';
       rangeselectionparams.value.rangeselectcount = 0;
@@ -2796,7 +2783,123 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', processDimensions, true);
 });
 
+const rightstyle = computed(() => {
+  return (dayindex: number, weekindex: number, day: VisibleCalendarType['selections'][number]['months'][number]['weeks'][number]['days'][number]) => {
+    (
+      (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[weekindex].ref
+      &&
+      (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue'
+    )?
+    'background-color: blue; color: #fff;'
+    : (
+      day.day ===
+      ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+        (visiblecalendar.value as VisibleCalendarType).current.month
+      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day 
+      &&
+      ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+        (visiblecalendar.value as VisibleCalendarType).current.month
+      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' 
+      &&
+      ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+        (visiblecalendar.value as VisibleCalendarType).current.month
+      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'? 
+      'background-color:green;color: #fff !important'
+      : (
+        day.day ===
+        ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+          (visiblecalendar.value as VisibleCalendarType).current.month
+        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day 
+        &&
+        ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+          (visiblecalendar.value as VisibleCalendarType).current.month
+        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' 
+        &&
+        ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+          (visiblecalendar.value as VisibleCalendarType).current.month
+        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'? 
+        'color: black !important;text-shadow:none'
+        : (
+          day.day ===
+          ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+            (visiblecalendar.value as VisibleCalendarType).current.month
+          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day 
+          &&
+          ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+            (visiblecalendar.value as VisibleCalendarType).current.month
+          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' 
+          &&
+          ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).current.year].months[
+            (visiblecalendar.value as VisibleCalendarType).current.month
+          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'? 
+          'background-color:grey;color: #fff !important'
+          : 
+          'color: gray !important;text-shadow:none'
+        )
+      )
+    )
+  }
+});
+
+const leftstyle = computed(() => {
+  return (dayindex: number, weekindex: number, day: VisibleCalendarType['selections'][number]['months'][number]['weeks'][number]['days'][number]) => {
+    (
+      (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[weekindex].ref
+      &&
+      (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue'
+    )?
+    'background-color: blue; color: #fff;'
+    : (
+      day.day ===
+      ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+        (visiblecalendar.value as VisibleCalendarType).previous.month
+      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day 
+      &&
+      ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+        (visiblecalendar.value as VisibleCalendarType).previous.month
+      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' 
+      &&
+      ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+        (visiblecalendar.value as VisibleCalendarType).previous.month
+      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'? 
+      'background-color:green;color: #fff !important'
+      : (
+        day.day ===
+        ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+          (visiblecalendar.value as VisibleCalendarType).previous.month
+        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day 
+        &&
+        ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+          (visiblecalendar.value as VisibleCalendarType).previous.month
+        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' 
+        &&
+        ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+          (visiblecalendar.value as VisibleCalendarType).previous.month
+        ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'? 
+        'color: black !important;text-shadow:none'
+        : (
+          day.day ===
+          ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+            (visiblecalendar.value as VisibleCalendarType).previous.month
+          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day 
+          &&
+          ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+            (visiblecalendar.value as VisibleCalendarType).previous.month
+          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' 
+          &&
+          ((visiblecalendar.value as VisibleCalendarType).selections[(visiblecalendar.value as VisibleCalendarType).previous.year].months[
+            (visiblecalendar.value as VisibleCalendarType).previous.month
+          ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'? 
+          'background-color:grey;color: #fff !important'
+          : 
+          'color: gray !important;text-shadow:none'
+        )
+      )
+    )
+  }
+})
 </script>
+
 
 <template>
   <div 
@@ -2805,19 +2908,19 @@ onBeforeUnmount(() => {
   >
     <div class="d-block" style="padding: 7px 2px;">
       <button 
-        @keypress.enter="{ jumptoweekclicked=!jumptoweekclicked; monthoryeardropdownclickcount = 0; monthoryeardropdownclicked = ''; }"
-        @click="{ jumptoweekclicked=!jumptoweekclicked; monthoryeardropdownclickcount = 0; monthoryeardropdownclicked = ''; }"
+        @keypress.enter="() => { jumptoweekclicked=!jumptoweekclicked; monthoryeardropdownclickcount = 0; monthoryeardropdownclicked = ''; }"
+        @click="() => { jumptoweekclicked=!jumptoweekclicked; monthoryeardropdownclickcount = 0; monthoryeardropdownclicked = ''; }"
         class="btn w-100" 
         style="padding:2px;"
         :style="from==='DD-MM-YYYY'? 'background-color: #E8E8E8;' : 'background-color: #f0e68c;'"
       >
         <span class="flex-box flex-direction-row flex-nowrap justify-content-center align-items-center w-100">
           <span style="padding-left:5px;">
-            <img src="/src/assets/icons/calendar.png" style="width:1rem;height:1rem;" />
+            <img src="./icons/calendar.png" style="width:1rem;height:1rem;" />
           </span>
           <span class="flex-fill text-center">Jump to week</span>
           <span style="padding-right:5px;">
-            <img :src="jumptoweekclicked? './src/assets/icons/up-arrow.png' : './src/assets/icons/down-arrow.png'" style="width:1rem;height:1rem;" />
+            <img :src="jumptoweekclicked? './icons/up-arrow.png' : './icons/down-arrow.png'" style="width:1rem;height:1rem;" />
           </span>
         </span>
       </button>
@@ -2889,8 +2992,8 @@ onBeforeUnmount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch" style="padding-left: 5px;padding-right:5px;">
                     <button 
-                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
-                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @keypress.enter="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
                       class="w-100 month-or-year-link btn cursor-pointer"
                       style="padding: 2px 0"
                     >
@@ -2900,8 +3003,8 @@ onBeforeUnmount(() => {
                         </span>
                         <span style="padding-right: 10px;">
                           <img 
-                            :src="(monthoryeardropdownclicked === 'MONTH-PREVIOUS')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
-                            style="width:10px;height:10px;"
+                            :src="(monthoryeardropdownclicked === 'MONTH-PREVIOUS')? (monthoryeardropdownclickcount === 0? './icons/down-arrow.png' : './icons/up-arrow.png') : './icons/down-arrow.png'" 
+                            style="width:10px; height:10px;"
                           />
                         </span>
                       </span>
@@ -2909,8 +3012,8 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch">
                     <button 
-                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
-                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @keypress.enter="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-PREVIOUS' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-PREVIOUS'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
                       class="w-100 month-or-year-link btn cursor-pointer"
                       style="padding: 2px 0"
                     >
@@ -2920,7 +3023,7 @@ onBeforeUnmount(() => {
                         </span>
                         <span style="padding-right: 10px;">
                           <img 
-                            :src="(monthoryeardropdownclicked === 'YEAR-PREVIOUS')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
+                            :src="(monthoryeardropdownclicked === 'YEAR-PREVIOUS')? (monthoryeardropdownclickcount === 0? './icons/down-arrow.png' : './icons/up-arrow.png') : './icons/down-arrow.png'" 
                             style="width:10px;height:10px;" 
                           />
                         </span>
@@ -2961,8 +3064,7 @@ onBeforeUnmount(() => {
                         :currentyear="(visiblecalendar as VisibleCalendarType).previous.year"
                         :rowlimit="4"
                         :collimit="3" 
-                        @receive:year="($val: number) => {
-                        }"
+                        @receive:year="($val: number) => {}"
                       ></DropDownYearPicker>
                     </div>
                   </template>
@@ -3022,12 +3124,12 @@ onBeforeUnmount(() => {
                         <div class="d-block p-0 m-0">
                           <input
                             v-model="(visiblecalendar as VisibleCalendarType).previous.ty[(visiblecalendar as VisibleCalendarType).previous.year][tyindex].checked"
-                            class="m-0 p-0 border-black  w-100"
+                            class="m-0 p-0 border-black w-100"
                             :disabled="((selectionformat==='RANGE' && excludedates) || (from === 'DAYS-MONTHS-YEARS' && selectionformat === 'MULTIPLE-OR-SINGLE'))? true : (visiblecalendar as VisibleCalendarType).previous.ty[(visiblecalendar as VisibleCalendarType).previous.year][tyindex].status === 'ENABLE'? false : true"
                             type="checkbox"
                             style="float: left; line-height: 1.2rem; height: 1.2rem;"
                             @change="handleTyTmClicked(
-                              'TY', 
+                              'TY',
                               tyindex, 
                               (visiblecalendar as VisibleCalendarType).previous.ty[(visiblecalendar as VisibleCalendarType).previous.year][tyindex].checked,
                               (visiblecalendar as VisibleCalendarType).previous.year
@@ -3115,10 +3217,10 @@ onBeforeUnmount(() => {
             <div
               :class="((props.excludedates!==undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')? 'flex-w-12-dot-5' : 'flex-w-14-dot-285714'"
               class="overflow-hidden"
-              v-for="(_day, dayindex) in props.isoweek ? isodays : days"
+              v-for="(_day, dayindex) in props.isoweek? isodays : days"
               :key="'dayname' + dayindex"
             >
-              {{ props.isoweek ? isodays[dayindex] : days[dayindex] }}
+              {{ props.isoweek? isodays[dayindex] : days[dayindex] }}
             </div>
           </div>
           <div
@@ -3126,7 +3228,7 @@ onBeforeUnmount(() => {
             id="previousvisiblecalendarbox"
             class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
           >
-            <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).previous.calendar.weeks">
+            <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).previous.calendar.weeks" :key="weekindex+'xss'">
               <div class="flex-w-100">
                 <div
                   :ref="($el) => assignWeekRef($el as HTMLDivElement, weekindex, 'PREVIOUS')"
@@ -3238,7 +3340,7 @@ onBeforeUnmount(() => {
                       "
                       @keypress.enter="handleDateClick(day)"
                       @click="handleDateClick(day)"
-                      :disabled="day.status === 'DISABLE' ? true : false"
+                      :disabled="day.status === 'DISABLE'? true : false"
                       :class="[day.status === 'DISABLE'?'':'cursor-pointer']"
                       class="w-100"
                       style="float: left;outline: 1px solid #fff;"
@@ -3261,7 +3363,7 @@ onBeforeUnmount(() => {
                       <input
                         @keypress.enter.stop=""
                         @click.stop=""
-                        :disabled="day.status === 'DISABLE' ? true : false"
+                        :disabled="day.status === 'DISABLE'? true : false"
                         type="checkbox"
                         class="position-absolute d-none"
                         style="pointer-events: auto;"
@@ -3288,48 +3390,7 @@ onBeforeUnmount(() => {
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
                             :style="
-                              (
-                                (visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref
-                                &&
-                                (visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue'
-                              )?
-                              'background-color: blue; color: #fff;'
-                              : (
-                                day.day ===
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                    (visiblecalendar as VisibleCalendarType).previous.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                  (visiblecalendar as VisibleCalendarType).previous.month
-                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
-                                ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                  (visiblecalendar as VisibleCalendarType).previous.month
-                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                  ? 'background-color:green;color: #fff !important'
-                                  : day.day ===
-                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                        (visiblecalendar as VisibleCalendarType).previous.month
-                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                      (visiblecalendar as VisibleCalendarType).previous.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                      (visiblecalendar as VisibleCalendarType).previous.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                  ? 'color: black !important;text-shadow:none'
-                                  : day.day ===
-                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                        (visiblecalendar as VisibleCalendarType).previous.month
-                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                      (visiblecalendar as VisibleCalendarType).previous.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).previous.year].months[
-                                      (visiblecalendar as VisibleCalendarType).previous.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                  ? 'background-color:grey;color: #fff !important'
-                                  : 'color: gray !important;text-shadow:none'
-                              )
+                              leftstyle(dayindex, weekindex, day)
                             "
                           >
                             {{ day.day }}
@@ -3361,8 +3422,8 @@ onBeforeUnmount(() => {
                               ((visiblecalendar as VisibleCalendarType).previous.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue')?
                               'background-color: blue; color: #fff;'
                               : (
-                                day.status === 'DISABLE'
-                                ? 'color: gray !important;text-shadow:none'
+                                day.status === 'DISABLE'? 
+                                'color: gray !important;text-shadow:none'
                                 : 'color: black !important;text-shadow:none'
                               )
                             "
@@ -3390,8 +3451,8 @@ onBeforeUnmount(() => {
                 >
                   <div class="flex-w-50 align-self-stretch">
                     <button 
-                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
-                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @keypress.enter="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'MONTH-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'MONTH-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
                       class="w-100 month-or-year-link btn cursor-pointer"
                       style="padding: 2px 0"
                     >
@@ -3401,7 +3462,7 @@ onBeforeUnmount(() => {
                         </span>
                         <span style="padding-right: 10px;">
                           <img 
-                            :src="(monthoryeardropdownclicked === 'MONTH-CURRENT')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
+                            :src="(monthoryeardropdownclicked === 'MONTH-CURRENT')? (monthoryeardropdownclickcount === 0? './icons/down-arrow.png' : './icons/up-arrow.png') : './icons/down-arrow.png'" 
                             style="width:10px;height:10px;"
                           />
                         </span>
@@ -3410,8 +3471,8 @@ onBeforeUnmount(() => {
                   </div>
                   <div class="flex-w-50 align-self-stretch" style="padding-left:5px;padding-right: 5px;">
                     <button 
-                      @keypress.enter="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
-                      @click="{ monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @keypress.enter="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
+                      @click="() => { monthoryeardropdownclickcount = (monthoryeardropdownclicked !== 'YEAR-CURRENT' && monthoryeardropdownclickcount === 1)? 0 : monthoryeardropdownclickcount; monthoryeardropdownclicked = 'YEAR-CURRENT'; monthoryeardropdownclickcount++; monthoryeardropdownclickcount = (monthoryeardropdownclickcount === 2)? 0 : monthoryeardropdownclickcount; }"
                       class="w-100 month-or-year-link btn cursor-pointer"
                       style="padding: 2px 0"
                     >
@@ -3421,7 +3482,7 @@ onBeforeUnmount(() => {
                         </span>
                         <span style="padding-right: 10px;">
                           <img 
-                            :src="(monthoryeardropdownclicked === 'YEAR-CURRENT')? (monthoryeardropdownclickcount === 0? './src/assets/icons/down-arrow.png' : './src/assets/icons/up-arrow.png') : './src/assets/icons/down-arrow.png'" 
+                            :src="(monthoryeardropdownclicked === 'YEAR-CURRENT')? (monthoryeardropdownclickcount === 0? './icons/down-arrow.png' : './icons/up-arrow.png') : './icons/down-arrow.png'" 
                             style="width:10px;height:10px;"
                           />
                         </span>
@@ -3657,11 +3718,11 @@ onBeforeUnmount(() => {
             <div
               :class="((props.excludedates!==undefined && props.excludedates) || props.selectionformat === 'MULTIPLE-OR-SINGLE')? 'flex-w-12-dot-5' : 'flex-w-14-dot-285714'"
               class="overflow-hidden"
-              v-for="(_day, dayindex) in props.isoweek ? isodays : days"
+              v-for="(_day, dayindex) in props.isoweek? isodays : days"
               :key="'dayname-' + dayindex"
               style="border-radius: 4px"
             >
-              {{ props.isoweek ? isodays[dayindex] : days[dayindex] }}
+              {{ props.isoweek? isodays[dayindex] : days[dayindex] }}
             </div>
           </div>
           <div
@@ -3669,7 +3730,7 @@ onBeforeUnmount(() => {
             id="currentvisiblecalendarbox"
             class="flex-box flex-direction-row flex-wrap justify-content-center align-items-center w-100"
           >
-            <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).current.calendar.weeks">
+            <template v-for="(week, weekindex) in (visiblecalendar as VisibleCalendarType).current.calendar.weeks" :key="weekindex+'daa'">
               <div class="flex-w-100">
                 <div
                   :ref="($el) => assignWeekRef($el as HTMLDivElement, weekindex, 'CURRENT')"
@@ -3782,7 +3843,7 @@ onBeforeUnmount(() => {
                       "
                       @keypress.enter="handleDateClick(day)"
                       @click="handleDateClick(day)"
-                      :disabled="day.status === 'DISABLE' ? true : false"
+                      :disabled="day.status === 'DISABLE'? true : false"
                       class="w-100"
                       :class="[day.status === 'DISABLE'?'':'cursor-pointer']"
                       style="float: left;outline: 1px solid #fff;"
@@ -3805,7 +3866,7 @@ onBeforeUnmount(() => {
                       <input
                         @keypress.enter.stop=""
                         @click.stop=""
-                        :disabled="day.status === 'DISABLE' ? true : false"
+                        :disabled="day.status === 'DISABLE'? true : false"
                         type="checkbox"
                         class="position-absolute d-none"
                         style="pointer-events: auto;"
@@ -3831,50 +3892,7 @@ onBeforeUnmount(() => {
                           <span
                             class="h-100 font-family text-center d-block letter-spacing"
                             style="font-size: 1rem;"
-                            :style="
-                              (
-                                (visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref
-                                &&
-                                (visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue'
-                              )?
-                              'background-color: blue; color: #fff;'
-                              : (
-                                day.day ===
-                                  ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                    (visiblecalendar as VisibleCalendarType).current.month
-                                  ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                  (visiblecalendar as VisibleCalendarType).current.month
-                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'SELECTED' &&
-                                ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                  (visiblecalendar as VisibleCalendarType).current.month
-                                ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                  ? 'background-color:green;color: #fff !important'
-                                  : day.day ===
-                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                        (visiblecalendar as VisibleCalendarType).current.month
-                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                      (visiblecalendar as VisibleCalendarType).current.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'DESELECTED' &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                      (visiblecalendar as VisibleCalendarType).current.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                  ? 'color: black !important;text-shadow:none'
-                                  : day.day ===
-                                      ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                        (visiblecalendar as VisibleCalendarType).current.month
-                                      ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].day &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                      (visiblecalendar as VisibleCalendarType).current.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].selected === 'HIGHLIGHTED' &&
-                                    ((visiblecalendar as VisibleCalendarType).selections[(visiblecalendar as VisibleCalendarType).current.year].months[
-                                      (visiblecalendar as VisibleCalendarType).current.month
-                                    ] as YearMonthClickable<{}>['calendar']).weeks[weekindex].days[dayindex].status === 'ENABLE'
-                                  ? 'background-color:grey;color: #fff !important'
-                                  : 'color: gray !important;text-shadow:none'
-                              )
-                            "
+                            :style="rightstyle(dayindex, weekindex, day)"
                           >
                             {{ day.day }}
                           </span>
@@ -3905,8 +3923,8 @@ onBeforeUnmount(() => {
                               ((visiblecalendar as VisibleCalendarType).current.calendar.weeks[weekindex].ref?.style.backgroundColor === 'blue')?
                               'background-color: blue; color: #fff;'
                               : (
-                                day.status === 'DISABLE'
-                                  ? 'color: gray !important;text-shadow:none'
+                                day.status === 'DISABLE'?
+                                  'color: gray !important;text-shadow:none'
                                   : 'color: black !important;text-shadow:none'
                               )
                             "

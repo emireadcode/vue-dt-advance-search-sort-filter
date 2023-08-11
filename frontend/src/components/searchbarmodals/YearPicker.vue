@@ -1,14 +1,27 @@
 <script setup lang="ts">
-import { computed, type WatchStopHandle, type ShallowRef, type Ref, onMounted, nextTick, ref, shallowRef, inject, onBeforeMount, watch, triggerRef, onBeforeUnmount } from "vue";
+import { 
+  type WatchStopHandle,
+  type ShallowRef,
+  type Ref,
+  computed,
+  onMounted,
+  nextTick,
+  ref,
+  shallowRef,
+  onBeforeMount,
+  watch,
+  triggerRef,
+  onBeforeUnmount,
+} from "vue";
 import type {  YearSelectionType, YearRangeFirstSelectionType, YearSelectionFormat } from "../types/days_months_years_types";
 import { 
-  addYear, 
-  getYearDimensions, 
+  addYear,
+  getYearDimensions,
   unTrackYearBoxMouseMovement,
   deselectAll,
   fillYearArray,
 } from "../utility/days_months_years_utility_fns";
-import Paste from "./Paste.vue";
+import PasteCopied from "./PasteCopied.vue";
 
 let 
   unwatchrangecount: WatchStopHandle,
@@ -93,7 +106,7 @@ onBeforeUnmount(() => {
 onMounted(() => {
   unwatchnotifytosendsignal = watch(
     () => (props.notifytosendsignal as number),
-    (x) => {
+    () => {
       (holder.value as YearSelectionFormat).years = years.value as YearSelectionType;
       triggerHolder();
       emits('update:yearselectionandformat', holder.value as YearSelectionFormat);
@@ -293,8 +306,8 @@ onMounted(() => {
   window.addEventListener('resize', processDimensions, true);
   window.addEventListener('scroll', processDimensions, true);
 });
-
 </script>
+
 
 <template>
   <div class="d-block position-relative">
@@ -303,11 +316,19 @@ onMounted(() => {
     >
       <div class="flex-w-50 align-self-stretch">
         <button
-          @keypress.enter="() => {(holder as YearSelectionFormat).format = 'RANGE'; greaterthan = ''; lessthan = ''; triggerHolder(); }"
-          @click="() => {(holder as YearSelectionFormat).format = 'RANGE'; greaterthan = ''; lessthan = ''; triggerHolder(); }"
-          :style="
-            (holder as YearSelectionFormat).format === 'RANGE' ? 'background-color:green;' : 'background-color:gray;'
-          "
+          @keypress.enter="() => {
+            (holder as YearSelectionFormat).format = 'RANGE'; 
+            greaterthan = ''; 
+            lessthan = ''; 
+            triggerHolder(); 
+          }"
+          @click="() => {
+            (holder as YearSelectionFormat).format = 'RANGE'; 
+            greaterthan = ''; 
+            lessthan = ''; 
+            triggerHolder(); 
+          }"
+          :style="(holder as YearSelectionFormat).format === 'RANGE'? 'background-color:green;' : 'background-color:gray;'"
           class="font-family letter-spacing cursor-pointer btn w-100"
           style="color: #fff; padding: 2px 0; border-right: 1px solid #fff"
         >
@@ -316,27 +337,19 @@ onMounted(() => {
       </div>
       <div class="flex-w-50 align-self-stretch">
         <button
-          @keypress.enter="
-            () => {
-              (holder as YearSelectionFormat).format = 'MULTIPLE-OR-SINGLE';
-              greaterthan = '';
-              lessthan = '';
-              triggerHolder();
-            }
-          "
-          @click="
-            () => {
-              (holder as YearSelectionFormat).format = 'MULTIPLE-OR-SINGLE';
-              greaterthan = '';
-              lessthan = '';
-              triggerHolder();
-            }
-          "
-          :style="
-            (holder as YearSelectionFormat).format === 'MULTIPLE-OR-SINGLE'
-              ? 'background-color:green;'
-              : 'background-color:gray;'
-          "
+          @keypress.enter="() => {
+            (holder as YearSelectionFormat).format = 'MULTIPLE-OR-SINGLE';
+            greaterthan = '';
+            lessthan = '';
+            triggerHolder();
+          }"
+          @click="() => {
+            (holder as YearSelectionFormat).format = 'MULTIPLE-OR-SINGLE';
+            greaterthan = '';
+            lessthan = '';
+            triggerHolder();
+          }"
+          :style="(holder as YearSelectionFormat).format === 'MULTIPLE-OR-SINGLE'? 'background-color:green;' : 'background-color:gray;'"
           class="font-family letter-spacing cursor-pointer btn w-100"
           style="color: #fff; padding: 2px 0; border-left: 1px solid #fff"
         >
@@ -344,7 +357,7 @@ onMounted(() => {
         </button>
       </div>
     </div>
-    <Paste
+    <PasteCopied
       pastearea="YEAR-AREA"
       :title="props.title"
       :datatype="'Year'"
@@ -352,7 +365,7 @@ onMounted(() => {
       :min="''+props.minyear"
       :text-area-height="'height:184px;'"
     >
-      <template v-slot:outcomeidentifier>
+      <template #outcomeidentifier>
         <div
           class="flex-box flex-direction-row w-100 flex-nowrap justify-content-center align-items-center"
         >
@@ -378,34 +391,34 @@ onMounted(() => {
           </div>
         </div>
       </template>
-    </Paste>
+    </PasteCopied>
     <div
       class="p-0 m-0 flex-box flex-direction-row flex-nowrap justify-content-start align-items-center w-100"
     >
-      <div 
-        class="flex-w-50 align-self-stretch" 
-        style="padding-right: 3px"
-      >
+      <div class="flex-w-50 align-self-stretch" style="padding-right: 3px">
         <div 
           class="d-block"
           :style="(holder as YearSelectionFormat).format === 'LESS-THAN'? 'background-color: green;' : 'background-color: #fff;'"
         >
-          <div class="d-block text-center" style="padding-bottom: 1.5px">
+          <div class="d-block text-center" style="padding-bottom: 1.5px;">
             <img
-              src="/src/assets/icons/less-than.png"
-              style="width: 20px; height: 20px"
+              src="./icons/less-than.png"
+              style="width: 20px; height: 20px;"
               class="align-middle"
             />
           </div>
           <div class="d-block">
             <input
               @keydown.space.prevent
-              :ref="
-                (el) => {
-                  lessthanref = el;
-                }
-              "
-              @focus="{ greaterthan=''; previousFormat = 'LESS-THAN'; (holder as YearSelectionFormat).format = 'LESS-THAN'; triggerHolder(); }"
+              :ref="(el) => {
+                lessthanref = el;
+              }"
+              @focus="() => {
+                greaterthan=''; 
+                previousFormat = 'LESS-THAN'; 
+                (holder as YearSelectionFormat).format = 'LESS-THAN'; 
+                triggerHolder(); 
+              }"
               type="text"
               v-model.trim="lessthan"
               class="text-center w-100 align-middle"
@@ -421,7 +434,7 @@ onMounted(() => {
         >
           <div class="d-block text-center" style="padding-bottom: 1.5px">
             <img
-              src="/src/assets/icons/greater-than.png"
+              src="./icons/greater-than.png"
               style="width: 20px; height: 20px"
               class="align-middle"
             />
@@ -429,12 +442,15 @@ onMounted(() => {
           <div class="d-block">
             <input
               @keydown.space.prevent
-              :ref="
-                (el) => {
-                  greaterthanref = el;
-                }
-              "
-              @focus="{ lessthan=''; previousFormat = 'GREATER-THAN'; (holder as YearSelectionFormat).format = 'GREATER-THAN'; triggerHolder(); }"
+              :ref="(el) => {
+                greaterthanref = el;
+              }"
+              @focus="() => {
+                lessthan='';
+                previousFormat = 'GREATER-THAN';
+                (holder as YearSelectionFormat).format = 'GREATER-THAN';
+                triggerHolder();
+              }"
               type="text"
               v-model.trim="greaterthan"
               class="text-center w-100 align-middle"
@@ -454,26 +470,18 @@ onMounted(() => {
           style="border-radius: 50%; padding: 5px 0; background-color: transparent"
         >
           <a
-            :class="[compYearsLength > 1 && page > 0 ? 'cursor-pointer' : '']"
+            :class="[(compYearsLength > 1 && page > 0)? 'cursor-pointer' : '']"
             style="border-radius: 50%"
-            :style="
-              compYearsLength > 1 && page > 0
-                ? 'background-color: green;'
-                : 'background-color:gray;'
-            "
+            :style="(compYearsLength > 1 && page > 0)? 'background-color: green;' : 'background-color:gray;'"
             class="flex-box align-items-center justify-content-center text-center"
-            @keypress.enter="
-              () => {
-                page = page - 1 < 0 ? 0 : page - 1;
-                processDimensions();
-              }
-            "
-            @click="
-              () => {
-                page = page - 1 < 0 ? 0 : page - 1;
-                processDimensions();
-              }
-            "
+            @keypress.enter="() => {
+              page = ((page - 1) < 0)? 0 : (page - 1);
+              processDimensions();
+            }"
+            @click="() => {
+              page = ((page - 1) < 0)? 0 : (page - 1);
+              processDimensions();
+            }"
           >
             <svg class="shadow"
               version="1.1"
@@ -494,28 +502,18 @@ onMounted(() => {
           style="border-radius: 50%; padding: 5px 0; background-color: transparent"
         >
           <a
-            :class="[
-              compYearsLength > 1 && page !== compYearsLength - 1 ? 'cursor-pointer' : '',
-            ]"
+            :class="[(compYearsLength > 1 && page !== (compYearsLength - 1))? 'cursor-pointer' : '']"
             style="border-radius: 50%"
-            :style="
-              compYearsLength > 1 && page !== compYearsLength - 1
-                ? 'background-color: green;'
-                : 'background-color:gray;'
-            "
+            :style="(compYearsLength > 1 && page !== (compYearsLength - 1))? 'background-color: green;' : 'background-color:gray;'"
             class="flex-box align-items-center justify-content-center text-center"
-            @keypress.enter="
-              () => {
-                page = page + 1 > compYearsLength - 1 ? compYearsLength - 1 : page + 1;
-                processDimensions();
-              }
-            "
-            @click="
-              () => {
-                page = page + 1 > compYearsLength - 1 ? compYearsLength - 1 : page + 1;
-                processDimensions();
-              }
-            "
+            @keypress.enter="() => {
+              page = ((page + 1) > (compYearsLength - 1))? (compYearsLength - 1) : (page + 1);
+              processDimensions();
+            }"
+            @click="() => {
+              page = ((page + 1) > (compYearsLength - 1))? (compYearsLength - 1) : (page + 1);
+              processDimensions();
+            }"
           >
             <svg
               class="shadow"
@@ -536,16 +534,40 @@ onMounted(() => {
       <div
         class="flex-box flex-direction-row flex-wrap justify-content-start align-items-center"
       >
-        <template v-for="(row, rindex) in (years as YearSelectionType)[page]">
-          <template v-for="(col, cindex) in row">
+        <template v-for="(row, rindex) in (years as YearSelectionType)[page]" :key="rindex+'aa'">
+          <template v-for="(col, cindex) in row" :key="cindex+'aa-aa'">
             <div
               class="flex-w-20 overflow-hidden"
               style="float: left; outline: 1px solid #fff"
             >
               <label
                 :ref="(el) => ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).ref = el as HTMLLabelElement"
-                @keypress.enter="() => { (((holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE') && (col as YearSelectionType[number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year, true) : ''; }"
-                @click="() => { (((holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE') && (col as YearSelectionType[number][number][number]).status === 'ENABLE')? addYearByClick(((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year, true) : ''; }"
+                @keypress.enter="() => {
+                  (
+                    (
+                      (holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE'
+                    ) && (col as YearSelectionType[number][number][number]).status === 'ENABLE'
+                  )? 
+                  addYearByClick(
+                    ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year, 
+                    true
+                  ) 
+                  : 
+                  ''; 
+                }"
+                @click="() => {
+                  (
+                    (
+                      (holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE'
+                    ) && (col as YearSelectionType[number][number][number]).status === 'ENABLE'
+                  )? 
+                  addYearByClick(
+                    ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year, 
+                    true
+                  ) 
+                  : 
+                  '';
+                }"
                 class="w-100"
                 style="float: left; line-height: 2em; height: 2em"
               >
@@ -561,14 +583,18 @@ onMounted(() => {
                   class="font-family text-center d-block letter-spacing"
                   style="font-size: 1rem; line-height: 2em; height: 2em"
                   :class="[(((holder as YearSelectionFormat).format==='RANGE' || (holder as YearSelectionFormat).format==='MULTIPLE-OR-SINGLE') && ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).status === 'ENABLE')? 'cursor-pointer' : '']"
-                  :style="
-                    ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).status === 'ENABLE' ? (
-                      ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).selected === 'SELECTED'?
+                  :style="((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).status === 'ENABLE'? (
+                    ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).selected === 'SELECTED'?
                       'background-color: green; color: #fff;'
-                      : ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).selected === 'DESELECTED'?
-                        'background-color: #E8E8E8; color: black; text-shadow:none;'
-                        : 'background-color: gray; color: #fff;'
-                    ) : 'background-color: #fff; color: #fff; text-shadow:none;'
+                      : (
+                        ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).selected === 'DESELECTED'?
+                        'background-color: #E8E8E8; color: black; text-shadow: none;'
+                        : 
+                        'background-color: gray; color: #fff;'
+                      )
+                    ) 
+                    : 
+                    'background-color: #fff; color: #fff; text-shadow: none;'
                   "
                 >
                   {{ ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).status === 'ENABLE'? ((years as YearSelectionType)[page][rindex][cindex] as YearSelectionType[number][number][number]).year : '' }}

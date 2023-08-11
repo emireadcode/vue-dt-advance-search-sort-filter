@@ -9,19 +9,63 @@ class CardDistinctRecord extends ResourceController
     protected $dateduplicatechecker = [];
 
     /*
-        Payment – customer – store – inventory  – film – language 
-                    |         |
-                address   address
-                    |         |
-                  city      city
-                    |         |
-                  country   country
+    -------sakila----------------------------------------------------
+    |    Payment – customer – store – inventory  – film – language  |
+    |                |        / |   \                               |
+    |             address    /address\                              |
+    |                |   ITEMS  |     \                             |
+    |              city        city    \                            |
+    |                |          |       \                           |
+    |             country     country    \                          |
+    |                                     \                         |
+    ---------------------------------------\------- -----------------
+                                            \
+                                             \
+                                              \
+    --------mysql_json_db--------------------- \---------------------
+    |                                           \                   |
+    |                                            \                  |
+    |                                             \                 |
+    |                                              \                |
+    |                                            ITEMS              |
+    |                                                               |
+    |                                                               |
+    |                                                               |
+    -----------------------------------------------------------------
+
+
+
+    -------sakila---------------------------------------------------
+    |    Payment – customer – store – inventory  – film – language |
+    |     \          |         |   \                               |
+    |      \      address    address\                              |
+    |       \        |         |     \                             |
+    |        \     city      city     \                            |
+    |         \      |         |       \                           |
+    |          \  country   country     \                          |
+    |           \                        \                         |
+    -------------\------------------------\-------------------------
+                  \                        \
+                   \                        \
+                    \                        \
+    --mysql_json_db--\------------------------\---------------------
+    |                 \                        \                   |
+    |                  \                        \                  |
+    |                   \                        \                 |
+    |                    \                        \                |
+    |                     \                      ITEMS             |
+    |                    order – sales                             |
+    |                                                              |
+    |                                                              |
+    ----------------------------------------------------------------
     */
 
     protected $clusters = [
-        [['payment','customer'], ['customer_id', 'customer_id']],
-        [['customer','store'], ['store_id', 'store_id']],
-        [['store','inventory'],['store_id', 'store_id']],
+        [['payment', 'customer'], ['customer_id', 'customer_id']],
+        [['customer', 'store'], ['store_id', 'store_id']],
+        [['store', 'inventory'],['store_id', 'store_id']],
+        [['store', 'ITEMS_mysql_json_db'], ['store_id', 'store_id']],
+        [['store', 'ITEMS_sakila'], ['store_id', 'store_id']],
         [['inventory', 'film'], ['film_id', 'film_id']],
         [['film', 'language'], ['language_id', 'language_id']],
         [['customer', 'address'], ['address_id', 'address_id']],
@@ -30,32 +74,332 @@ class CardDistinctRecord extends ResourceController
         [['city', 'country'], ['country_id', 'country_id']]
     ];
 
-    /*protected $fields = [
-        'payment' => ['payment_date', 'amount', 'visited_time'],
-        'customer' => ['first_name', 'last_name', 'email', 'active', 'create_date'],
-        //'store' => [],
-        //'inventory' => [],
-        'film' => ['title', 'description', 'release_year', 'rental_duration', 'rental_rate', 'length', 'replacement_cost', 'rating', 			'special_features'],
-        'language' => ['name'],
-        'address' => ['address', 'phone', 'postal_code'],
-        'city' => ['city'],
-        'country' => ['country']
+    protected $multipledbconnectionwithtableandalias = [
+        'mysql_json_db' => [
+            'tableandalias' => [
+                [
+                    'table' =>'ITEMS',
+                    'alias' => 'ITEMS_mysql_json_db'
+                ]
+            ],
+            'connection' => [
+                'DSN'      => '',
+                'hostname' => 'mysql',
+                'username' => 'root',
+                'password' => 'root',
+                'database' => 'mysql_json_db',
+                'DBDriver' => 'MySQLi',
+                'DBPrefix' => '',
+                'pConnect' => false,
+                'DBDebug'  => (ENVIRONMENT !== 'production'),
+                'charset'  => 'utf8',
+                'DBCollat' => 'utf8_general_ci',
+                'swapPre'  => '',
+                'encrypt'  => false,
+                'compress' => false,
+                'strictOn' => false,
+                'failover' => [],
+                'port'     => 3306,
+            ]
+        ],
+        'sakila' => [
+            'tableandalias' => [
+                [
+                    'table' =>'ITEMS',
+                    'alias' => 'ITEMS_sakila'
+                ],
+                [
+                    'table' => 'store'
+                ],
+                [
+                    'table' => 'inventory'
+                ],
+                [
+                    'table' =>'payment'
+                ],
+                [
+                    'table' =>'customer'
+                ],
+                [
+                    'table' =>'film'
+                ],
+                [
+                    'table' =>'language'
+                ],
+                [
+                    'table' =>'address'
+                ],
+                [
+                    'table' =>'city'
+                ],
+                [
+                    'table' =>'country'
+                ]
+            ],
+            'connection' => [
+                'DSN'      => '',
+                'hostname' => 'mysql',
+                'username' => 'root',
+                'password' => 'root',
+                'database' => 'sakila',
+                'DBDriver' => 'MySQLi',
+                'DBPrefix' => '',
+                'pConnect' => false,
+                'DBDebug'  => (ENVIRONMENT !== 'production'),
+                'charset'  => 'utf8',
+                'DBCollat' => 'utf8_general_ci',
+                'swapPre'  => '',
+                'encrypt'  => false,
+                'compress' => false,
+                'strictOn' => false,
+                'failover' => [],
+                'port'     => 3306,
+            ]
+        ]
     ];
-    
-
-   */
-
 
     protected $cards = [];
 
+    private function loopThroughDBConnections($table) {
+        $actualdb = '';
+        $found = false;
+        $actualtable = $table;
+        foreach($this->multipledbconnectionwithtableandalias as $dbkey => $dbvalue) {
+            foreach($dbvalue['tableandalias'] as $tableandalias) {
+                if(array_key_exists('alias', $tableandalias)) {
+                    if(
+                        $table === $tableandalias['alias']
+                    ) {
+                        $actualdb = $dbkey;
+                        $actualtable = $tableandalias['table'];
+                        $found = true;
+                        break;
+                    }
+                }
+                else {
+                    if($table === $tableandalias['table']) {
+                        $actualdb = $dbkey;
+                        $actualtable = $tableandalias['table'];
+                        $found = true;
+                        break;
+                    }
+                }
+            }
+            if($found) {
+                break;
+            }
+        }
+        return ['db' => $actualdb, 'table' => $actualtable];
+    }
+
+    private function reconstructClusters($dbkey, $clusters) {
+        for($i=0; $i<count($clusters); $i++) {
+            foreach($this->multipledbconnectionwithtableandalias[$dbkey]['tableandalias'] as $tableandalias) {
+                if(array_key_exists('alias', $tableandalias)) {
+                    if($clusters[$i][0][0] === $tableandalias['alias'] || $clusters[$i][0][1] === $tableandalias['alias']) {
+                        if($clusters[$i][0][0] === $tableandalias['alias']) {
+                            $clusters[$i][0][0] = $tableandalias['table'];
+                        }
+                        else {
+                            $clusters[$i][0][1] = $tableandalias['table'];
+                        }
+                    }
+                }
+            }
+        }
+        return $clusters;
+    }
+
+    private function findClustersWithinTheSameDBAndInterDBRelatedClusters($config) {
+        $clusters = [
+            'CLUSTERS-WITHIN-THE-SAME-DB' => [],
+            'INTER-DB-RELATED-CLUSTERS' => []
+        ];
+        foreach($config as $key => $value) {
+            foreach($value as $multipletype) {
+                if($this->isConcatenated($multipletype)) {
+                    $alldbs = [];
+                    foreach($multipletype['concatenated']['fields'] as $fieldindex => $fieldvalue) {
+                        $tableresult = $this->loopThroughDBConnections($fieldvalue['table']);
+                        if($this->isJoined($fieldvalue)) {
+                            //concatenation via join
+                            $joinresult = $this->loopThroughDBConnections($fieldvalue['join']);
+                            if($tableresult['db'] === $joinresult['db']) {
+                                if(!in_array($tableresult['db'], $alldbs)) {
+                                    array_push(
+                                        $alldbs,
+                                        $tableresult['db']
+                                    );
+                                }
+                            }
+                            else {
+                                if(!in_array($tableresult['db'], $alldbs)) {
+                                    array_push(
+                                        $alldbs,
+                                        $tableresult['db']
+                                    );
+                                }
+                                if(!in_array($joinresult['db'], $alldbs)) {
+                                    array_push(
+                                        $alldbs,
+                                        $joinresult['db']
+                                    );
+                                }
+                            }
+                        }
+                        else {
+                            //concatenation without join
+                            if(!in_array($tableresult['db'], $alldbs)) {
+                                array_push(
+                                    $alldbs,
+                                    $tableresult['db']
+                                );
+                            }
+                        }
+                    }
+                    if(count($alldbs) === 1) {
+                        foreach($multipletype['concatenated']['fields'] as $fieldindex => $fieldvalue) {
+                            $tableresult = $this->loopThroughDBConnections($fieldvalue['table']);
+                            if($this->isJoined($fieldvalue)) {
+                                //concatenation via join
+                                $joinresult = $this->loopThroughDBConnections($fieldvalue['join']);
+                                $multipletype['concatenated']['fields'][$fieldindex]['join'] = $joinresult['table'];
+                                $multipletype['concatenated']['fields'][$fieldindex]['table'] = $tableresult['table'];
+                            }
+                            else {
+                                //concatenation without join
+                                $multipletype['concatenated']['fields'][$fieldindex]['table'] = $tableresult['table'];
+                            }
+                        }
+                        
+                        if(array_key_exists($alldbs[0], $clusters['CLUSTERS-WITHIN-THE-SAME-DB'])) {
+                            if(array_key_exists($key, $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$alldbs[0]])) {
+                                array_push(
+                                    $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$alldbs[0]][$key],
+                                    $multipletype
+                                );
+                            }
+                            else {
+                                $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$alldbs[0]][$key] = [];
+                                array_push(
+                                    $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$alldbs[0]][$key],
+                                    $multipletype
+                                );
+                            }
+                        }
+                        else {
+                            $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$alldbs[0]][$key] = [];
+                            array_push(
+                                $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$alldbs[0]][$key],
+                                $multipletype
+                            );
+                        }
+                    }
+                    else {
+                        if(array_key_exists($key, $clusters['INTER-DB-RELATED-CLUSTERS'])) {
+                            array_push(
+                                $clusters['INTER-DB-RELATED-CLUSTERS'][$key],
+                                $multipletype
+                            );
+                        }
+                        else {
+                            $clusters['INTER-DB-RELATED-CLUSTERS'][$key] = [];
+                            array_push(
+                                $clusters['INTER-DB-RELATED-CLUSTERS'][$key],
+                                $multipletype
+                            );
+                        }
+                    }
+                }
+                else {
+                    $tableresult = $this->loopThroughDBConnections($multipletype['table']);
+                    if($this->isJoined($multipletype)) {
+                        //join without concatenation
+                        $joinresult = $this->loopThroughDBConnections($multipletype['join']);
+
+                        if($tableresult['db'] === $joinresult['db']) {
+                            $multipletype['join'] = $joinresult['table'];
+                            $multipletype['table'] = $tableresult['table'];
+                            
+                            if(array_key_exists($tableresult['db'], $clusters['CLUSTERS-WITHIN-THE-SAME-DB'])) {
+                                if(array_key_exists($key, $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']])) {
+                                    array_push(
+                                        $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key],
+                                        $multipletype
+                                    );
+                                }
+                                else {
+                                    $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key] = [];
+                                    array_push(
+                                        $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key],
+                                        $multipletype
+                                    );
+                                }
+                            }
+                            else {
+                                $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key] = [];
+                                array_push(
+                                    $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key],
+                                    $multipletype
+                                );
+                            }
+                        }
+                        else {
+                            if(array_key_exists($key, $clusters['INTER-DB-RELATED-CLUSTERS'])) {
+                                array_push(
+                                    $clusters['INTER-DB-RELATED-CLUSTERS'][$key],
+                                    $multipletype
+                                );
+                            }
+                            else {
+                                $clusters['INTER-DB-RELATED-CLUSTERS'][$key] = [];
+                                array_push(
+                                    $clusters['INTER-DB-RELATED-CLUSTERS'][$key],
+                                    $multipletype
+                                );
+                            }
+                        }
+                    }
+                    else {
+                        $multipletype['table'] = $tableresult['table'];
+                        //no join no concatenation = single
+                        if(array_key_exists($tableresult['db'], $clusters['CLUSTERS-WITHIN-THE-SAME-DB'])) {
+                            if(array_key_exists($key, $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']])) {
+                                array_push(
+                                    $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key],
+                                    $multipletype
+                                );
+                            }
+                            else {
+                                $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key] = [];
+                                array_push(
+                                    $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key],
+                                    $multipletype
+                                );
+                            }
+                        }
+                        else {
+                            $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key] = [];
+                            array_push(
+                                $clusters['CLUSTERS-WITHIN-THE-SAME-DB'][$tableresult['db']][$key],
+                                $multipletype
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        return $clusters;
+    }
+
     private function mysqlTimeFormatMap() {
         return [
-            "24-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO" => "%H:%i",
-            "24-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO" => "%k:%i",
-            "12-HOUR-CLOCK-WITHOUT-SECONDS-WITH-LEADING-ZERO" => "%h:%i %p",
-            "12-HOUR-CLOCK-WITHOUT-SECONDS-WITHOUT-LEADING-ZERO" => "%l:%i %p",
-            "24-HOUR-CLOCK-WITH-SECONDS" => "%T",
-            "12-HOUR-CLOCK-WITH-SECONDS" => "%r"
+            "24-HCWOSWLZ" => "%H:%i",
+            "24-HCWOSWOLZ" => "%k:%i",
+            "12-HCWOSWLZ" => "%h:%i %p",
+            "12-HCWOSWOLZ" => "%l:%i %p",
+            "24-HCWS" => "%T",
+            "12-HCWS" => "%r"
         ];
     }
 
@@ -418,31 +762,46 @@ class CardDistinctRecord extends ResourceController
     }
 
     private function isOnlySameTableAndJoinPairInCluster($fields) {
-        $size = 0;
-        for($i = 0; $i < count($fields); $i++) {
-            if($fields[0]['join'] === $fields[$i]['join'] && $fields[0]['table'] === $fields[$i]['table']) {
-                $size++;
+        $sametableandjoinpairs = true;
+        for($i = 1; $i < count($fields); $i++) {
+            if($fields[0]['join'] !== $fields[$i]['join'] || $fields[0]['table'] !== $fields[$i]['table']) {
+                $sametableandjoinpairs = false;
+                break;
             }
         }
-        if($size === count($fields))
-            return true;
-        else
-            return false;
+        return $sametableandjoinpairs;
     }
 
     private function isDuplicateTableAndJoinPairInCluster($fields) {
-        $size = 0;
-        $duplicate = [];
-        for($i = 0; $i < count($fields); $i++) {
-            if($fields[0]['join'] === $fields[$i]['join'] && $fields[0]['table'] === $fields[$i]['table']) {
-                $size++;
-                $duplicate = [$fields[0]['join'], $fields[0]['table']];
+        $duplicates = [];
+        for($i = 0; $i < count($fields) - 1; $i++) {
+            $count = 0;
+            for($j = $i+1; $j < count($fields); $j++) {
+                if($fields[$i]['join'] === $fields[$j]['join'] && $fields[$i]['table'] === $fields[$j]['table']) {
+                    $count++;
+                }
+            }
+            if($count > 0) {
+                $found = false;
+                if(count($duplicates) > 0) {
+                    foreach($duplicates as $duplicate) {
+                        if($duplicate === [$fields[$i]['join'], $fields[$i]['table']]) {
+                            $found = true;
+                            break;
+                        }
+                    }
+                }
+                if($found === false) {
+                    $duplicates[] = [$fields[$i]['join'], $fields[$i]['table']];
+                }
             }
         }
-        if($size > 1 && $size < count($fields))
-            return [true, $duplicate];
-        else
-            return [false, $duplicate];
+        if(count($duplicates) > 0) {
+            return [true, $duplicates];
+        }
+        else {
+            return [false, $duplicates];
+        }
     }
 
     private function formConcatenationViaOrWithoutJoin($multipletype, $concatenationtype, $clusters, $datatype) {
@@ -454,9 +813,16 @@ class CardDistinctRecord extends ResourceController
             $pairHolder[] = $this->attachModifiersOrNot($datatype, $fields[$i]);
             
             if(is_array($delimiters)) {
-                if($i<count($delimiters)) {
-                    $pairHolder[] = ", '$delimiters[$i]', ";
-                }
+            	if(count($delimiters) === 1) {
+                    if($i<count($fields)-1) {
+                        $pairHolder[] = ", '$delimiters[0]', ";
+                    }
+            	}
+            	else {
+                    if($i<count($delimiters)) {
+                        $pairHolder[] = ", '$delimiters[$i]', ";
+                    }
+               }
             }
             else {
                 if($i<count($fields)-1) {
@@ -468,10 +834,18 @@ class CardDistinctRecord extends ResourceController
             $tableHolder = [];
             if($this->isOnlySameTableAndJoinPairInCluster($fields)) {
                 foreach($clusters as $cluster) {
-                    if($cluster[0] === [$fields[0]['join'], $fields[0]['table']]) {
+                    $clusterlink1 = [$fields[0]['join'], $fields[0]['table']];
+                    $clusterlink2 = [$fields[0]['table'], $fields[0]['join']];
+                    if($cluster[0] === $clusterlink1 || $cluster[0] === $clusterlink2) {
                         $tableAndJoinKey = [];
-                        $tableAndJoinKey[] = [$fields[0]['join'], $cluster[1][0]];
-                        $tableAndJoinKey[] = [$fields[0]['table'], $cluster[1][1]];
+                        if($cluster[0] === $clusterlink1) {
+                            $tableAndJoinKey[] = [$fields[0]['join'], $cluster[1][0]];
+                            $tableAndJoinKey[] = [$fields[0]['table'], $cluster[1][1]];
+                        }
+                        else {
+                            $tableAndJoinKey[] = [$fields[0]['table'], $cluster[1][0]];
+                            $tableAndJoinKey[] = [$fields[0]['join'], $cluster[1][1]];
+                        }
                         $tableHolder = $tableAndJoinKey;
                         break;
                     }
@@ -481,23 +855,67 @@ class CardDistinctRecord extends ResourceController
                 $isduplicate = $this->isDuplicateTableAndJoinPairInCluster($fields);
                 if($isduplicate[0]) {
                     foreach($clusters as $cluster) {
-                        if($cluster[0] === $isduplicate[1]) {
-                            $tableAndJoinKey = [];
-                            $tableAndJoinKey[] = [$isduplicate[1][0], $cluster[1][0]];
-                            $tableAndJoinKey[] = [$isduplicate[1][1], $cluster[1][1]];
-                            $tableHolder[] = $tableAndJoinKey;
-                            break;
+                        foreach($isduplicate[1] as $duplicate) {
+                            if($cluster[0] === $duplicate || $cluster[0] === [$duplicate[1], $duplicate[0]]) {
+                                $tableAndJoinKey = [];
+                                if($cluster[0] === $duplicate) {
+                                    $tableAndJoinKey[] = [$duplicate[0], $cluster[1][0]];
+                                    $tableAndJoinKey[] = [$duplicate[1], $cluster[1][1]];
+                                }
+                                else {
+                                    $tableAndJoinKey[] = [$duplicate[1], $cluster[1][0]];
+                                    $tableAndJoinKey[] = [$duplicate[0], $cluster[1][1]];
+                                }
+                                $found = false;
+                                foreach($tableHolder as $th) {
+                                    if($th === $tableAndJoinKey) {
+                                        $found = true;
+                                        break;
+                                    }
+                                }
+                                if($found === false) {
+                                    $tableHolder[] = $tableAndJoinKey;
+                                }
+                                break;
+                            }
                         }
                     }
                     for($i = 0; $i < count($fields); $i++) {
-                        if($fields[$i]['join'] !== $isduplicate[1][0] || $fields[$i]['table'] !== $isduplicate[1][1]) {
-                            $clusterlink = [$fields[$i]['join'], $fields[$i]['table']];
+                        $found = false;
+                        foreach($isduplicate[1] as $duplicate) {
+                            if(
+                                ($fields[$i]['join'] === $duplicate[0] && $fields[$i]['table'] === $duplicate[1])
+                                ||
+                                ($fields[$i]['join'] === $duplicate[1] && $fields[$i]['table'] === $duplicate[0])
+                            ) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if($found === false) {
+                            $clusterlink1 = [$fields[$i]['join'], $fields[$i]['table']];
+                            $clusterlink2 = [$fields[$i]['table'], $fields[$i]['join']];
                             foreach($clusters as $cluster) {
-                                if($cluster[0] === $clusterlink) {
+                                if($cluster[0] === $clusterlink1 || $cluster[0] === $clusterlink2) {
                                     $tableAndJoinKey = [];
-                                    $tableAndJoinKey[] = [$clusterlink[0], $cluster[1][0]];
-                                    $tableAndJoinKey[] = [$clusterlink[1], $cluster[1][1]];
-                                    $tableHolder[] = $tableAndJoinKey;
+                                    if($cluster[0] === $clusterlink1) {
+                                        $tableAndJoinKey[] = [$clusterlink1[0], $cluster[1][0]];
+                                        $tableAndJoinKey[] = [$clusterlink1[1], $cluster[1][1]];
+                                    }
+                                    else {
+                                        $tableAndJoinKey[] = [$clusterlink2[0], $cluster[1][0]];
+                                        $tableAndJoinKey[] = [$clusterlink2[1], $cluster[1][1]];
+                                    }
+                                    $foundHolder = false;
+                                    foreach($tableHolder as $th) {
+                                        if($th === $tableAndJoinKey) {
+                                            $foundHolder = true;
+                                            break;
+                                        }
+                                    }
+                                    if($foundHolder === false) {
+                                        $tableHolder[] = $tableAndJoinKey;
+                                    }
                                 }
                             }
                         }
@@ -505,13 +923,29 @@ class CardDistinctRecord extends ResourceController
                 }
                 else {
                     for($i = 0; $i < count($fields); $i++) {
-                        $clusterlink = [$fields[$i]['join'], $fields[$i]['table']];
+                        $clusterlink1 = [$fields[$i]['join'], $fields[$i]['table']];
+                        $clusterlink2 = [$fields[$i]['table'], $fields[$i]['join']];
                         foreach($clusters as $cluster) {
-                            if($cluster[0] === $clusterlink) {
+                            if($cluster[0] === $clusterlink1 || $cluster[0] === $clusterlink2) {
                                 $tableAndJoinKey = [];
-                                $tableAndJoinKey[] = [$clusterlink[0], $cluster[1][0]];
-                                $tableAndJoinKey[] = [$clusterlink[1], $cluster[1][1]];
-                                $tableHolder[] = $tableAndJoinKey;
+                                if($cluster[0] === $clusterlink1) {
+                                    $tableAndJoinKey[] = [$clusterlink1[0], $cluster[1][0]];
+                                    $tableAndJoinKey[] = [$clusterlink1[1], $cluster[1][1]];
+                                }
+                                else {
+                                    $tableAndJoinKey[] = [$clusterlink2[0], $cluster[1][0]];
+                                    $tableAndJoinKey[] = [$clusterlink2[1], $cluster[1][1]];
+                                }
+                                $foundHolder = false;
+                                foreach($tableHolder as $th) {
+                                    if($th === $tableAndJoinKey) {
+                                        $foundHolder = true;
+                                        break;
+                                    }
+                                }
+                                if($foundHolder === false) {
+                                    $tableHolder[] = $tableAndJoinKey;
+                                }
                             }
                         }
                     }
@@ -545,8 +979,9 @@ class CardDistinctRecord extends ResourceController
         }
     }
 
-    private function createCards($config, $clusters) {
+    private function createCardsForClustersWithinTheSameDB($dbkey, $config, $cluster) {
         $cards = [];
+        $clusters = $this->reconstructClusters($dbkey, $cluster);
         foreach($config as $key => $value) {
             foreach($value as $multipletype) {
                 $cardkey = $this->getCardKey($multipletype);
@@ -618,192 +1053,211 @@ class CardDistinctRecord extends ResourceController
     public function getCardDistinctRecord() {
 
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: POST,GET, OPTIONS');
+        header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
         header('Access-Control-Allow-Headers: *');
-
-	$config = json_decode($this->request->getPost('config'), true);
-
-        $this->cards = $this->createCards($config, $this->clusters);
-
-        //print_r($this->cards);
 
         $distinctrecords = [];
 
-        $db = \Config\Database::connect();
+	$config = json_decode($this->request->getPost('config'), true);
 
-        foreach($this->cards as $key => $value) {
-    
-            $sql = '';
+        //print_r($config);
 
-            $maxminsql = '';
+        $clusters = $this->findClustersWithinTheSameDBAndInterDBRelatedClusters($config);
 
-            $datatype = '';
+        //print_r($clusters);
 
-            if(array_key_exists('concatenation_via_join', $value)) {
-                //concatenation via join
+        if(count($clusters['INTER-DB-RELATED-CLUSTERS']) > 0) {
+            print_r($clusters['INTER-DB-RELATED-CLUSTERS']);
+            //createCardsForInterRelatedClusters($clusters['INTER-DB-RELATED-CLUSTERS'])
+            foreach($clusters['INTER-DB-RELATED-CLUSTERS'] as $interdbrelatedclusters) {
 
-                $datatype = $value['concatenation_via_join'][2];
-
-                $concatenation = $this->formConcatString($value['concatenation_via_join'][0]);
-                $tablejoin = $this->formColumnJoinString($value['concatenation_via_join'][1]);
-                $sql = "SELECT DISTINCT $concatenation AS 'row' from $tablejoin";
-                
-                if($datatype==='numberstringtypes' || $datatype==='timetypes' || $datatype==='datetypes' || $datatype==='datetimetypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
-                    $maxminsql = "SELECT MAX(".$concatenation.") AS 'max', MIN(".$concatenation.") as 'min' from ".$tablejoin;
-                }
-            }
-            else if(array_key_exists('concatenation_without_join', $value)) {
-                //concatenation without join
-
-                $datatype = $value['concatenation_without_join'][2];
-
-                $concatenation = $this->formConcatString($value['concatenation_without_join'][0]);
-                $sql = "SELECT DISTINCT $concatenation AS 'row' from ".$value['concatenation_without_join'][1];
-                
-                if($datatype==='numberstringtypes' || $datatype==='timetypes' || $datatype==='datetypes' || $datatype==='datetimetypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
-                    $maxminsql = "SELECT MAX(".$concatenation.") AS 'max', MIN(".$concatenation.") as 'min' from ".$tablejoin;
-                }
-            }
-            else if(array_key_exists('join_without_concatenation', $value)) {
-                //join_without_concatenation
-
-                $datatype = $value['join_without_concatenation'][2];
-
-                $tablejoin = $this->formColumnJoinString($value['join_without_concatenation'][1]);
-
-                if($datatype === 'timetypes' || $datatype === 'datetypes' || $datatype === 'datetimetypes') {
-                    if($datatype === 'timetypes') {
-                        $timeFormat = $value['join_without_concatenation'][3]['timeformat'];
-                        $field = $value['join_without_concatenation'][0];
-
-                        $maxminsql = "SELECT DATE_FORMAT(MAX($field), $timeFormat)) AS 'max', DATE_FORMAT(MIN($field), $timeFormat)) as 'min' from $tablejoin";
-                        $sql = "SELECT DISTINCT DATE_FORMAT($field, '$timeFormat') AS 'row' from $tablejoin";
-                    }
-                    else if($datatype === 'datetypes') {
-                        $dateFormat = $value['join_without_concatenation'][3]['dateformat'];
-                        $field = $value['join_without_concatenation'][0];
-
-                        $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d')) AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d')) as 'min' from $tablejoin";
-                        $sql = "SELECT DISTINCT DATE_FORMAT($field, '$dateFormat') AS 'row' from $tablejoin";
-                    }
-                    else {
-                        $datetimeFormat = $value['join_without_concatenation'][3]['dateformat'].'__O__'.$value['join_without_concatenation'][3]['timeformat'];
-                        $field = $value['join_without_concatenation'][0];
-
-                        $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d')) AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d')) as 'min' from $tablejoin";
-                        $sql = "SELECT DISTINCT DATE_FORMAT($field, '$datetimeFormat') AS 'row' from $tablejoin";
-                    }
-                }
-                else {
-                    $sql = 'SELECT DISTINCT '.$value['join_without_concatenation'][0]." AS 'row' from $tablejoin";
-                
-                    if($datatype==='numberstringtypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
-                        $maxminsql = "SELECT MAX(".
-                            $value['join_without_concatenation'][0].
-                        ") AS 'max', MIN(".
-                            $value['join_without_concatenation'][0].
-                        ") as 'min' from ".$tablejoin;
-                    }
-                }
-            }
-            else {
-                if(count($value['single']) === 2) {
-                    $datatype = $value['single'][1];
-
-                    $sql = "SELECT DISTINCT $key AS 'row' from ".$value['single'][0];
-
-                    if($datatype==='numberstringtypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
-                        $maxminsql = "SELECT MAX($key) AS 'max', MIN($key) as 'min' from ".$value['single'][0];
-                    }
-                }
-                else {
-                    $field = "";
-                    $table = "";
-                    if(count($value['single']) === 3) {
-                        if(is_array($value['single'][2])) {
-                            $datatype = $value['single'][1];
-                            $field = $key;
-                            $table = $value['single'][0];
-                        }
-                        else {
-                            $datatype = $value['single'][2];
-                            $field = $value['single'][0];
-                            $table = $value['single'][1];
-                        }
-                    }
-                    else {
-                        $datatype = $value['single'][2];
-                        $field = $value['single'][0];
-                        $table = $value['single'][1];
-                    }
-
-                    if($datatype === 'timetypes' || $datatype === 'datetypes' || $datatype === 'datetimetypes') {
-                        if($datatype === 'timetypes') {
-                            $timeFormat = $value['single'][count($value['single'])-1]['timeformat'];
-                            $sql = "SELECT DISTINCT DATE_FORMAT($field, '$timeFormat') AS 'row' from $table";
-                            $maxminsql = "SELECT DATE_FORMAT(MAX($field), '$timeFormat') AS 'max', DATE_FORMAT(MIN($field), '$timeFormat') as 'min' from $table";
-                        }
-                        else if($datatype === 'datetypes') {
-                            $dateFormat = $value['single'][count($value['single'])-1]['dateformat'];
-                            $sql = "SELECT DISTINCT DATE_FORMAT($field, '$dateFormat') AS 'row' from $table";
-                            $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d') AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d') as 'min' from $table";
-                        }
-                        else {
-                            $datetimeFormat = $value['single'][count($value['single'])-1]['dateformat'].'__O__'.$value['single'][count($value['single'])-1]['timeformat'];
-                            $sql = "SELECT DISTINCT DATE_FORMAT($field, '$datetimeFormat') AS 'row' from $table";
-                            $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d') AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d') as 'min' from $table";
-                        }
-                    }
-                    else {
-                        $sql = "SELECT DISTINCT $field AS 'row' from $table";
-                        if($datatype==='numberstringtypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
-                            $maxminsql = "SELECT MAX($field) AS 'max', MIN($field) as 'min' from $table";
-                        }
-                    }
-                }
-            }
-            
-            /*
-            print_r("\n==================\n");
-            print_r($sql);
-            print_r("\n==================\n");
-            print_r($maxminsql);
-            print_r("\n==================\n");
-            */
-
-            $query = $db->query($sql);
-                
-            $data = [];
-
-            foreach($query->getResult() as $r) {
-                $data[] = [
-                    'row' => $r->row,
-                    'checked' => false,
-                    'selected' => false
-                ];
-            }
-    
-            if($datatype==='numberstringtypes' || $datatype==='timetypes' || $datatype==='datetypes' || $datatype==='datetimetypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
-                $query1 = $db->query($maxminsql);
-                $distinctrecords["$key"] = [
-                    'data' => $data,
-                    'total' => count($query->getResult()),
-                    'offset' => 2,
-                    'max' => $query1->getResult()[0]->max,
-                    'min' => $query1->getResult()[0]->min
-                ];
-            }
-            else {
-                $distinctrecords["$key"] = [
-                    'data' => $data,
-                    'total' => count($query->getResult()),
-                    'offset' => 2
-                ];
             }
         }
-        
-        $db->close();
 
-		return $this->respond($distinctrecords);        
+        if(count($clusters['CLUSTERS-WITHIN-THE-SAME-DB']) > 0) {
+            foreach($clusters['CLUSTERS-WITHIN-THE-SAME-DB'] as $dbkey => $dbcluster) {
+
+                $this->cards = $this->createCardsForClustersWithinTheSameDB($dbkey, $dbcluster, $this->clusters);
+
+                //print_r($this->cards);
+
+                $db = \Config\Database::connect($this->multipledbconnectionwithtableandalias[$dbkey]['connection']);
+
+                foreach($this->cards as $key => $value) {
+            
+                    $sql = '';
+
+                    $maxminsql = '';
+
+                    $datatype = '';
+
+                    if(array_key_exists('concatenation_via_join', $value)) {
+                        //concatenation via join
+
+                        $datatype = $value['concatenation_via_join'][2];
+
+                        $concatenation = $this->formConcatString($value['concatenation_via_join'][0]);
+                        $tablejoin = $this->formColumnJoinString($value['concatenation_via_join'][1]);
+                        $sql = "SELECT DISTINCT $concatenation AS 'row' from $tablejoin";
+                        
+                        if($datatype==='numberstringtypes' || $datatype==='timetypes' || $datatype==='datetypes' || $datatype==='datetimetypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
+                            $maxminsql = "SELECT MAX(".$concatenation.") AS 'max', MIN(".$concatenation.") as 'min' from ".$tablejoin;
+                        }
+                    }
+                    else if(array_key_exists('concatenation_without_join', $value)) {
+                        //concatenation without join
+
+                        $datatype = $value['concatenation_without_join'][2];
+
+                        $concatenation = $this->formConcatString($value['concatenation_without_join'][0]);
+                        $sql = "SELECT DISTINCT $concatenation AS 'row' from ".$value['concatenation_without_join'][1];
+                        
+                        if($datatype==='numberstringtypes' || $datatype==='timetypes' || $datatype==='datetypes' || $datatype==='datetimetypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
+                            $maxminsql = "SELECT MAX(".$concatenation.") AS 'max', MIN(".$concatenation.") as 'min' from ".$tablejoin;
+                        }
+                    }
+                    else if(array_key_exists('join_without_concatenation', $value)) {
+                        //join_without_concatenation
+
+                        $datatype = $value['join_without_concatenation'][2];
+
+                        $tablejoin = $this->formColumnJoinString($value['join_without_concatenation'][1]);
+
+                        if($datatype === 'timetypes' || $datatype === 'datetypes' || $datatype === 'datetimetypes') {
+                            if($datatype === 'timetypes') {
+                                $timeFormat = $value['join_without_concatenation'][3]['timeformat'];
+                                $field = $value['join_without_concatenation'][0];
+
+                                $maxminsql = "SELECT DATE_FORMAT(MAX($field), $timeFormat)) AS 'max', DATE_FORMAT(MIN($field), $timeFormat)) as 'min' from $tablejoin";
+                                $sql = "SELECT DISTINCT DATE_FORMAT($field, '$timeFormat') AS 'row' from $tablejoin";
+                            }
+                            else if($datatype === 'datetypes') {
+                                $dateFormat = $value['join_without_concatenation'][3]['dateformat'];
+                                $field = $value['join_without_concatenation'][0];
+
+                                $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d')) AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d')) as 'min' from $tablejoin";
+                                $sql = "SELECT DISTINCT DATE_FORMAT($field, '$dateFormat') AS 'row' from $tablejoin";
+                            }
+                            else {
+                                $datetimeFormat = $value['join_without_concatenation'][3]['dateformat'].'__O__'.$value['join_without_concatenation'][3]['timeformat'];
+                                $field = $value['join_without_concatenation'][0];
+
+                                $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d')) AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d')) as 'min' from $tablejoin";
+                                $sql = "SELECT DISTINCT DATE_FORMAT($field, '$datetimeFormat') AS 'row' from $tablejoin";
+                            }
+                        }
+                        else {
+                            $sql = 'SELECT DISTINCT '.$value['join_without_concatenation'][0]." AS 'row' from $tablejoin";
+                        
+                            if($datatype==='numberstringtypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
+                                $maxminsql = "SELECT MAX(".
+                                    $value['join_without_concatenation'][0].
+                                ") AS 'max', MIN(".
+                                    $value['join_without_concatenation'][0].
+                                ") as 'min' from ".$tablejoin;
+                            }
+                        }
+                    }
+                    else {
+                        if(count($value['single']) === 2) {
+                            $datatype = $value['single'][1];
+
+                            $sql = "SELECT DISTINCT $key AS 'row' from ".$value['single'][0];
+
+                            if($datatype==='numberstringtypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
+                                $maxminsql = "SELECT MAX($key) AS 'max', MIN($key) as 'min' from ".$value['single'][0];
+                            }
+                        }
+                        else {
+                            $field = "";
+                            $table = "";
+                            if(count($value['single']) === 3) {
+                                if(is_array($value['single'][2])) {
+                                    $datatype = $value['single'][1];
+                                    $field = $key;
+                                    $table = $value['single'][0];
+                                }
+                                else {
+                                    $datatype = $value['single'][2];
+                                    $field = $value['single'][0];
+                                    $table = $value['single'][1];
+                                }
+                            }
+                            else {
+                                $datatype = $value['single'][2];
+                                $field = $value['single'][0];
+                                $table = $value['single'][1];
+                            }
+
+                            if($datatype === 'timetypes' || $datatype === 'datetypes' || $datatype === 'datetimetypes') {
+                                if($datatype === 'timetypes') {
+                                    $timeFormat = $value['single'][count($value['single'])-1]['timeformat'];
+                                    $sql = "SELECT DISTINCT DATE_FORMAT($field, '$timeFormat') AS 'row' from $table";
+                                    $maxminsql = "SELECT DATE_FORMAT(MAX($field), '$timeFormat') AS 'max', DATE_FORMAT(MIN($field), '$timeFormat') as 'min' from $table";
+                                }
+                                else if($datatype === 'datetypes') {
+                                    $dateFormat = $value['single'][count($value['single'])-1]['dateformat'];
+                                    $sql = "SELECT DISTINCT DATE_FORMAT($field, '$dateFormat') AS 'row' from $table";
+                                    $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d') AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d') as 'min' from $table";
+                                }
+                                else {
+                                    $datetimeFormat = $value['single'][count($value['single'])-1]['dateformat'].'__O__'.$value['single'][count($value['single'])-1]['timeformat'];
+                                    $sql = "SELECT DISTINCT DATE_FORMAT($field, '$datetimeFormat') AS 'row' from $table";
+                                    $maxminsql = "SELECT DATE_FORMAT(MAX($field), '%Y-%m-%d') AS 'max', DATE_FORMAT(MIN($field), '%Y-%m-%d') as 'min' from $table";
+                                }
+                            }
+                            else {
+                                $sql = "SELECT DISTINCT $field AS 'row' from $table";
+                                if($datatype==='numberstringtypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
+                                    $maxminsql = "SELECT MAX($field) AS 'max', MIN($field) as 'min' from $table";
+                                }
+                            }
+                        }
+                    }
+                    
+                    /*
+                    print_r("\n==================\n");
+                    print_r($sql);
+                    print_r("\n==================\n");
+                    print_r($maxminsql);
+                    print_r("\n==================\n");
+                    */
+
+                    $query = $db->query($sql);
+                        
+                    $data = [];
+
+                    foreach($query->getResult() as $r) {
+                        $data[] = [
+                            'row' => $r->row,
+                            'checked' => false,
+                            'selected' => false
+                        ];
+                    }
+            
+                    if($datatype==='numberstringtypes' || $datatype==='timetypes' || $datatype==='datetypes' || $datatype==='datetimetypes' || $datatype==='numbertypes' || $datatype==='yeartypes') {
+                        $query1 = $db->query($maxminsql);
+                        $distinctrecords["$key"] = [
+                            'data' => $data,
+                            'total' => count($query->getResult()),
+                            'offset' => 2,
+                            'max' => $query1->getResult()[0]->max,
+                            'min' => $query1->getResult()[0]->min
+                        ];
+                    }
+                    else {
+                        $distinctrecords["$key"] = [
+                            'data' => $data,
+                            'total' => count($query->getResult()),
+                            'offset' => 2
+                        ];
+                    }
+                }
+                
+                $db->close();
+            }
+        }
+
+	    return $this->respond($distinctrecords);        
     }
 }

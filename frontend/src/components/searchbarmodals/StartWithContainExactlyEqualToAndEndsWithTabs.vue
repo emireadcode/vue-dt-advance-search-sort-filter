@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, inject, type ShallowRef, triggerRef, } from "vue";
-import type { 
-  StringSearchType, 
+import { inject, type ShallowRef, triggerRef, } from "vue";
+import type {
   MultipleWordsStringType, 
   NumberStringType,
-  SingleWordStringType, 
+  SingleWordStringType,
   MultipleWordsStringConcatenatedFieldType,
   SingleWordStringConcatenatedFieldType,
 } from "../types/SupportedDatatypesTypeDeclaration";

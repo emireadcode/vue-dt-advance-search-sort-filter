@@ -1,123 +1,107 @@
 <script setup lang="ts">
-import { nextTick, computed, triggerRef, ref, inject, type ShallowRef, type Ref, } from "vue";
+import { nextTick, computed, triggerRef, ref, inject, type ShallowRef } from 'vue'
 import type {
   NumberSearchType,
   AtNumber,
   SingleWordStringType,
-  NumberStringType,
-} from "../types/SupportedDatatypesTypeDeclaration";
+  NumberStringType
+} from '../types/SupportedDatatypesTypeDeclaration'
 
-const
-  holder = inject("numbersearchcard") as ShallowRef<AtNumber<NumberSearchType>>,
-  index = inject("index") as number,
-  props = defineProps<{
-    from?: 'TABPANELWITHINCLUDEANDEXCLUDE' | undefined;
-  }>(),
+defineProps<{
+  from?: 'TABPANELWITHINCLUDEANDEXCLUDE' | undefined
+}>()
+
+const holder = inject('numbersearchcard') as ShallowRef<AtNumber<NumberSearchType>>,
+  index = inject('index') as number,
   emits = defineEmits<{
-    (e: "open:atnumbersearchwindow", action: boolean): void;
-    (e: "enable:atnumbersearchwindowopenerbutton", action: boolean): void;
+    (e: 'open:atnumbersearchwindow', action: boolean): void
+    (e: 'enable:atnumbersearchwindowopenerbutton', action: boolean): void
   }>(),
   thematchref = ref<HTMLInputElement>(),
   fromthispattern = ref<string>(),
   cards = inject('cards') as ShallowRef<(SingleWordStringType | NumberStringType)[]>
-;
-
 function addMatchAndPattern() {
   nextTick(() => {
-    if(
-      (thematchref.value as HTMLInputElement) !== undefined
-      &&
-      /^\s*\d+\s*$/g.test((thematchref.value as HTMLInputElement).value as string)
-      &&
-      fromthispattern.value !== undefined
-      &&
-      (fromthispattern.value as string).length <= 40 
-      && 
-      (fromthispattern.value as string).length > 0
-      &&
+    if (
+      (thematchref.value as HTMLInputElement) !== undefined &&
+      /^\s*\d+\s*$/g.test((thematchref.value as HTMLInputElement).value as string) &&
+      fromthispattern.value !== undefined &&
+      (fromthispattern.value as string).length <= 40 &&
+      (fromthispattern.value as string).length > 0 &&
       /\d+ns/g.test(fromthispattern.value as string)
     ) {
-      if(holder.value.thematchfromthispattern.length === 0) {
+      if (holder.value.thematchfromthispattern.length === 0) {
         holder.value.thematchfromthispattern = [
           {
             thematch: (thematchref.value as HTMLInputElement).value as string,
             fromthispattern: fromthispattern.value as string
           }
-        ];
-      }
-      else {
+        ]
+      } else {
         holder.value.thematchfromthispattern = [
           ...holder.value.thematchfromthispattern,
           {
             thematch: (thematchref.value as HTMLInputElement).value,
             fromthispattern: fromthispattern.value as string
           }
-        ];
+        ]
       }
-      triggerRef(holder);
-      fromthispattern.value = '';
-      (thematchref.value as HTMLInputElement).value = '0';
+      triggerRef(holder)
+      fromthispattern.value = ''
+      ;(thematchref.value as HTMLInputElement).value = '0'
     }
-  });
+  })
 }
 function checkWhetherToEnableExclude() {
-  if(
-    (
-      holder.value.search.fromto.from.trim().length > 0 
-      &&
-      holder.value.search.fromto.to.trim().length > 0 
-      && 
-      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.fromto.from)
-      && 
-      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.fromto.to)
-      &&
-      parseFloat(holder.value.search.fromto.from) < parseFloat(holder.value.search.fromto.to)
-    )
-    ||
-    (
-      holder.value.search.greaterthan.trim().length > 0
-      &&
-      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.greaterthan)
-    )
-    ||
-    (
-      holder.value.search.lessthan.trim().length > 0
-      &&
-      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.lessthan)
-    )
+  if (
+    (holder.value.search.fromto.from.trim().length > 0 &&
+      holder.value.search.fromto.to.trim().length > 0 &&
+      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.fromto.from) &&
+      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.fromto.to) &&
+      parseFloat(holder.value.search.fromto.from) < parseFloat(holder.value.search.fromto.to)) ||
+    (holder.value.search.greaterthan.trim().length > 0 &&
+      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.greaterthan)) ||
+    (holder.value.search.lessthan.trim().length > 0 &&
+      /^\s*\d+(\.\d+)?\s*$/g.test(holder.value.search.lessthan))
   ) {
-    emits('enable:atnumbersearchwindowopenerbutton', false);
+    emits('enable:atnumbersearchwindowopenerbutton', false)
   }
 }
 
 let addnewpatternguard = computed(() => {
   return (
-    (thematchref.value as HTMLInputElement) !== undefined
-    &&
-    /^\s*\d+\s*$/g.test((thematchref.value as HTMLInputElement).value as string)
-    &&
-    fromthispattern.value !== undefined
-    &&
-    (fromthispattern.value as string).length <= 40 
-    && 
-    (fromthispattern.value as string).length > 0
-    &&
+    (thematchref.value as HTMLInputElement) !== undefined &&
+    /^\s*\d+\s*$/g.test((thematchref.value as HTMLInputElement).value as string) &&
+    fromthispattern.value !== undefined &&
+    (fromthispattern.value as string).length <= 40 &&
+    (fromthispattern.value as string).length > 0 &&
     /\d+ns/g.test(fromthispattern.value as string)
-  );
+  )
 })
-
 </script>
 
 <template>
   <div class="d-block">
-    <div class="d-block" style="padding:0px 0.5rem 8px 0.5rem;">
-      <div class="flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
+    <div class="d-block" style="padding: 0px 0.5rem 8px 0.5rem">
+      <div
+        class="flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center"
+      >
         <div class="flex-fill align-self-stretch">
-          <button 
-            @click="() => { emits('open:atnumbersearchwindow', true); checkWhetherToEnableExclude(); }"
-            @keypress.enter="() => { emits('open:atnumbersearchwindow', true); checkWhetherToEnableExclude(); }"
-            class="btn w-100 shadow-sm" 
-            style="padding:5px;"
+          <button
+            @click="
+              () => {
+                emits('open:atnumbersearchwindow', true)
+                checkWhetherToEnableExclude()
+              }
+            "
+            @keypress.enter="
+              () => {
+                emits('open:atnumbersearchwindow', true)
+                checkWhetherToEnableExclude()
+              }
+            "
+            class="btn w-100 shadow-sm"
+            style="padding: 5px"
           >
             Open @Number Picker
           </button>
@@ -125,153 +109,190 @@ let addnewpatternguard = computed(() => {
         <slot name="closeatnumbersearch"></slot>
       </div>
     </div>
-    <div 
-      class="d-block" 
-      style="padding: 5px 0.5rem 10px 0.5rem;"
-      :style="(from !== undefined && from === 'TABPANELWITHINCLUDEANDEXCLUDE')? 'height: 80px;' : 'height:90px;'"
+    <div
+      class="d-block"
+      style="padding: 5px 0.5rem 10px 0.5rem"
+      :style="
+        from !== undefined && from === 'TABPANELWITHINCLUDEANDEXCLUDE'
+          ? 'height: 80px;'
+          : 'height:90px;'
+      "
     >
-      <div class="shadow-sm flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center" style="background-color: #E8E8E8;">
+      <div
+        class="shadow-sm flex-box flex-direction-row w-100 h-100 p-0 m-0 flex-nowrap justify-content-center align-items-center"
+        style="background-color: #e8e8e8"
+      >
         <div class="flex-fill">
-          {{
-            cards[index].result.data.length > 0?
-            cards[index].result.data[0].row
-            :
-            'No Data'
-          }}
+          {{ cards[index].result.data.length > 0 ? cards[index].result.data[0].row : 'No Data' }}
         </div>
       </div>
     </div>
-    <div class="d-block" style="padding: 5px 0.5rem 5px 0.5rem;">
-      <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
-        <div class="flex-fill align-self-stretch" style="padding-right:5px;">
-          <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
+    <div class="d-block" style="padding: 5px 0.5rem 5px 0.5rem">
+      <div
+        class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center"
+      >
+        <div class="flex-fill align-self-stretch" style="padding-right: 5px">
+          <div
+            style="padding: 5px 0; font-size: 0.9rem"
+            class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center"
+          >
             last
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                ref=""
-                @change=""
-                @keypress.enter=""
+            <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+              <input
                 type="number"
                 min="0"
                 value="0"
-                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
+                style="
+                  background-color: #ffff99;
+                  height: 32px;
+                  width: 100px;
+                  border: none;
+                  outline: 0.063rem solid black;
+                "
               />
             </div>
             digits
           </div>
         </div>
-        <div class="flex-fill align-self-stretch" style="padding-left:5px;">
-          <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
+        <div class="flex-fill align-self-stretch" style="padding-left: 5px">
+          <div
+            style="padding: 5px 0; font-size: 0.9rem"
+            class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center"
+          >
             first
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                ref=""
-                @change=""
-                @keypress.enter=""
+            <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+              <input
                 type="number"
                 min="0"
                 value="0"
-                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
+                style="
+                  background-color: #ffff99;
+                  height: 32px;
+                  width: 100px;
+                  border: none;
+                  outline: 0.063rem solid black;
+                "
               />
             </div>
             digits
           </div>
         </div>
       </div>
-      <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
-        <div class="flex-fill align-self-stretch" style="padding: 13px 0;">
-          <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
+      <div
+        class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center"
+      >
+        <div class="flex-fill align-self-stretch" style="padding: 13px 0">
+          <div
+            style="padding: 5px 0; font-size: 0.9rem"
+            class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center"
+          >
             the
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                ref=""
-                @change=""
-                @keypress.enter=""
+            <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+              <input
                 type="number"
                 min="0"
                 value="0"
-                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
+                style="
+                  background-color: #ffff99;
+                  height: 32px;
+                  width: 100px;
+                  border: none;
+                  outline: 0.063rem solid black;
+                "
               />
             </div>
             digits, before the last
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                ref=""
-                @change=""
-                @keypress.enter=""
+            <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+              <input
                 type="number"
                 min="0"
                 value="0"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid black;" 
+                style="height: 32px; width: 100px; border: none; outline: 0.063rem solid black"
               />
             </div>
             characters
           </div>
         </div>
       </div>
-      <div class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center">
-        <div class="flex-fill align-self-stretch" style="padding: 0 0 13px 0;">
-          <div style="padding:5px 0;font-size:0.9rem;" class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
+      <div
+        class="flex-box flex-direction-row w-100 p-0 m-0 flex-nowrap justify-content-center align-items-center"
+      >
+        <div class="flex-fill align-self-stretch" style="padding: 0 0 13px 0">
+          <div
+            style="padding: 5px 0; font-size: 0.9rem"
+            class="shadow-sm flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center"
+          >
             after the first
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                ref=""
-                @change=""
-                @keypress.enter=""
+            <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+              <input
                 type="number"
                 min="0"
                 value="0"
-                style="height:32px;width:100px;border:none;outline:0.063rem solid black;" 
+                style="height: 32px; width: 100px; border: none; outline: 0.063rem solid black"
               />
             </div>
             characters, the next
-            <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-              <input 
-                ref=""
-                @change=""
-                @keypress.enter=""
+            <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+              <input
                 type="number"
                 min="0"
                 value="0"
-                style="background-color:#FFFF99;height:32px;width:100px;border:none;outline:0.063rem solid black;" 
+                style="
+                  background-color: #ffff99;
+                  height: 32px;
+                  width: 100px;
+                  border: none;
+                  outline: 0.063rem solid black;
+                "
               />
             </div>
             digits
           </div>
         </div>
       </div>
-      <div class="d-block shadow-sm" style="padding:6px;">
-        <div style="font-size:0.9rem;padding: 0 0 8px 0;" class="flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center">
+      <div class="d-block shadow-sm" style="padding: 6px">
+        <div
+          style="font-size: 0.9rem; padding: 0 0 8px 0"
+          class="flex-box flex-direction-row w-100 m-0 flex-nowrap justify-content-center align-items-center"
+        >
           the
-          <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-            <input 
-              :ref="(el) => thematchref = el as HTMLInputElement"
-              @change=""
-              @keypress.enter=""
+          <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+            <input
+              :ref="(el) => (thematchref = el as HTMLInputElement)"
               type="number"
               min="0"
               value="0"
-              style="background-color:#FFFF99;height:32px;width:60px;border:none;outline:0.063rem solid black;" 
+              style="
+                background-color: #ffff99;
+                height: 32px;
+                width: 60px;
+                border: none;
+                outline: 0.063rem solid black;
+              "
             />
           </div>
           match from this
-          <div class="flex-shrink-0 flex-grow-0" style="padding:0 10px;">
-            <input 
+          <div class="flex-shrink-0 flex-grow-0" style="padding: 0 10px">
+            <input
               v-model="fromthispattern"
-              type="text" 
-              style="height:32px;width:230px;border:none;outline:0.063rem solid black;" 
+              type="text"
+              style="height: 32px; width: 230px; border: none; outline: 0.063rem solid black"
             />
           </div>
           pattern
         </div>
-        <div class="d-block" style="padding: 4px 0;">
-          <button 
+        <div class="d-block" style="padding: 4px 0">
+          <button
             @click="addMatchAndPattern()"
             @keypress.enter="addMatchAndPattern()"
-            class="btn w-100 shadow-sm" 
-            style="padding:5px;"
-            :style="addnewpatternguard? 'background-color: blue; color: #fff;' : 'background-color:#B8B8B8;color:gray;'"
-            :disabled="addnewpatternguard? false : true"
+            class="btn w-100 shadow-sm"
+            style="padding: 5px"
+            :style="
+              addnewpatternguard
+                ? 'background-color: blue; color: #fff;'
+                : 'background-color:#B8B8B8;color:gray;'
+            "
+            :disabled="addnewpatternguard ? false : true"
           >
             Add New Match and Pattern
           </button>
@@ -301,7 +322,6 @@ let addnewpatternguard = computed(() => {
       </div>
 
       -->
-
     </div>
   </div>
 </template>

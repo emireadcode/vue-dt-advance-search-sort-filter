@@ -30,8 +30,8 @@ const
 ;
 
 export function removeDelimiters(item: string) {
-  let newItem = item;
-  let newItemArray = newItem
+  const newItem = item;
+  const newItemArray = newItem
     .replace(/-/g, " ")
     .replace(/\//g, " ")
     .replace(/\.\s*/g, " ")
@@ -135,13 +135,13 @@ export function getYearMonthAndDate(isoweek: boolean, pastedorclickeddate: strin
     day,
     teststringdate = "";
   if (isclickedstatus) {
-      let splitedfdate = pastedorclickeddate.split("-");
+      const splitedfdate = pastedorclickeddate.split("-");
       year = splitedfdate[0];
       month = parseInt(splitedfdate[1]) - 1;
       day = parseInt(splitedfdate[2]);
   } else {
     try {
-      let fdate = format(new Date(pastedorclickeddate), "yyyy-MM-dd"),
+      const fdate = format(new Date(pastedorclickeddate), "yyyy-MM-dd"),
         removedDelimiter = removeDelimiters(fdate),
         delimiterRemovedDateArray = (removedDelimiter[0] as string).split(" ");
       teststringdate =
@@ -151,7 +151,7 @@ export function getYearMonthAndDate(isoweek: boolean, pastedorclickeddate: strin
         "-" +
         delimiterRemovedDateArray[2];
     } catch (ex) {
-      let removedDelimiter = removeDelimiters(pastedorclickeddate),
+      const removedDelimiter = removeDelimiters(pastedorclickeddate),
         delimiterRemovedDateArray = (removedDelimiter[0] as string).split(" ");
       for (let i = 0; i < delimiterRemovedDateArray.length; i++) {
         for (let j = i + 1; j < delimiterRemovedDateArray.length; j++) {
@@ -159,7 +159,7 @@ export function getYearMonthAndDate(isoweek: boolean, pastedorclickeddate: strin
             parseInt(delimiterRemovedDateArray[i]) <
             parseInt(delimiterRemovedDateArray[j])
           ) {
-            let temp = delimiterRemovedDateArray[j];
+            const temp = delimiterRemovedDateArray[j];
             delimiterRemovedDateArray[j] = delimiterRemovedDateArray[i];
             delimiterRemovedDateArray[i] = temp;
           }
@@ -191,10 +191,10 @@ export function getYearMonthAndDate(isoweek: boolean, pastedorclickeddate: strin
 }
 
 export function deselectAll(visiblecalendar: ShallowRef<VisibleCalendarType>) {
-  for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-    for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
-      for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
-        for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+  for (const year in (visiblecalendar.value as VisibleCalendarType).selections) {
+    for (const month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+      for (const week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+        for (const day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
           if(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].readonlystatus === 'ENABLE') {
             ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].selected = "DESELECTED";
           }
@@ -217,7 +217,7 @@ export function buildCalendar(
   maxdate: string,
   visiblecalendar?: ShallowRef<VisibleCalendarType> | undefined
 ) {
-  let
+  const
     calendar = {
       weeks: {},
       tm: [
@@ -230,12 +230,13 @@ export function buildCalendar(
         {checked: false, status: 'ENABLE'}
       ],
     } as YearMonthClickable<PositionTrackerType>['calendar'] | YearMonthClickable<{}>['calendar'],
-    diffBtwWkStartAndMnthStart,
-    startDate,
-    counter = 0,
-    weeksInMonth = getWeeksInMonth(new Date(year, month, 1)),
+    
     daysInMonth = getDaysInMonth(new Date(year, month, 1))
   ;
+  let diffBtwWkStartAndMnthStart,
+  startDate,
+  counter = 0,
+  weeksInMonth = getWeeksInMonth(new Date(year, month, 1));
 
   if (isoweek) {
     diffBtwWkStartAndMnthStart = differenceInCalendarDays(
@@ -277,7 +278,7 @@ export function buildCalendar(
     for (let k = 0; k < 7; k++) {
       if (j === 0) {
         if (k < diffBtwWkStartAndMnthStart) {
-          let sDate = startDate + k, mm = (month-1)<0? 12 : (month<10? "0"+month : month), yy = (month-1)<0? year-1 : year;
+          const sDate = startDate + k, mm = (month-1)<0? 12 : (month<10? "0"+month : month), yy = (month-1)<0? year-1 : year;
           if(k === 0) {
             calendar.weeks[j].days = {
               [k]: {
@@ -416,7 +417,7 @@ export function buildCalendar(
           }
         } else {
           newWeekDate++;
-          let yy = month+2 > 12? year+1 : year, mm = month+2 > 12? '01' : (month+2 < 10? '0'+(month+2) : month+2);
+          const yy = month+2 > 12? year+1 : year, mm = month+2 > 12? '01' : (month+2 < 10? '0'+(month+2) : month+2);
           calendar.weeks[j].days = {
             ...calendar.weeks[j].days,
             [k]: {
@@ -469,12 +470,12 @@ export function buildCalendar(
 
 export function getDimensions(visiblecalendar: ShallowRef<VisibleCalendarType>) {
   nextTick(() => {
-    for (let w in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
-      for (let d in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days) {
+    for (const w in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+      for (const d in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days) {
         if (w in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
           if (d in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days) {
             if ((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement) {
-              let offset = getOffset((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement);
+              const offset = getOffset((visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement);
               if (offset) {
                 (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].x1 = offset.x1;
                 (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(w)].days[d].y1 = offset.y1;
@@ -490,12 +491,12 @@ export function getDimensions(visiblecalendar: ShallowRef<VisibleCalendarType>) 
         }
       }
     }
-    for (let w in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
-      for (let d in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days) {
+    for (const w in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+      for (const d in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days) {
         if (w in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
           if (d in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days) {
             if ((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement) {
-              let offset = getOffset((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement);
+              const offset = getOffset((visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].ref as HTMLLabelElement);
               if (offset) {
                 (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].x1 = offset.x1;
                 (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(w)].days[d].y1 = offset.y1;
@@ -3167,8 +3168,8 @@ function checkThroughMonthDayLineToBeCheckedAndEnabledByDefault(
     tobecheckedandenabled1 = true,
     tobecheckedandenabled2 = false
   ;
-  for(let w in month.weeks) {
-    for(let d in month.weeks[w].days) {
+  for(const w in month.weeks) {
+    for(const d in month.weeks[w].days) {
       if(parseInt(d) === day) {
         if(
           (
@@ -3188,8 +3189,8 @@ function checkThroughMonthDayLineToBeCheckedAndEnabledByDefault(
     }
     if(!tobecheckedandenabled1) break;
   }
-  for(let w in month.weeks) {
-    for(let d in month.weeks[w].days) {
+  for(const w in month.weeks) {
+    for(const d in month.weeks[w].days) {
       if(parseInt(d) === day) {
         if(
           month.weeks[w].days[d].status === 'ENABLE'
@@ -3213,9 +3214,9 @@ function checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
     tobecheckedandenabled1 = true,
     tobecheckedandenabled2 = false
   ;
-  for(let m in year.months) {
-    for(let w in year.months[m].weeks) {
-      for(let d in year.months[m].weeks[w].days) {
+  for(const m in year.months) {
+    for(const w in year.months[m].weeks) {
+      for(const d in year.months[m].weeks[w].days) {
         if(parseInt(d) === day) {
           if(
             year.months[m].weeks[w].days[d].status === 'ENABLE'
@@ -3235,9 +3236,9 @@ function checkThroughYearDayLineToBeCheckedAndEnabledByDefault(
     }
     if(!tobecheckedandenabled1) break;
   }
-  for(let m in year.months) {
-    for(let w in year.months[m].weeks) {
-      for(let d in year.months[m].weeks[w].days) {
+  for(const m in year.months) {
+    for(const w in year.months[m].weeks) {
+      for(const d in year.months[m].weeks[w].days) {
         if(parseInt(d) === day) {
           if(
             year.months[m].weeks[w].days[d].status === 'ENABLE'
@@ -3264,7 +3265,7 @@ function loopThroughWeekForMultipleSelection(
   boxtype: 'WEEK-BOX' | 'CELL-BOX'
 ) {
   let deselectedcount = 0, deselected = false;
-  for(let d in (
+  for(const d in (
       (visiblecalendar.value as VisibleCalendarType).selections[
         year
       ].months[
@@ -3507,7 +3508,7 @@ function loopThroughWeekForRangeSelection(
   boxtype: 'WEEK-BOX' | 'CELL-BOX'
 ) {
   let deselectedcount = 0, deselected = false;
-  for(let d in (
+  for(const d in (
       (visiblecalendar.value as VisibleCalendarType).selections[
         year
       ].months[
@@ -4443,7 +4444,7 @@ function deselectOrSelectTyTmForWeekBoxClick(
   isoweek?: boolean | undefined
 ) {
   if(selectordeselect === 'DESELECT') {
-    for(let d in 
+    for(const d in 
       (
         (
           visiblecalendar.value as VisibleCalendarType
@@ -4532,7 +4533,7 @@ function deselectOrSelectTyTmForWeekBoxClick(
         }
       }
     }
-    for(let d in 
+    for(const d in 
       (
         (
           visiblecalendar.value as VisibleCalendarType
@@ -9000,7 +9001,7 @@ function checkNextMonthFirstDayIsHighlighted(week: VisibleCalendarType['selectio
     firstdayishighlighted = true;
   }
   else {
-    for(let d in week.days) {
+    for(const d in week.days) {
       if(week.days[d].day === 1) {
         if(
           week.days[d].selected === 'HIGHLIGHTED'
@@ -9032,7 +9033,7 @@ function checkPreviousMonthLastDayIsHighlighted(week: VisibleCalendarType['selec
     }
   }
   else {
-    for(let d in week.days) {
+    for(const d in week.days) {
       if(week.days[d].day === 1) {
         if(
           week.days[parseInt(d) - 1].selected === 'HIGHLIGHTED'
@@ -9056,11 +9057,11 @@ function handleForwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, vis
   ;
   let years = Object.keys(visiblecalendar.value.selections).map((item) => parseInt(item));
   years = years.sort();
-  for(let y in years) {
-    let months = Object.keys(visiblecalendar.value.selections[years[y]].months).map((item) => parseInt(item));
+  for(const y in years) {
+    const months = Object.keys(visiblecalendar.value.selections[years[y]].months).map((item) => parseInt(item));
     months.sort();
-    for(let m in months) {
-      let weeks = Object.keys(
+    for(const m in months) {
+      const weeks = Object.keys(
         (
           visiblecalendar.value.selections[years[y]].months[
             months[m]
@@ -9068,8 +9069,8 @@ function handleForwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, vis
         ).weeks
       ).map((item) => parseInt(item));
       weeks.sort();
-      for(let w in weeks) {
-        let days = Object.keys(
+      for(const w in weeks) {
+        const days = Object.keys(
           (
             visiblecalendar.value.selections[years[y]].months[
               months[m]
@@ -9077,7 +9078,7 @@ function handleForwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, vis
           ).weeks[weeks[w]].days
         ).map((item) => parseInt(item));
         days.sort();
-        for(let d in days) {
+        for(const d in days) {
           if(
             params.value.rangefirstselection.year === years[y]
             &&
@@ -9143,11 +9144,11 @@ function handleBackwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, vi
   let years = Object.keys(visiblecalendar.value.selections).map((item) => parseInt(item));
   years.sort();
   years = years.reverse();
-  for(let y in years) {
+  for(const y in years) {
     let months = Object.keys(visiblecalendar.value.selections[years[y]].months).map((item) => parseInt(item));
     months.sort();
     months = months.reverse();
-    for(let m in months) {
+    for(const m in months) {
       let weeks = Object.keys(
         (
           visiblecalendar.value.selections[years[y]].months[
@@ -9157,7 +9158,7 @@ function handleBackwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, vi
       ).map((item) => parseInt(item));
       weeks.sort();
       weeks = weeks.reverse();
-      for(let w in weeks) {
+      for(const w in weeks) {
         let days = Object.keys(
           (
             visiblecalendar.value.selections[years[y]].months[
@@ -9167,7 +9168,7 @@ function handleBackwardEdgeCase(params: ShallowRef<RangeSelectionParamsType>, vi
         ).map((item) => parseInt(item));
         days.sort();
         days = days.reverse();
-        for(let d in days) {
+        for(const d in days) {
           if(
             params.value.rangefirstselection.year === years[y]
             &&
@@ -9335,7 +9336,7 @@ function handleRangeSelection(
             };
           }
           else {
-            let avoidedgecases = whereisMouse(xpoint.value, ypoint.value, visiblecalendar);
+            const avoidedgecases = whereisMouse(xpoint.value, ypoint.value, visiblecalendar);
             if(
               avoidedgecases.date === 
               (
@@ -9363,14 +9364,14 @@ function handleRangeSelection(
                 onesideishighlighted = false,
                 highlightstoppeddate = {year: 0, month: 0, week: 0, day: 0, date: ''} as RangeFirstAndLastSelectionType
               ;
-              for(let y in visiblecalendar.value.selections) {
-                for(let m in visiblecalendar.value.selections[y].months) {
+              for(const y in visiblecalendar.value.selections) {
+                for(const m in visiblecalendar.value.selections[y].months) {
                   if(
                     parseInt(y) === params.value.rangefirstselection.year
                     &&
                     parseInt(m) === params.value.rangefirstselection.month
                   ) {
-                    for(let d in (visiblecalendar.value.selections[y].months[m] as YearMonthClickable<{}>['calendar']).weeks[params.value.rangefirstselection.week].days) {
+                    for(const d in (visiblecalendar.value.selections[y].months[m] as YearMonthClickable<{}>['calendar']).weeks[params.value.rangefirstselection.week].days) {
                       if(params.value.rangefirstselection.date === (visiblecalendar.value.selections[y].months[m] as YearMonthClickable<{}>['calendar']).weeks[params.value.rangefirstselection.week].days[d].date) {
                         if(params.value.rangefirstselection.week === 0) {
                           if(params.value.rangefirstselection.month === 0) {
@@ -10637,20 +10638,21 @@ export function handleDateSelectHighlightDeselect(
   visiblecalendar: ShallowRef<VisibleCalendarType>,
   params?: ShallowRef<RangeSelectionParamsType> | undefined
 ) {
+  const
+    result = getYearMonthAndDate(isoweek, pastedorclickeddate, isclickedstatus);
   let
-    result = getYearMonthAndDate(isoweek, pastedorclickeddate, isclickedstatus),
     yFound = false,
     mFound = false,
     wFound = false
   ;
 
   if (Object.keys((visiblecalendar.value as VisibleCalendarType).selections).length > 0) {
-    for (let year in (visiblecalendar.value as VisibleCalendarType).selections) {
+    for (const year in (visiblecalendar.value as VisibleCalendarType).selections) {
       if (parseInt(year) === result.year) {
-        for (let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+        for (const month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
           if (parseInt(month) === result.month) {
-            for (let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
-              for (let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+            for (const week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+              for (const day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                 if (
                   (
                     (visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']
@@ -10818,7 +10820,7 @@ export function handleDateSelectHighlightDeselect(
 }
 
 export function fillVisibleCalendarArray(maxdate: string, mindate: string, isoweek: boolean) {
-  let tempvisiblecalendar = shallowRef<VisibleCalendarType>();
+  const tempvisiblecalendar = shallowRef<VisibleCalendarType>();
   if (isoweek) {
     const maxISOWeekYear = getISOWeekYear(new Date(maxdate));
     const minISOWeekYear = getISOWeekYear(new Date(mindate));
@@ -11485,7 +11487,7 @@ export function mouseMovement(
       loadingMovement.value = true;
       if (selectionformat === "RANGE") {
         if ((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date) {
-          let mousePointedDate = whereisMouse(event.pageX, event.pageY, visiblecalendar);
+          const mousePointedDate = whereisMouse(event.pageX, event.pageY, visiblecalendar);
           buildHighlightedCalendar(
             isoweek,
             mindate,
@@ -11503,10 +11505,10 @@ export function mouseMovement(
                 new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
               ) >= 0
             ) {
-              for(let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-                for(let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
-                  for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
-                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+              for(const year in (visiblecalendar.value as VisibleCalendarType).selections) {
+                for(const month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+                  for(const week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                    for(const day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                       if(
                         new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) > new Date((params.value.rangefirstselection as RangeFirstAndLastSelectionType).date)
                         &&
@@ -11546,10 +11548,10 @@ export function mouseMovement(
               }
             }
             else {
-              for(let year in (visiblecalendar.value as VisibleCalendarType).selections) {
-                for(let month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
-                  for(let week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
-                    for(let day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+              for(const year in (visiblecalendar.value as VisibleCalendarType).selections) {
+                for(const month in (visiblecalendar.value as VisibleCalendarType).selections[year].months) {
+                  for(const week in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+                    for(const day in ((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
                       if(
                         new Date(((visiblecalendar.value as VisibleCalendarType).selections[year].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days[day].date) >= new Date(mousePointedDate.date)
                         &&
@@ -11697,10 +11699,10 @@ export function handleTyTm(
         }
       }
     }
-    for(let y in visiblecalendar.value.selections) {
-      for(let m in visiblecalendar.value.selections[y].months) {
-        for(let w in visiblecalendar.value.selections[y].months[m].weeks) {
-          for(let d in visiblecalendar.value.selections[y].months[m].weeks[w].days) {
+    for(const y in visiblecalendar.value.selections) {
+      for(const m in visiblecalendar.value.selections[y].months) {
+        for(const w in visiblecalendar.value.selections[y].months[m].weeks) {
+          for(const d in visiblecalendar.value.selections[y].months[m].weeks[w].days) {
             if(
               year === parseInt(y)
               && month !== undefined
@@ -11943,7 +11945,7 @@ export function handleTyTm(
             tytmindex
           ].status === 'DISABLE'? false : checkedornot
         );
-        for(let w in (visiblecalendar.value as VisibleCalendarType).selections[year].months[m].weeks) {
+        for(const w in (visiblecalendar.value as VisibleCalendarType).selections[year].months[m].weeks) {
           if(from === 'DAYS-MONTHS-YEARS') {
             if (
               (
@@ -12076,7 +12078,7 @@ export function handleTyTm(
 
 export function weekHasHighlightedOrSelected(week: VisibleCalendarType['selections'][number]['months'][number]['weeks'][number] | YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]) {
   let hasHighlightedOrSelected = false;
-  for(let d in week.days) {
+  for(const d in week.days) {
     if(
       week.days[d].status === 'ENABLE'
       &&
@@ -12097,7 +12099,7 @@ export function weekHasHighlightedOrSelected(week: VisibleCalendarType['selectio
 
 export function weekHasEnable(week: VisibleCalendarType['selections'][number]['months'][number]['weeks'][number] | YearMonthClickable<PositionTrackerType>['calendar']['weeks'][number]) {
   let hasenable = false;
-  Object.values(week.days).forEach((day, i) => {
+  Object.values(week.days).forEach((day) => {
     if(day.status === 'ENABLE') {
       hasenable = true;
     }
@@ -12335,8 +12337,8 @@ function buildHighlightedCalendar(isoweek: boolean, mindate: string, maxdate: st
 
 function whereisMouse(pointx: number, pointy: number, visiblecalendar: ShallowRef<VisibleCalendarType>) {
   let result = {date: "", status: "", day: "", month: "", year: ""}, found = false;
-  for(let week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
-    for(let day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days) {
+  for(const week in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks) {
+    for(const day in (visiblecalendar.value as VisibleCalendarType).previous.calendar.weeks[parseInt(week)].days) {
       if(
         (
           parseInt(week) === 0
@@ -12388,8 +12390,8 @@ function whereisMouse(pointx: number, pointy: number, visiblecalendar: ShallowRe
     return result;
   }
   else {
-    for(let week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
-      for(let day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days) {
+    for(const week in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks) {
+      for(const day in (visiblecalendar.value as VisibleCalendarType).current.calendar.weeks[parseInt(week)].days) {
         if(
           (
             parseInt(week) === 0
@@ -12655,12 +12657,12 @@ export function assignRef(prevorcur: YearMonthClickable<PositionTrackerType>, el
 }
 
 export function resetSelections(resetarea: 'SELECTIONS' | 'CALENDAR', _selectionsorcalendar: VisibleCalendarType['selections'] | YearMonthClickable<PositionTrackerType>['calendar'], maxdate: string, mindate: string, isoweek: boolean) {
-  let selectionsorcalendar = _selectionsorcalendar;
+  const selectionsorcalendar = _selectionsorcalendar;
   if(resetarea === 'SELECTIONS') {
-    for(let year in selectionsorcalendar) {
-      for(let month in (selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months) {
-        for(let week in ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
-          for(let day in ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
+    for(const year in selectionsorcalendar) {
+      for(const month in (selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months) {
+        for(const week in ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks) {
+          for(const day in ((selectionsorcalendar as VisibleCalendarType['selections'])[parseInt(''+year) as number].months[parseInt(''+month)] as YearMonthClickable<{}>['calendar']).weeks[parseInt(week)].days) {
             if(
               differenceInCalendarDays(
                 isoweek
@@ -12689,8 +12691,8 @@ export function resetSelections(resetarea: 'SELECTIONS' | 'CALENDAR', _selection
     }
   }
   else {
-    for(let week in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks) {
-      for(let day in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days) {
+    for(const week in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks) {
+      for(const day in (selectionsorcalendar as YearMonthClickable<PositionTrackerType>['calendar']).weeks[parseInt(''+week)].days) {
         if(
           differenceInCalendarDays(
             isoweek

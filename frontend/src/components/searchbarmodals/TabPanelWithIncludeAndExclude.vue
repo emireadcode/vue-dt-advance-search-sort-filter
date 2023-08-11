@@ -21,12 +21,13 @@ const
     (e: "show:atnumbersearchexcludenumberwindowopenerbutton", action: boolean): void;
   }>(),
   index = inject("index") as number,
-  searchphraseinputboxenabler = ref(true)
+  searchphraseinputboxenabler = ref(true),
+  cc = props
 ;
 
 let unwatchopenatnumbersearchexcludenumberwindow: WatchStopHandle;
 
-provide("concatfieldindex", props.concatfieldindex as number | undefined);
+provide("concatfieldindex", cc.concatfieldindex as number | undefined);
 
 if(props.concatfieldindex === undefined) {
   if(
@@ -177,7 +178,7 @@ onBeforeUnmount(() => {
                     @keypress.enter="openOrCloseAtNumberSearchWindow(false)"
                   >
                     <img
-                      src="/src/assets/icons/close.png"
+                      src="./icons/close.png"
                       class="align-middle"
                       style="width: 2.205rem; height: 2.205rem"
                     />

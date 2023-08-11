@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.vue";
+import AdvanceSearchSortAndFilter from './components/AdvanceSearchSortAndFilter.vue'
 
 //npm install --save ol
 //npm i date-fns
+//npm i vue3-openlayers
 </script>
 
 <template>
@@ -15,21 +16,21 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           attribute: 'email',
           table: 'customer',
           enableincludeandexcludesearch: true,
-          limit: 100,
+          limit: 100
         },
         {
           position: 6,
           name: 'LANGUAGE',
           attribute: 'name',
           table: 'language',
-          limit: 10,
+          limit: 10
         },
         {
           position: 8,
           name: 'RATING',
           table: 'film',
-          limit: 10,
-        },
+          limit: 10
+        }
       ],
       numberstringtypes: [
         {
@@ -41,7 +42,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           limit: 100,
           enableincludeandexcludesearch: true,
           hasfixedlengthof: 11,
-          enableatnumbersearch: true,
+          enableatnumbersearch: true
         },
         {
           position: 3,
@@ -51,7 +52,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           join: 'store',
           limit: 100,
           hasfixedlengthof: 11,
-          enableatnumbersearch: true,
+          enableatnumbersearch: true
         },
         {
           position: 18,
@@ -59,7 +60,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           attribute: 'postal_code',
           table: 'address',
           join: 'customer',
-          limit: 100,
+          limit: 100
         },
         {
           position: 23,
@@ -73,19 +74,24 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 table: 'address',
                 join: 'customer',
                 startmodifierwildcard: '+(',
-                endmodifierwildcard: ')',
+                endmodifierwildcard: ')'
               },
               1: {
-                name: 'CUSTOMER PHONE',
+                /*name: 'CUSTOMER PHONE',
                 attribute: 'phone',
                 table: 'address',
                 join: 'customer',
                 enableincludeandexcludesearch: true,
-                enableatnumbersearch: true,
-              },
+                enableatnumbersearch: true,*/
+
+                name: 'POINT',
+                attribute: 'geopoint',
+                table: 'ITEMS_mysql_json_db',
+                join: 'store'
+              }
             },
-            delimiters: [''],
-          },
+            delimiters: ['']
+          }
         },
         {
           position: 22,
@@ -93,8 +99,8 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           attribute: 'postal_code',
           table: 'address',
           join: 'store',
-          limit: 100,
-        },
+          limit: 100
+        }
       ],
       multiplewordsstringtypes: [
         {
@@ -106,30 +112,30 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
               0: {
                 name: 'First Name',
                 attribute: 'first_name',
-                table: 'customer',
+                table: 'customer'
               },
               1: {
                 name: 'Last Name',
                 attribute: 'last_name',
-                table: 'customer',
-              },
+                table: 'customer'
+              }
             },
-            delimiters: [' '],
-          },
+            delimiters: [' ']
+          }
         },
         {
           position: 4,
           name: 'TITLE',
           table: 'film',
           limit: 100,
-          enableincludeandexcludesearch: true,
+          enableincludeandexcludesearch: true
         },
         {
           position: 5,
           name: 'DESCRIPTION',
           table: 'film',
           limit: 100,
-          enableincludeandexcludesearch: true,
+          enableincludeandexcludesearch: true
         },
         {
           position: 9,
@@ -137,7 +143,7 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           attribute: 'special_features',
           table: 'film',
           limit: 30,
-          enableincludeandexcludesearch: true,
+          enableincludeandexcludesearch: true
         },
         {
           position: 20,
@@ -149,21 +155,21 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 name: 'Address',
                 table: 'address',
                 join: 'customer',
-                enableincludeandexcludesearch: true,
+                enableincludeandexcludesearch: true
               },
               1: {
                 name: 'City',
                 table: 'city',
-                join: 'address',
+                join: 'address'
               },
               2: {
                 name: 'Country',
                 table: 'country',
-                join: 'city',
-              },
+                join: 'city'
+              }
             },
-            delimiters: [', ', ', '],
-          },
+            delimiters: [', ', ', ']
+          }
         },
         {
           position: 21,
@@ -175,24 +181,24 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
                 name: 'Address',
                 table: 'address',
                 join: 'store',
-                enableincludeandexcludesearch: true,
+                enableincludeandexcludesearch: true
               },
               1: {
                 name: 'City',
                 table: 'city',
                 join: 'address',
-                enableincludeandexcludesearch: false,
+                enableincludeandexcludesearch: false
               },
               2: {
                 name: 'Country',
                 table: 'country',
                 join: 'city',
-                enableincludeandexcludesearch: false,
-              },
+                enableincludeandexcludesearch: false
+              }
             },
-            delimiters: [', '],
-          },
-        },
+            delimiters: [', ']
+          }
+        }
       ],
       datetypes: [
         {
@@ -202,8 +208,8 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           table: 'payment',
           limit: 10,
           dateFormat: 'ddd dd mmm, yyyy',
-          isoweek: false,
-        },
+          isoweek: false
+        }
       ],
       timetypes: [
         {
@@ -212,8 +218,8 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           attribute: 'visited_time',
           table: 'payment',
           limit: 10,
-          timeFormat: '12-HCWOSWLZ',
-        },
+          timeFormat: '12-HCWOSWLZ'
+        }
       ],
       datetimetypes: [
         {
@@ -224,43 +230,59 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           limit: 10,
           dateFormat: 'dd-mm-yyyy',
           timeFormat: '12-HCWOSWOLZ',
-          isoweek: true,
-        },
+          isoweek: true
+        }
       ],
       numbertypes: [
         {
           position: 12,
           name: 'AMOUNT',
           table: 'payment',
-          limit: 10,
+          limit: 10
+        },
+        {
+          position: 25,
+          name: 'POINT',
+          attribute: 'geopoint',
+          table: 'ITEMS_sakila',
+          join: 'store',
+          limit: 10
+        },
+        {
+          position: 24,
+          name: 'POINT1',
+          attribute: 'geopoint',
+          table: 'ITEMS_mysql_json_db',
+          join: 'store',
+          limit: 10
         },
         {
           position: 7,
           name: 'RENTAL RATE',
           attribute: 'rental_rate',
           table: 'film',
-          limit: 50,
+          limit: 50
         },
         {
           position: 13,
           name: 'LENGTH',
           table: 'film',
-          limit: 10,
+          limit: 10
         },
         {
           position: 14,
           name: 'REPLACEMENT COST',
           attribute: 'replacement_cost',
           table: 'film',
-          limit: 7,
+          limit: 7
         },
         {
           position: 16,
           name: 'RENTAL DURATION',
           attribute: 'rental_duration',
           table: 'film',
-          limit: 100,
-        },
+          limit: 100
+        }
       ],
       yeartypes: [
         {
@@ -268,9 +290,19 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           name: 'RELEASE YEAR',
           attribute: 'release_year',
           table: 'film',
-          limit: 8,
-        },
+          limit: 8
+        }
       ],
+      /*jsontypes: [
+        {
+          position: 26,
+          name: 'MEDICAL APPOINTMENT',
+          attribute: 'arbitraryjsonvalues',
+          table: 'ITEMS_mysql_json_db',
+          join: 'store',
+          limit: 500,
+        },
+      ],*/
       keytonamemappingtypes: [
         {
           position: 17,
@@ -280,10 +312,10 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
           limit: 10,
           keytonamemapping: {
             1: 'Active',
-            0: 'Disable',
-          },
-        },
-      ],
+            0: 'Disable'
+          }
+        }
+      ]
     }"
   ></AdvanceSearchSortAndFilter>
 </template>
@@ -316,11 +348,11 @@ import AdvanceSearchSortAndFilter from "./components/AdvanceSearchSortAndFilter.
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
-  --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  --font-family-sans-serif: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
 }
 *,
 *::before,
@@ -341,9 +373,9 @@ section {
 }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
@@ -351,7 +383,7 @@ body {
   text-align: left;
   background-color: #fff;
 }
-[tabindex="-1"]:focus:not(:focus-visible) {
+[tabindex='-1']:focus:not(:focus-visible) {
   outline: 0 !important;
 }
 hr {
@@ -436,36 +468,36 @@ input {
 button {
   text-transform: none;
 }
-[role="button"] {
+[role='button'] {
   cursor: pointer;
 }
 button:not(:disabled),
-[type="button"]:not(:disabled),
-[type="reset"]:not(:disabled),
-[type="submit"]:not(:disabled) {
+[type='button']:not(:disabled),
+[type='reset']:not(:disabled),
+[type='submit']:not(:disabled) {
   cursor: pointer;
 }
 button::-moz-focus-inner,
-[type="button"]::-moz-focus-inner,
-[type="reset"]::-moz-focus-inner,
-[type="submit"]::-moz-focus-inner {
+[type='button']::-moz-focus-inner,
+[type='reset']::-moz-focus-inner,
+[type='submit']::-moz-focus-inner {
   padding: 0;
   border-style: none;
 }
-input[type="radio"],
-input[type="checkbox"] {
+input[type='radio'],
+input[type='checkbox'] {
   box-sizing: border-box;
   padding: 0 !important;
   margin: 0 !important;
 }
-[type="number"]::-webkit-inner-spin-button,
-[type="number"]::-webkit-outer-spin-button {
+[type='number']::-webkit-inner-spin-button,
+[type='number']::-webkit-outer-spin-button {
   height: auto;
 }
-[type="search"] {
+[type='search'] {
   outline-offset: -2px;
 }
-[type="search"]::-webkit-search-decoration {
+[type='search']::-webkit-search-decoration {
   -webkit-appearance: none;
 }
 ::-webkit-file-upload-button {
@@ -478,7 +510,7 @@ template {
 [hidden] {
   display: none !important;
 }
-input[type="text"] {
+input[type='text'] {
   display: block;
   width: 100%;
   height: calc(1.5em + 0.75rem + 2px);
@@ -491,22 +523,24 @@ input[type="text"] {
   background-color: #fff;
   background-clip: padding-box;
   outline: 1px solid rgba(0, 0, 0, 0.2);
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  input[type="text"] {
+  input[type='text'] {
     transition: none;
   }
 }
-input[type="text"]::-ms-expand {
+input[type='text']::-ms-expand {
   background-color: transparent;
   border: 0;
 }
-input[type="text"]:-moz-focusring {
+input[type='text']:-moz-focusring {
   color: transparent;
   text-shadow: 0 0 0 #495057;
 }
-input[type="text"]:focus {
+input[type='text']:focus {
   color: #495057;
   background-color: #fff;
   outline-color: #80bdff;
@@ -514,28 +548,28 @@ input[type="text"]:focus {
   box-shadow: 0 0 0 0.115rem rgba(0, 123, 255, 0.25);
   z-index: 1200;
 }
-input[type="text"]::-webkit-input-placeholder {
+input[type='text']::-webkit-input-placeholder {
   color: #6c757d;
   opacity: 1;
 }
-input[type="text"]::-moz-placeholder {
+input[type='text']::-moz-placeholder {
   color: #6c757d;
   opacity: 1;
 }
-input[type="text"]:-ms-input-placeholder {
+input[type='text']:-ms-input-placeholder {
   color: #6c757d;
   opacity: 1;
 }
-input[type="text"]::-ms-input-placeholder {
+input[type='text']::-ms-input-placeholder {
   color: #6c757d;
   opacity: 1;
 }
-input[type="text"]::placeholder {
+input[type='text']::placeholder {
   color: #6c757d;
   opacity: 1;
 }
-input[type="text"]:disabled,
-input[type="text"][readonly] {
+input[type='text']:disabled,
+input[type='text'][readonly] {
   background-color: #e9ecef;
   opacity: 1;
 }
@@ -604,11 +638,13 @@ input[type="text"][readonly] {
   align-items: center !important;
 }
 .shadow {
-  box-shadow: 0 0.46667rem 0.991667rem 0 rgba(0, 0, 0, 0.2),
+  box-shadow:
+    0 0.46667rem 0.991667rem 0 rgba(0, 0, 0, 0.2),
     0 0.35rem 1.16667rem 0 rgba(0, 0, 0, 0.19);
 }
 .shadow-sm {
-  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+  box-shadow:
+    rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
     rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
 }
 .user-select-none,
@@ -625,7 +661,6 @@ input[type="text"][readonly] {
   display: -moz-inline-stack;
   display: inline-block !important;
   zoom: 1;
-  *display: inline;
 }
 .overflow-hidden {
   overflow: hidden !important;
@@ -879,7 +914,7 @@ input[type="text"][readonly] {
   overflow: hidden;
   text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
-  -moz-binding: url("/src/assets/xml/ellipsis.xml#ellipsis");
+  -moz-binding: url('/src/assets/xml/ellipsis.xml#ellipsis');
 }
 .btn {
   font-weight: 400;
@@ -889,8 +924,11 @@ input[type="text"][readonly] {
   background-color: transparent;
   border: 1px solid transparent;
   border-radius: 0.25rem;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
-    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
   .btn {
@@ -956,8 +994,7 @@ a.btn.disabled {
   border: 1px solid black;
 }
 .font-family {
-  font-family: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, oxygen, ubuntu,
-    cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell,
+    'Open Sans', 'Helvetica Neue', sans-serif;
 }
 </style>
-

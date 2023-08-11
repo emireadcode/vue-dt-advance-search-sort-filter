@@ -196,6 +196,10 @@ export interface SingleWordStringType extends IdentityType {
 
 export interface NumberStringType extends SingleWordStringType {}
 
+export type JSONObjectAndScalarType = {
+  [key: string]: JSONObjectAndScalarType;
+} | {[key: string]: string | number | boolean};
+
 export type KeyToNameMappingType = {
   keytonamemapping: {
     [key: string]: string
@@ -340,6 +344,7 @@ export type CardInnerType = {
 
 export type CardType<T> = 
 {
+  jsontypes?: T[] | undefined;
   multiplewordsstringtypes?:
     | (T & { 
       concatenated?: MultipleWordsStringConcatenatedType | undefined; 
@@ -385,7 +390,7 @@ export type DistinctRecordType = {
     offset: number;
   }; 
 } | undefined;
-  
+
 export type PrimitiveType =
   | YearType
   | DateType
